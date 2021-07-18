@@ -1,5 +1,5 @@
-#include "Toolkit/Features/AUMI API/Exports.hpp"
-#include "Toolkit/Features/AUMI API/IPC/IPC.hpp"
+#include "Toolkit/Features/AUMI_API/Exports.hpp"
+#include "Toolkit/Features/AUMI_API/IPC/IPC.hpp"
 #include "Toolkit/Core.hpp"
 #include <thread>
 #include <Windows.h>
