@@ -1,4 +1,5 @@
 #include "../../../Utils/SDK.hpp"
+#include <string>
 #include <cstring>
 #include <Windows.h>
 #include <Psapi.h>
@@ -165,7 +166,7 @@ DllExport YYTKStatus AUMI_GetCodeExecuteAddress(void** outAddress)
 	
 	if (g_pCodeExecute)
 	{
-		*outAddress = g_pCodeExecute;
+		*outAddress = (void*)g_pCodeExecute;
 		return YYTK_OK;
 	}
 

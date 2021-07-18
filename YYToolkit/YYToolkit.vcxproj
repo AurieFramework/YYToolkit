@@ -144,17 +144,17 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="Src\Toolkit\Features\AUMI API\IPC\IPC.hpp" />
+    <ClInclude Include="Src\Toolkit\Features\AUMI_API\IPC\IPC.hpp" />
     <ClInclude Include="Src\Toolkit\Core.hpp" />
     <ClInclude Include="Src\Toolkit\Features\Features.hpp" />
     <ClInclude Include="Src\Toolkit\Hooks\Hooks.hpp" />
-    <ClInclude Include="Src\Toolkit\Features\AUMI API\Exports.hpp" />
+    <ClInclude Include="Src\Toolkit\Features\AUMI_API\Exports.hpp" />
     <ClInclude Include="Src\Utils\SDK.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Src\Toolkit\Features\AUMI API\AUMI.cpp" />
-    <ClCompile Include="Src\Toolkit\Features\AUMI API\IPC\IPC.cpp" />
-    <ClCompile Include="Src\Toolkit\Features\AUMI API\IPC\Wrappers\Wrappers.cpp" />
+    <ClCompile Include="Src\Toolkit\Features\AUMI_API\AUMI.cpp" />
+    <ClCompile Include="Src\Toolkit\Features\AUMI_API\IPC\IPC.cpp" />
+    <ClCompile Include="Src\Toolkit\Features\AUMI_API\IPC\Wrappers\Wrappers.cpp" />
     <ClCompile Include="Src\MainEntry.cpp" />
     <ClCompile Include="Src\Toolkit\Core.cpp" />
   </ItemGroup>

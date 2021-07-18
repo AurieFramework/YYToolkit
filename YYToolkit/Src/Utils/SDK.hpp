@@ -1,6 +1,5 @@
 #pragma once
 #ifdef __cplusplus
-#pragma warning(disable : 26812)
 #define DllExport extern "C" __declspec(dllexport)
 #else //!__cplusplus
 #define DllExport __declspec(dllexport)
@@ -11,9 +10,12 @@
 #define alignedTo(x) __declspec(align(x))
 #else //!MSC_VER
 #define alignedTo(x) __attribute__((aligned (x)))
+//#define strcpy_s(x,y,z) strncpy(x,z,y)
+#include <inttypes.h>
 #endif //MSC_VER
 
 #define YYTK_MAGIC 'TFSI'
+
 
 // Enums
 enum YYTKStatus : int
