@@ -165,7 +165,7 @@ DllExport AUMIResult AUMI_GetCodeExecuteAddress(void** outAddress)
 	
 	if (g_pCodeExecute)
 	{
-		*outAddress = g_pCodeExecute;
+		*outAddress = (void*)g_pCodeExecute;
 		return AUMI_OK;
 	}
 

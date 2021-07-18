@@ -1,13 +1,19 @@
 #pragma once
 
 #ifdef __cplusplus
+#ifdef _MSC_VER
 #pragma warning(disable : 26812)
+#define alignedTo(x) __declspec(align(x))
+#else
+#define alignedTo(x) __attribute__((aligned (x)))
+#endif
 #define DllExport extern "C" __declspec(dllexport)
 #else
 #define DllExport __declspec(dllexport)
 #endif
 
 #define AUMI_MAGIC 'AAA'
+
 
 enum AUMIResult
 {
@@ -122,7 +128,7 @@ struct YYObjectBase
 	int m_curSlot;
 };
 
-struct __declspec(align(8)) YYVAR
+struct alignedTo(8) YYVAR
 {
 	const char* pName;
 	int val;

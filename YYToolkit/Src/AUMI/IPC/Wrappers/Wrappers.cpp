@@ -1,11 +1,12 @@
 #include "../../Exports.hpp"
 #include "../IPC.hpp"
-#include <string>
+#include <cstring>
+#include <cstdlib>
 
 void IpcTestCommunication(IPCMessage_t* Message, IPCReply_t* OutReply)
 {
 	OutReply->AUMIResult = AUMI_OK;
-	strcpy_s(OutReply->Buffer, 128, "Hello from YYToolkit - If you can read this, the IPC Test was successful!\nNow let me just pad this reply out to 128 characters.");
+	strncpy(OutReply->Buffer, "Hello from YYToolkit - If you can read this, the IPC Test was successful!\nNow let me just pad this reply out to 128 characters.", 128);
 }
 
 void IpcGetFunctionByIndex(IPCMessage_t* Message, IPCReply_t* OutReply)
