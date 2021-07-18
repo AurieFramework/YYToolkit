@@ -15,13 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Src\AUMI\Exports.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Src\Shared.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Src\AUMI\IPC\IPC.hpp">
+    <ClInclude Include="Src\Toolkit\Features\AUMI API\IPC\IPC.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Src\Toolkit\Core.hpp">
@@ -30,12 +24,21 @@
     <ClInclude Include="Src\Toolkit\Hooks\Hooks.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Src\Toolkit\Features\Features.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Utils\SDK.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Toolkit\Features\AUMI API\Exports.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Src\AUMI\Functions\AUMI.cpp">
+    <ClCompile Include="Src\Toolkit\Features\AUMI API\AUMI.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Src\AUMI\IPC\IPC.cpp">
+    <ClCompile Include="Src\Toolkit\Features\AUMI API\IPC\IPC.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Src\MainEntry.cpp">
@@ -44,7 +47,7 @@
     <ClCompile Include="Src\Toolkit\Core.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Src\AUMI\IPC\Wrappers\Wrappers.cpp">
+    <ClCompile Include="Src\Toolkit\Features\AUMI API\IPC\Wrappers\Wrappers.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

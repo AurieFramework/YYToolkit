@@ -1,8 +1,8 @@
-#include "../../Shared.hpp"
+#include "../../../Utils/SDK.hpp"
+#include <cstring>
 #include <Windows.h>
 #include <Psapi.h>
-#include <cstdlib>
-#include "../Exports.hpp"
+#include "Exports.hpp"
 static PFUNC_CEXEC g_pCodeExecute = NULL;
 static void(*g_pGrabCodeFunction)(int, char** Name, void** Routine, int* Argc, void**) = NULL;
 
@@ -35,9 +35,9 @@ static MODULEINFO GetCurrentModuleInfo()
 	return modinfo;
 }
 
-AUMIResult AUMI_Initialize()
+YYTKStatus AUMI_Initialize()
 {
-	AUMIResult Result = AUMI_OK;
+	YYTKStatus Result = YYTK_OK;
 	if (Result = AUMI_GetCodeExecuteAddress((PVOID*)&g_pCodeExecute))
 		return Result;
 
@@ -47,20 +47,20 @@ AUMIResult AUMI_Initialize()
 	return Result;
 }
 
-AUMIResult AUMI_CreateCode(CCode* outCode, void* CodeBuffer, int CodeBufferSize, int LocalVarsUsed, const char* Name)
+YYTKStatus AUMI_CreateCode(CCode* outCode, void* CodeBuffer, int CodeBufferSize, int LocalVarsUsed, const char* Name)
 {
 	if (!outCode)
-		return AUMI_INVALID;
+		return YYTK_INVALID;
 
 	memset(outCode, 0, sizeof(CCode));
 
 	outCode->i_pVM = new VMBuffer;
 	if (!outCode->i_pVM)
-		return AUMI_NO_MEMORY;
+		return YYTK_NO_MEMORY;
 
 	outCode->i_pVM->m_pBuffer = new char[CodeBufferSize + 1];
 	if (!outCode->i_pVM->m_pBuffer)
-		return AUMI_NO_MEMORY;
+		return YYTK_NO_MEMORY;
 
 	outCode->i_compiled = 1;
 	outCode->i_kind = 1;
@@ -69,15 +69,15 @@ AUMIResult AUMI_CreateCode(CCode* outCode, void* CodeBuffer, int CodeBufferSize,
 	outCode->i_pVM->m_numLocalVarsUsed = LocalVarsUsed;
 	memcpy(outCode->i_pVM->m_pBuffer, CodeBuffer, CodeBufferSize);
 	outCode->i_locals = LocalVarsUsed;
-	outCode->i_flags = AUMI_MAGIC; //magic value
+	outCode->i_flags = YYTK_MAGIC; //magic value
 
-	return AUMI_OK;
+	return YYTK_OK;
 }
 
-DllExport AUMIResult AUMI_CreateYYCCode(CCode* outCode, PFUNC_YYGML Function, const char* FunctionName, const char* CodeName)
+DllExport YYTKStatus AUMI_CreateYYCCode(CCode* outCode, TGMLRoutine Function, const char* FunctionName, const char* CodeName)
 {
 	if (!outCode)
-		return AUMI_INVALID;
+		return YYTK_INVALID;
 
 	memset(outCode, 0, sizeof(CCode));
 
@@ -87,23 +87,23 @@ DllExport AUMIResult AUMI_CreateYYCCode(CCode* outCode, PFUNC_YYGML Function, co
 	outCode->i_pFunc = new YYGMLFuncs;
 
 	if (!outCode->i_pFunc)
-		return AUMI_NO_MEMORY;
+		return YYTK_NO_MEMORY;
 
 	outCode->i_pFunc->pFunc = Function;
 	outCode->i_pFunc->pName = FunctionName;
 
-	outCode->i_flags = 'AUMI'; //magic value
+	outCode->i_flags = 'YYTK'; //magic value
 
-	return AUMI_OK;
+	return YYTK_OK;
 }
 
-DllExport AUMIResult AUMI_FreeCode(CCode* Code)
+DllExport YYTKStatus AUMI_FreeCode(CCode* Code)
 {
 	if (!Code)
-		return AUMI_INVALID;
+		return YYTK_INVALID;
 
-	if (Code->i_flags != AUMI_MAGIC) //Not AUMI Code
-		return AUMI_INVALID;
+	if (Code->i_flags != YYTK_MAGIC) //Not YYTK Code
+		return YYTK_INVALID;
 
 	if (Code->i_pVM)
 	{
@@ -116,38 +116,38 @@ DllExport AUMIResult AUMI_FreeCode(CCode* Code)
 	if (Code->i_pFunc)
 		delete Code->i_pFunc;
 
-	return AUMI_OK;
+	return YYTK_OK;
 }
 
-DllExport AUMIResult AUMI_GetGlobalState(YYObjectBase** outState)
+DllExport YYTKStatus AUMI_GetGlobalState(YYObjectBase** outState)
 {
 	if (!outState)
-		return AUMI_INVALID;
+		return YYTK_INVALID;
 
 	AUMIFunctionInfo FunctionEntry;
 	RValue Result;
 
 	if (AUMI_GetFunctionByName("@@GlobalScope@@", &FunctionEntry))
-		return AUMI_NOT_FOUND;
+		return YYTK_NOT_FOUND;
 
 	if (!FunctionEntry.Function)
-		return AUMI_NOT_FOUND;
+		return YYTK_NOT_FOUND;
 
-	((PFUNC_TROUTINE)FunctionEntry.Function)(&Result, NULL, NULL, NULL, NULL);
+	FunctionEntry.Function(&Result, NULL, NULL, 0, NULL);
 
 	*outState = (YYObjectBase*)Result.Pointer;
 
-	return AUMI_OK;
+	return YYTK_OK;
 }
 
-DllExport AUMIResult AUMI_ExecuteCode(YYObjectBase* Self, YYObjectBase* Other, CCode* Code, YYRValue* Arguments)
+DllExport YYTKStatus AUMI_ExecuteCode(YYObjectBase* Self, YYObjectBase* Other, CCode* Code, YYRValue* Arguments)
 {
 	if (!Code)
-		return AUMI_INVALID;
+		return YYTK_INVALID;
 
 	if (!g_pCodeExecute)
 	{
-		AUMIResult Result;
+		YYTKStatus Result;
 		if (Result = AUMI_GetCodeExecuteAddress((PVOID*)&g_pCodeExecute))
 			return Result;
 	}
@@ -155,25 +155,25 @@ DllExport AUMIResult AUMI_ExecuteCode(YYObjectBase* Self, YYObjectBase* Other, C
 	int ret = 0;
 	ret = g_pCodeExecute(Self, Other, Code, Arguments, 0);
 
-	return (ret == 1) ? AUMI_OK : AUMI_FAIL;
+	return (ret == 1) ? YYTK_OK : YYTK_FAIL;
 }
 
-DllExport AUMIResult AUMI_GetCodeExecuteAddress(void** outAddress)
+DllExport YYTKStatus AUMI_GetCodeExecuteAddress(void** outAddress)
 {
 	if (!outAddress)
-		return AUMI_INVALID;
+		return YYTK_INVALID;
 	
 	if (g_pCodeExecute)
 	{
 		*outAddress = g_pCodeExecute;
-		return AUMI_OK;
+		return YYTK_OK;
 	}
 
 	MODULEINFO CurInfo = GetCurrentModuleInfo();
 	char* Base = (PCHAR)FindPattern("\x8A\xD8\x83\xC4\x14\x80\xFB\x01\x74", "xxxxxxxxx", (long)CurInfo.lpBaseOfDll, CurInfo.SizeOfImage);
 
 	if (!Base)
-		return AUMI_NOT_FOUND;
+		return YYTK_NOT_FOUND;
 
 	while (*(WORD*)Base != 0xCCCC)
 		Base -= 1;
@@ -182,35 +182,35 @@ DllExport AUMIResult AUMI_GetCodeExecuteAddress(void** outAddress)
 
 	*outAddress = Base;
 
-	return AUMI_OK;
+	return YYTK_OK;
 }
 
-DllExport AUMIResult AUMI_GetCodeFunctionAddress(void** outAddress)
+DllExport YYTKStatus AUMI_GetCodeFunctionAddress(void** outAddress)
 {
 	MODULEINFO CurInfo = GetCurrentModuleInfo();
 
 	if (!(*outAddress = (void*)FindPattern("\x8B\x44\x24\x04\x3B\x05\x00\x00\x00\x00\x7F", "xxxxxx????x", (long)CurInfo.lpBaseOfDll, CurInfo.SizeOfImage)))
-		return AUMI_NOT_FOUND;
+		return YYTK_NOT_FOUND;
 
-	return AUMI_OK;
+	return YYTK_OK;
 }
 
-DllExport AUMIResult AUMI_GetFunctionByIndex(int index, AUMIFunctionInfo* outInformation)
+DllExport YYTKStatus AUMI_GetFunctionByIndex(int index, AUMIFunctionInfo* outInformation)
 {
 	if (!outInformation)
-		return AUMI_INVALID;
+		return YYTK_INVALID;
 
 	memset(outInformation, 0, sizeof(AUMIFunctionInfo));
 
 	if (!g_pGrabCodeFunction)
 	{
-		AUMIResult Result;
+		YYTKStatus Result;
 		if (Result = AUMI_GetCodeFunctionAddress((void**)&g_pGrabCodeFunction))
 			return Result;
 	}
 
 
-	int Argc = 'AUMI'; //If this doesn't change, the function index is invalid.
+	int Argc = 'YYTK'; //If this doesn't change, the function index is invalid.
 
 	{
 		void* pLastArg = NULL; // Made for compatibility with GMS 1
@@ -221,28 +221,28 @@ DllExport AUMIResult AUMI_GetFunctionByIndex(int index, AUMIFunctionInfo* outInf
 	}
 
 	if (!*(outInformation->Name))
-		return AUMI_NOT_FOUND;
+		return YYTK_NOT_FOUND;
 
-	if (Argc == 'AUMI')
-		return AUMI_NOT_FOUND;
+	if (Argc == 'YYTK')
+		return YYTK_NOT_FOUND;
 
 	outInformation->Arguments = Argc;
 	outInformation->Index = index;
 
-	return AUMI_OK;
+	return YYTK_OK;
 }
 
-DllExport AUMIResult AUMI_GetFunctionByName(const char* Name, AUMIFunctionInfo* outInformation)
+DllExport YYTKStatus AUMI_GetFunctionByName(const char* Name, AUMIFunctionInfo* outInformation)
 {
 	if (!outInformation)
-		return AUMI_INVALID;
+		return YYTK_INVALID;
 
 	int Index = 0;
 	AUMIFunctionInfo Info;
 
 	while (1)
 	{
-		AUMIResult result;
+		YYTKStatus result;
 		if (result = AUMI_GetFunctionByIndex(Index, &Info))
 			return result;
 
@@ -251,23 +251,23 @@ DllExport AUMIResult AUMI_GetFunctionByName(const char* Name, AUMIFunctionInfo* 
 			outInformation->Index = Index;
 			memcpy(outInformation, &Info, sizeof(AUMIFunctionInfo));
 
-			return AUMI_OK;
+			return YYTK_OK;
 		}
 
 		Index++;
 	}
 
-	return AUMI_FAIL; // How did we get here?
+	return YYTK_FAIL; // How did we get here?
 }
 
-DllExport AUMIResult AUMI_GetFunctionByRoutine(PFUNC_TROUTINE Routine, AUMIFunctionInfo* outInformation)
+DllExport YYTKStatus AUMI_GetFunctionByRoutine(TRoutine Routine, AUMIFunctionInfo* outInformation)
 {
 	AUMIFunctionInfo mInfo;
 	int Index = 0;
 
 	while (1)
 	{
-		AUMIResult result;
+		YYTKStatus result;
 		if (result = AUMI_GetFunctionByIndex(Index, &mInfo))
 			return result;
 
@@ -276,24 +276,24 @@ DllExport AUMIResult AUMI_GetFunctionByRoutine(PFUNC_TROUTINE Routine, AUMIFunct
 			outInformation->Index = Index;
 			memcpy(outInformation, &mInfo, sizeof(AUMIFunctionInfo));
 
-			return AUMI_OK;
+			return YYTK_OK;
 		}
 
 		Index++;
 	}
 
-	return AUMI_NOT_FOUND;
+	return YYTK_NOT_FOUND;
 }
 
-DllExport AUMIResult AUMI_CallBuiltinFunction(const char* Name, RValue* Result, YYObjectBase* Self, YYObjectBase* Other, int argc, RValue* Args)
+DllExport YYTKStatus AUMI_CallBuiltinFunction(const char* Name, RValue* Result, YYObjectBase* Self, YYObjectBase* Other, int argc, RValue* Args)
 {
 	AUMIFunctionInfo mInfo;
-	AUMIResult result;
+	YYTKStatus result;
 
 	if (result = AUMI_GetFunctionByName(Name, &mInfo))
 		return result;
 
 	mInfo.Function(Result, Self, Other, argc, Args);
 
-	return AUMI_OK;
+	return YYTK_OK;
 }

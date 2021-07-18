@@ -1,5 +1,5 @@
 #include "IPC.hpp"
-#include "../../Shared.hpp"
+#include "../../../../Utils/SDK.hpp"
 #include <Windows.h>
 
 #define IPCID_TestCommunication		0x01
@@ -29,10 +29,10 @@ static bool InitIPCPipe()
 	return g_hPipeHandle != INVALID_HANDLE_VALUE;
 }
 
-static BOOL IpcPostReply(struct IPCReply_t* pReply)
+static BOOL IpcPostReply(IPCReply_t* pReply)
 {
 	DWORD dwBytesTransferred;
-	return WriteFile(g_hPipeHandle, pReply, sizeof(struct IPCReply_t), &dwBytesTransferred, NULL);
+	return WriteFile(g_hPipeHandle, pReply, sizeof(IPCReply_t), &dwBytesTransferred, NULL);
 }
 
 void AUMI_RunIPC()
@@ -63,7 +63,7 @@ void AUMI_RunIPC()
 					IpcExecuteCode(&MessageBuffer, &MessageReply);
 					break;
 				default:
-					MessageReply.AUMIResult = AUMI_NOT_IMPLEMENTED;
+					MessageReply.AUMIResult = YYTK_NOT_IMPLEMENTED;
 					break;
 				}
 
@@ -73,7 +73,7 @@ void AUMI_RunIPC()
 		Sleep(5);
 	}
 
-		
+	CloseHandle(g_hPipeHandle);
 }
 
 void AUMI_StopIPC()
