@@ -1,3 +1,6 @@
+# Utilities + progress indication, please ignore.
+
+rwildcard=$(foreach d,$(wildcard $(1:=/*)),$(call rwildcard,$d,$2) $(filter $(subst *,%,$2),$d))
 _mkfile_path := $(abspath $(lastword $(MAKEFILE_LIST)))
 I := $(patsubst %/,%,$(dir $(_mkfile_path)))
 
@@ -13,25 +16,28 @@ C = $(words $N)$(eval N := x $N)
 ECHO = echo [$C/$T]
 endif
 
-# (Recursively) finds every file in a folder with given mask (super useful)
-rwildcard=$(foreach d,$(wildcard $(1:=/*)),$(call rwildcard,$d,$2) $(filter $(subst *,%,$2),$d))
+# Makefile starts here.
+include make_stuff/make_config.mk
 
-BUILD_DIR ?= _build
-SOURCE_DIR ?= YYToolkit/Src
-TARGET_EXEC ?= yytoolkit.dll
-
-CC := gcc
-CXX := g++
-
-SRC := $(call rwildcard,$(SOURCE_DIR),*.cpp)
+SRC := $(call rwildcard,$(SOURCE_DIR),*.c) $(call rwildcard,$(SOURCE_DIR),*.cpp)
 OBJ := $(SRC:%=$(BUILD_DIR)/%.obj)
-CPPFLAGS ?= -m32 -Ofast -std=c++14
-CFLAGS ?= -m32 -std=c11 -Ofast
-LDFLAGS ?= -m32 -Ofast -shared -lkernel32 -lpsapi
+
+ifeq ($(BUILD_TYPE),DEBUG)
+CPPFLAGS ?= -m32 -Og -g3 -ggdb -std=c++14 -Wall -Wextra -Wpedantic
+CFLAGS ?= -m32 -std=c11 -Og -g3 -ggdb -Wall -Wextra -Wpedantic
+LDFLAGS ?= -m32 -Og -g3 -ggdb -shared -lkernel32 -lpsapi
+else ifeq ($(BUILD_TYPE),RELEASE)
+CPPFLAGS ?= -m32 -std=c++14 -march=native -mtune=native -Ofast -fno-pie -flto -ffunction-sections -fdata-sections
+CFLAGS ?= -m32 -std=c11 -march=native -mtune=native -Ofast -fno-pie -flto -ffunction-sections -fdata-sections
+LDFLAGS ?= -m32 -march=native -mtune=native -Ofast -static-libstdc++ -static-libgcc -fno-pie -flto -ffunction-sections -fdata-sections -shared -lkernel32 -lpsapi -Wl,--as-needed -Wl,--gc-sections -s
+endif
 
 BUILD_DIRS ?= $(sort $(dir $(OBJ)))
 
-$(BUILD_DIR)/$(TARGET_EXEC): $(BUILD_DIR) $(OBJ)
+dll: $(TARGET_EXEC)
+all: dll
+
+$(TARGET_EXEC): $(BUILD_DIR) $(OBJ)
 	@$(ECHO) Linking $<
 	@$(CXX) $(OBJ) $(LDFLAGS) -o $@
 
@@ -50,13 +56,6 @@ else
 	@rm -rf $(BUILD_DIR)
 endif
 
-$(BUILD_DIRS):
-ifeq ($(OS), Windows_NT)
-	@mkdir $(subst /,\,$(BUILD_DIRS))
-else
-	@mkdir -p $(BUILD_DIRS)
-endif
-
 $(BUILD_DIR):
 ifeq ($(OS), Windows_NT)
 	@mkdir $(subst /,\,$(BUILD_DIRS))
@@ -64,4 +63,5 @@ else
 	@mkdir -p $(BUILD_DIRS)
 endif
 
+# No, this is not a mistake. Leave this here, it's for progress bar
 endif

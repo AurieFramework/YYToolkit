@@ -75,7 +75,7 @@ struct VMBuffer
 struct CCode
 {
 	void** vTable;				// 0x4
-	CCode* m_pNext;		// 0x8
+	CCode* m_pNext;				// 0x8
 	int i_kind;					// 0xC
 	int i_compiled;				// 0x10
 	const char* i_str;			// 0x14
@@ -84,7 +84,7 @@ struct CCode
 	VMBuffer* i_pVM;
 	VMBuffer* i_pVMDebugInfo;
 	char* i_pCode;
-	const char* i_pName; //0x5C
+	const char* i_pName; 		//0x5C
 	int i_CodeIndex;
 	struct YYGMLFuncs* i_pFunc;
 	char i_watch;

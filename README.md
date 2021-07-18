@@ -1,7 +1,7 @@
 # YYToolkit
 YYToolkit is a tool for creating mods and altering GameMaker games.
 
-Currently, only Windows is supported.
+Currently, only Windows is supported. (We heavily rely on Windows's API's.)
 
 YYToolkit Features:
 - Intercepting script calls and object events
