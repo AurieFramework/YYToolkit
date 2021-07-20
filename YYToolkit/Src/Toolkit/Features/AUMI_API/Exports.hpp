@@ -1,5 +1,6 @@
 #pragma once
-#include "../../../Utils/SDK.hpp"
+#include "../../Utils/SDK.hpp"
+
 YYTKStatus AUMI_Initialize();
 
 // Create a CCode object using VM Bytecode
@@ -34,3 +35,9 @@ DllExport YYTKStatus AUMI_GetFunctionByRoutine(TRoutine Routine, AUMIFunctionInf
 
 // Call a builtin function with predefined arguments.
 DllExport YYTKStatus AUMI_CallBuiltinFunction(const char* Name, RValue* Result, YYObjectBase* Self, YYObjectBase* Other, int argc, RValue* Args);
+
+// Find a pattern of bytes inside the main game module (can't search other memory regions!)
+DllExport YYTKStatus AUMI_FindPattern(const char* Pattern, const char* Mask, unsigned long* outAddress);
+
+// Find a pattern of bytes inside the any module.
+DllExport YYTKStatus AUMI_FindPatternEx(const char* Pattern, const char* Mask, unsigned long Base, unsigned long Size, unsigned long* outAddress);

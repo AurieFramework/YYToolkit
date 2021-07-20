@@ -1,4 +1,4 @@
-#include "../../../Utils/SDK.hpp"
+#include "../../Utils/SDK.hpp"
 #include <string>
 #include <cstring>
 #include <Windows.h>
@@ -9,6 +9,8 @@ static void(*g_pGrabCodeFunction)(int, char** Name, void** Routine, int* Argc, v
 
 static unsigned long FindPattern(const char* Pattern, const char* Mask, long base, unsigned size)
 {
+	YYTKTrace(__FUNCTION__ "()", __LINE__);
+
 	size_t PatternSize = strlen(Mask);
 
 	for (unsigned i = 0; i < size - PatternSize; i++)
@@ -28,6 +30,8 @@ static unsigned long FindPattern(const char* Pattern, const char* Mask, long bas
 
 static MODULEINFO GetCurrentModuleInfo()
 {
+	YYTKTrace(__FUNCTION__ "()", __LINE__);
+
 	MODULEINFO modinfo = { 0 };
 	HMODULE hModule = GetModuleHandleA(NULL);
 	if (hModule == 0)
@@ -38,6 +42,8 @@ static MODULEINFO GetCurrentModuleInfo()
 
 YYTKStatus AUMI_Initialize()
 {
+	YYTKTrace(__FUNCTION__ "()", __LINE__);
+
 	YYTKStatus Result = YYTK_OK;
 	if (Result = AUMI_GetCodeExecuteAddress((PVOID*)&g_pCodeExecute))
 		return Result;
@@ -50,6 +56,8 @@ YYTKStatus AUMI_Initialize()
 
 YYTKStatus AUMI_CreateCode(CCode* outCode, void* CodeBuffer, int CodeBufferSize, int LocalVarsUsed, const char* Name)
 {
+	YYTKTrace(__FUNCTION__ "()", __LINE__);
+
 	if (!outCode)
 		return YYTK_INVALID;
 
@@ -77,6 +85,8 @@ YYTKStatus AUMI_CreateCode(CCode* outCode, void* CodeBuffer, int CodeBufferSize,
 
 DllExport YYTKStatus AUMI_CreateYYCCode(CCode* outCode, TGMLRoutine Function, const char* FunctionName, const char* CodeName)
 {
+	YYTKTrace(__FUNCTION__ "()", __LINE__);
+
 	if (!outCode)
 		return YYTK_INVALID;
 
@@ -100,6 +110,8 @@ DllExport YYTKStatus AUMI_CreateYYCCode(CCode* outCode, TGMLRoutine Function, co
 
 DllExport YYTKStatus AUMI_FreeCode(CCode* Code)
 {
+	YYTKTrace(__FUNCTION__ "()", __LINE__);
+
 	if (!Code)
 		return YYTK_INVALID;
 
@@ -122,6 +134,8 @@ DllExport YYTKStatus AUMI_FreeCode(CCode* Code)
 
 DllExport YYTKStatus AUMI_GetGlobalState(YYObjectBase** outState)
 {
+	YYTKTrace(__FUNCTION__ "()", __LINE__);
+
 	if (!outState)
 		return YYTK_INVALID;
 
@@ -143,6 +157,8 @@ DllExport YYTKStatus AUMI_GetGlobalState(YYObjectBase** outState)
 
 DllExport YYTKStatus AUMI_ExecuteCode(YYObjectBase* Self, YYObjectBase* Other, CCode* Code, YYRValue* Arguments)
 {
+	YYTKTrace(__FUNCTION__ "()", __LINE__);
+
 	if (!Code)
 		return YYTK_INVALID;
 
@@ -161,6 +177,8 @@ DllExport YYTKStatus AUMI_ExecuteCode(YYObjectBase* Self, YYObjectBase* Other, C
 
 DllExport YYTKStatus AUMI_GetCodeExecuteAddress(void** outAddress)
 {
+	YYTKTrace(__FUNCTION__ "()", __LINE__);
+
 	if (!outAddress)
 		return YYTK_INVALID;
 	
@@ -188,6 +206,8 @@ DllExport YYTKStatus AUMI_GetCodeExecuteAddress(void** outAddress)
 
 DllExport YYTKStatus AUMI_GetCodeFunctionAddress(void** outAddress)
 {
+	YYTKTrace(__FUNCTION__ "()", __LINE__);
+
 	MODULEINFO CurInfo = GetCurrentModuleInfo();
 
 	if (!(*outAddress = (void*)FindPattern("\x8B\x44\x24\x04\x3B\x05\x00\x00\x00\x00\x7F", "xxxxxx????x", (long)CurInfo.lpBaseOfDll, CurInfo.SizeOfImage)))
@@ -198,7 +218,12 @@ DllExport YYTKStatus AUMI_GetCodeFunctionAddress(void** outAddress)
 
 DllExport YYTKStatus AUMI_GetFunctionByIndex(int index, AUMIFunctionInfo* outInformation)
 {
+	YYTKTrace(__FUNCTION__ "()", __LINE__);
+
 	if (!outInformation)
+		return YYTK_INVALID;
+
+	if (index < 0)
 		return YYTK_INVALID;
 
 	memset(outInformation, 0, sizeof(AUMIFunctionInfo));
@@ -235,6 +260,8 @@ DllExport YYTKStatus AUMI_GetFunctionByIndex(int index, AUMIFunctionInfo* outInf
 
 DllExport YYTKStatus AUMI_GetFunctionByName(const char* Name, AUMIFunctionInfo* outInformation)
 {
+	YYTKTrace(__FUNCTION__ "()", __LINE__);
+
 	if (!outInformation)
 		return YYTK_INVALID;
 
@@ -263,6 +290,8 @@ DllExport YYTKStatus AUMI_GetFunctionByName(const char* Name, AUMIFunctionInfo* 
 
 DllExport YYTKStatus AUMI_GetFunctionByRoutine(TRoutine Routine, AUMIFunctionInfo* outInformation)
 {
+	YYTKTrace(__FUNCTION__ "()", __LINE__);
+
 	AUMIFunctionInfo mInfo;
 	int Index = 0;
 
@@ -288,6 +317,8 @@ DllExport YYTKStatus AUMI_GetFunctionByRoutine(TRoutine Routine, AUMIFunctionInf
 
 DllExport YYTKStatus AUMI_CallBuiltinFunction(const char* Name, RValue* Result, YYObjectBase* Self, YYObjectBase* Other, int argc, RValue* Args)
 {
+	YYTKTrace(__FUNCTION__ "()", __LINE__);
+
 	AUMIFunctionInfo mInfo;
 	YYTKStatus result;
 
@@ -295,6 +326,24 @@ DllExport YYTKStatus AUMI_CallBuiltinFunction(const char* Name, RValue* Result, 
 		return result;
 
 	mInfo.Function(Result, Self, Other, argc, Args);
+
+	return YYTK_OK;
+}
+
+DllExport YYTKStatus AUMI_FindPattern(const char* Pattern, const char* Mask, unsigned long* outAddress)
+{
+	MODULEINFO CurInfo = GetCurrentModuleInfo();
+
+	if (!(*outAddress = FindPattern("\x8B\x44\x24\x04\x3B\x05\x00\x00\x00\x00\x7F", "xxxxxx????x", (long)CurInfo.lpBaseOfDll, CurInfo.SizeOfImage)))
+		return YYTK_NOT_FOUND;
+
+	return YYTK_OK;
+}
+
+DllExport YYTKStatus AUMI_FindPatternEx(const char* Pattern, const char* Mask, unsigned long Base, unsigned long Size, unsigned long* outAddress)
+{
+	if (!(*outAddress = FindPattern("\x8B\x44\x24\x04\x3B\x05\x00\x00\x00\x00\x7F", "xxxxxx????x", Base, Size)))
+		return YYTK_NOT_FOUND;
 
 	return YYTK_OK;
 }

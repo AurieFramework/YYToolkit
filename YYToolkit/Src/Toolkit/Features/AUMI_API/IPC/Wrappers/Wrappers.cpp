@@ -5,6 +5,8 @@
 
 void IpcTestCommunication(IPCMessage_t* Message, IPCReply_t* OutReply)
 {
+	YYTKTrace(__FUNCTION__ "()", __LINE__);
+
 	OutReply->AUMIResult = YYTK_OK;
 #ifdef _MSC_VER
 	strcpy_s(OutReply->Buffer, 128, "Hello from YYToolkit - If you can read this, the IPC Test was successful!\nNow let me just pad this reply out to 128 characters.");
@@ -15,6 +17,8 @@ void IpcTestCommunication(IPCMessage_t* Message, IPCReply_t* OutReply)
 
 void IpcGetFunctionByIndex(IPCMessage_t* Message, IPCReply_t* OutReply)
 {
+	YYTKTrace(__FUNCTION__ "()", __LINE__);
+
 	AUMIFunctionInfo RFInformation;
 
 	YYTKStatus result = AUMI_GetFunctionByIndex(*(int*)(Message->Buffer), &RFInformation);
@@ -25,6 +29,8 @@ void IpcGetFunctionByIndex(IPCMessage_t* Message, IPCReply_t* OutReply)
 
 void IpcGetFunctionByName(IPCMessage_t* Message, IPCReply_t* Reply)
 {
+	YYTKTrace(__FUNCTION__ "()", __LINE__);
+
 	AUMIFunctionInfo RFInformation;
 	YYTKStatus result = AUMI_GetFunctionByName(Message->Buffer, &RFInformation);
 
@@ -34,6 +40,8 @@ void IpcGetFunctionByName(IPCMessage_t* Message, IPCReply_t* Reply)
 
 void IpcExecuteCode(IPCMessage_t* Message, IPCReply_t* OutReply)
 {
+	YYTKTrace(__FUNCTION__ "()", __LINE__);
+
 	const struct BufferLayout
 	{
 		int CodeSize;

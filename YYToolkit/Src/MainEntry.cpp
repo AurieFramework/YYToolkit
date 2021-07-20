@@ -1,13 +1,20 @@
 #include "Toolkit/Features/AUMI_API/Exports.hpp"
 #include "Toolkit/Features/AUMI_API/IPC/IPC.hpp"
 #include "Toolkit/Core.hpp"
+#include "Toolkit/Utils/StackTrace.hpp"
 #include <thread>
 #include <Windows.h>
+
+#if _WIN64
+#error Don't compile in x64!
+#endif
 
 static HINSTANCE g_hDLL = 0;
 
 void Main()
 {
+	YYTKTrace(__FUNCTION__ "()", __LINE__);
+
 	std::thread IPCThread;
 
 	// Phase 1 - Pre-toolkit Initialization

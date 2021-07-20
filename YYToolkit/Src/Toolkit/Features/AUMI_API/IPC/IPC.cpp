@@ -1,5 +1,5 @@
 #include "IPC.hpp"
-#include "../../../../Utils/SDK.hpp"
+#include "../../../Utils/SDK.hpp"
 #include <Windows.h>
 
 #define IPCID_TestCommunication		0x01

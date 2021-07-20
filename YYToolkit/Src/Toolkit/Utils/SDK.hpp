@@ -1,4 +1,6 @@
 #pragma once
+#include "StackTrace.hpp"
+
 #ifdef __cplusplus
 #define DllExport extern "C" __declspec(dllexport)
 #else //!__cplusplus
@@ -15,7 +17,6 @@
 #endif //MSC_VER
 
 #define YYTK_MAGIC 'TFSI'
-
 
 // Enums
 enum YYTKStatus : int
@@ -116,6 +117,7 @@ struct YYRValue
 #pragma pack(pop)
 using RValue = YYRValue;
 
+#ifndef YYSDK_NODEFS
 // It's an RValue / YYRValue, except it's only a double
 struct DValue
 {
@@ -565,7 +567,7 @@ struct CDynamicArray
 	T** Array;
 };
 
-struct alignedTo(8) RToken
+struct RToken
 {
 	int kind;
 	eGML_TYPE type;
@@ -621,12 +623,13 @@ struct VMBuffer
 	char* m_pJumpBuffer;
 };
 
+#pragma pack(push, 4)
 struct CCode
 {
 	int (**_vptr$CCode)(void);
 	CCode* m_pNext;
 	int i_kind;
-	bool i_compiled;
+	int i_compiled;
 	String i_str;
 	RToken i_token;
 	RValue i_value;
@@ -643,6 +646,7 @@ struct CCode
 	int i_flags;
 	YYObjectBase* i_pPrototype;
 };
+#pragma pack(pop)
 
 struct CStream
 {
@@ -697,10 +701,19 @@ struct VMExec
 	int* jt;
 };
 
+#endif // YYSDK_NODEFS
+
 struct AUMIFunctionInfo
 {
 	int Index;
 	char Name[72];
 	TRoutine Function;
 	int Arguments;
+};
+
+struct YYGMLException
+{
+	YYObjectBase* ExceptionObject;
+	char Padding[8];
+	int32 Kind;
 };
