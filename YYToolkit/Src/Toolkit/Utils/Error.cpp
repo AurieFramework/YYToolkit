@@ -9,11 +9,7 @@ static std::string ParseVA(const char* fmt, va_list Args)
 	char Buf[MaxStringLength];
 	memset(Buf, 0, MaxStringLength);
 
-#ifdef _MSC_VER
-	strcpy_s<MaxStringLength>(Buf, fmt);
-#else
 	strncpy(Buf, fmt, MaxStringLength);
-#endif
 
 	vsprintf_s(Buf, fmt, Args);
 

@@ -8,11 +8,7 @@ void IpcTestCommunication(IPCMessage_t* Message, IPCReply_t* OutReply)
 	YYTKTrace(__FUNCTION__ "()", __LINE__);
 
 	OutReply->AUMIResult = YYTK_OK;
-#ifdef _MSC_VER
-	strcpy_s(OutReply->Buffer, 128, "Hello from YYToolkit - If you can read this, the IPC Test was successful!\nNow let me just pad this reply out to 128 characters.");
-#else
 	strncpy(OutReply->Buffer, "Hello from YYToolkit - If you can read this, the IPC Test was successful!\nNow let me just pad this reply out to 128 characters.", 128);
-#endif
 }
 
 void IpcGetFunctionByIndex(IPCMessage_t* Message, IPCReply_t* OutReply)

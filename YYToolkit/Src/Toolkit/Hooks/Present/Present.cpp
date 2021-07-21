@@ -1,15 +1,16 @@
-#include "../Hooks.hpp"
-#include "../../Utils/Error.hpp"
 #include "../../Features/AUMI_API/Exports.hpp"
+#include "../../Features/Menu/Menu.hpp"
+#include "../../Utils/Error.hpp"
+#include "../Hooks.hpp"
 
 static void SetupDescriptor(DXGI_SWAP_CHAIN_DESC* pDesc)
 {
 	YYTKTrace(__FUNCTION__ "()", __LINE__);
 
-	HWND hwWindow; RValue Result;
+	RValue Result;
 
 	if (auto Status = AUMI_CallBuiltinFunction("window_handle", &Result, 0, 0, 0, 0))
-		Utils::Error::Error(1, "Unspecified error while calling window_handle.\nError Code: %i", Status);
+		Utils::Error::Error(1, "Failed to get the window handle.\nError Code: %s", Utils::Error::YYTKStatus_ToString(Status).data());
 
 	if (!Result.Pointer)
 		Utils::Error::Error(1, "Cannot obtain the window handle.");
@@ -31,11 +32,44 @@ static void SetupDescriptor(DXGI_SWAP_CHAIN_DESC* pDesc)
 
 namespace Hooks
 {
+	inline ID3D11RenderTargetView* pView;
+
 	HRESULT __stdcall Present(IDXGISwapChain* _this, unsigned int Sync, unsigned int Flags)
 	{
-		using Fn = decltype(&Present);
+		static ID3D11Device* pDevice;
+		static ID3D11DeviceContext* pContext;
 
-		return ((Fn)oPresent)(_this, Sync, Flags);
+		if (!pDevice)
+		{
+			RValue Result;
+			if (auto Status = AUMI_CallBuiltinFunction("window_device", &Result, 0, 0, 0, 0))
+			{
+				YYTKTrace("(Async) " __FUNCTION__ "()", __LINE__);
+				Utils::Error::Error(0, "Failed to get the window device!\nError Code: %s", Utils::Error::YYTKStatus_ToString(Status).data());
+				return oPresent(_this, Sync, Flags);
+			}
+
+			pDevice = (decltype(pDevice))Result.Pointer;
+		}
+
+		if (!pContext && pDevice)
+			pDevice->GetImmediateContext(&pContext);
+
+		Tool::Menu::Initialize(_this, pDevice, pContext, &pView);
+
+		ImGui_ImplDX11_NewFrame();
+		ImGui_ImplWin32_NewFrame();
+		ImGui::NewFrame();
+
+		Tool::Menu::Run();
+
+		ImGui::Render();
+
+		pContext->OMSetRenderTargets(1, &pView, 0);
+		ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+		ImGui::EndFrame();
+
+		return oPresent(_this, Sync, Flags);
 	}
 
 	void* Hooks::Present_Address()

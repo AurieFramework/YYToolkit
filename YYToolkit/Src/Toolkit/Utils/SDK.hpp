@@ -9,6 +9,7 @@
 
 #ifdef _MSC_VER
 #pragma warning(disable : 26812)
+#define _CRT_SECURE_NO_WARNINGS 1
 #define alignedTo(x) __declspec(align(x))
 #else //!MSC_VER
 #define alignedTo(x) __attribute__((aligned (x)))
@@ -87,6 +88,7 @@ struct CScript;
 template <typename, typename>
 struct CHashMap;
 struct VMExec;
+struct CWADFile; // The format used for the data.win
 
 typedef void (*TRoutine)(YYRValue* Result, YYObjectBase* Self, YYObjectBase* Other, int argc, YYRValue* Args);
 typedef void (*TGMLRoutine)(YYObjectBase* Self, YYObjectBase* Other);
@@ -118,6 +120,8 @@ struct YYRValue
 using RValue = YYRValue;
 
 #ifndef YYSDK_NODEFS
+#pragma pack(push, 4)
+
 // It's an RValue / YYRValue, except it's only a double
 struct DValue
 {
@@ -623,7 +627,6 @@ struct VMBuffer
 	char* m_pJumpBuffer;
 };
 
-#pragma pack(push, 4)
 struct CCode
 {
 	int (**_vptr$CCode)(void);
@@ -646,7 +649,6 @@ struct CCode
 	int i_flags;
 	YYObjectBase* i_pPrototype;
 };
-#pragma pack(pop)
 
 struct CStream
 {
@@ -701,6 +703,8 @@ struct VMExec
 	int* jt;
 };
 
+#pragma pack(pop)
+
 #endif // YYSDK_NODEFS
 
 struct AUMIFunctionInfo
@@ -711,9 +715,43 @@ struct AUMIFunctionInfo
 	int Arguments;
 };
 
+/*
 struct YYGMLException
 {
 	YYObjectBase* ExceptionObject;
 	char Padding[8];
 	int32 Kind;
+};
+*/
+
+struct CWADChunk
+{
+	char Header[4];
+	int32 Size;
+};
+
+struct CGEN8Header : CWADChunk
+{
+	bool DisableDebug;
+	uint8_t FormatID;
+	short Reserved;
+	int32 pFileName;
+	int32 pConfig;
+	int32 LastObjectID;
+	int32 LastTileID;
+	int32 GameID;
+	struct {
+		unsigned long  Data1;
+		unsigned short Data2;
+		unsigned short Data3;
+		unsigned char  Data4[8];
+	} GUID;
+	int32 pGameName;
+	int32 Major, Minor, Release, Build;
+	int32 WindowWidth, WindowHeight;
+	int32 Flags;
+	char MD5Hash[16];
+	int32 CRCHash;
+	char Timestamp[8];
+	int32 pDisplayName;
 };

@@ -14,17 +14,17 @@ void Tool_Initialize()
 	{
 		if (int Result = Utils::Tests::FunctionIndexTest())
 		{
-			Utils::Error::Error(1, "Undefined behavior detected.\nError Code: %i", Result);
+			Utils::Error::Error(0, "Undefined behavior detected.\nError Code: %i", Result);
 		}
 
 		if (int Result = Utils::Tests::FunctionPointerTest())
 		{
-			Utils::Error::Error(1, "Undefined behavior detected.\nError Code: %i", Result);
+			Utils::Error::Error(0, "Undefined behavior detected.\nError Code: %i", Result);
 		}
 
 		if (int Result = Utils::Tests::GetGlobalObjectTest())
 		{
-			Utils::Error::Error(1, "Undefined behavior detected.\nError Code: %i", Result);
+			Utils::Error::Error(0, "Undefined behavior detected.\nError Code: %i", Result);
 		}
 	}
 

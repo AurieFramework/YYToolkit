@@ -4,6 +4,7 @@
 #include "Toolkit/Utils/StackTrace.hpp"
 #include <thread>
 #include <Windows.h>
+#include "Toolkit/Utils/MH/MinHook.h"
 
 #if _WIN64
 #error Don't compile in x64!
@@ -32,6 +33,9 @@ void Main()
 
 	// Phase 3 - Toolkit Exit
 	{
+		MH_DisableHook(MH_ALL_HOOKS);
+		Sleep(100);
+		MH_Uninitialize();
 		AUMI_StopIPC();
 		IPCThread.join();
 		FreeLibraryAndExitThread(g_hDLL, 0);

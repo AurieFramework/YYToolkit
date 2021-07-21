@@ -86,7 +86,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_WARNINGS;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <EnforceTypeConversionRules>true</EnforceTypeConversionRules>
       <LanguageStandard>stdcpp17</LanguageStandard>
@@ -104,7 +104,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_WARNINGS;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <UseFullPaths>false</UseFullPaths>
@@ -150,10 +150,19 @@
   <ItemGroup>
     <ClInclude Include="Src\Toolkit\Features\AUMI_API\IPC\IPC.hpp" />
     <ClInclude Include="Src\Toolkit\Core.hpp" />
-    <ClInclude Include="Src\Toolkit\Features\Plugin API\Features.hpp" />
+    <ClInclude Include="Src\Toolkit\Features\Menu\Menu.hpp" />
     <ClInclude Include="Src\Toolkit\Hooks\Hooks.hpp" />
     <ClInclude Include="Src\Toolkit\Features\AUMI_API\Exports.hpp" />
     <ClInclude Include="Src\Toolkit\Utils\Error.hpp" />
+    <ClInclude Include="Src\Toolkit\Utils\ImGui\imconfig.h" />
+    <ClInclude Include="Src\Toolkit\Utils\ImGui\imgui.h" />
+    <ClInclude Include="Src\Toolkit\Utils\ImGui\imgui_impl_dx11.h" />
+    <ClInclude Include="Src\Toolkit\Utils\ImGui\imgui_impl_dx9.h" />
+    <ClInclude Include="Src\Toolkit\Utils\ImGui\imgui_impl_win32.h" />
+    <ClInclude Include="Src\Toolkit\Utils\ImGui\imgui_internal.h" />
+    <ClInclude Include="Src\Toolkit\Utils\ImGui\imstb_rectpack.h" />
+    <ClInclude Include="Src\Toolkit\Utils\ImGui\imstb_textedit.h" />
+    <ClInclude Include="Src\Toolkit\Utils\ImGui\imstb_truetype.h" />
     <ClInclude Include="Src\Toolkit\Utils\MH\buffer.h" />
     <ClInclude Include="Src\Toolkit\Utils\MH\hde\hde32.h" />
     <ClInclude Include="Src\Toolkit\Utils\MH\hde\hde64.h" />
@@ -172,6 +181,7 @@
     <ClCompile Include="Src\Toolkit\Features\AUMI_API\IPC\Wrappers\Wrappers.cpp" />
     <ClCompile Include="Src\MainEntry.cpp" />
     <ClCompile Include="Src\Toolkit\Core.cpp" />
+    <ClCompile Include="Src\Toolkit\Features\Menu\Menu.cpp" />
     <ClCompile Include="Src\Toolkit\Hooks\Code_Execute\Code_Execute.cpp" />
     <ClCompile Include="Src\Toolkit\Hooks\EndScene\EndScene.cpp" />
     <ClCompile Include="Src\Toolkit\Hooks\Hooks.cpp" />
@@ -179,6 +189,14 @@
     <ClCompile Include="Src\Toolkit\Hooks\WindowProc\WindowProc.cpp" />
     <ClCompile Include="Src\Toolkit\Hooks\YYError\YYError.cpp" />
     <ClCompile Include="Src\Toolkit\Utils\Error.cpp" />
+    <ClCompile Include="Src\Toolkit\Utils\ImGui\imgui.cpp" />
+    <ClCompile Include="Src\Toolkit\Utils\ImGui\imgui_demo.cpp" />
+    <ClCompile Include="Src\Toolkit\Utils\ImGui\imgui_draw.cpp" />
+    <ClCompile Include="Src\Toolkit\Utils\ImGui\imgui_impl_dx11.cpp" />
+    <ClCompile Include="Src\Toolkit\Utils\ImGui\imgui_impl_dx9.cpp" />
+    <ClCompile Include="Src\Toolkit\Utils\ImGui\imgui_impl_win32.cpp" />
+    <ClCompile Include="Src\Toolkit\Utils\ImGui\imgui_tables.cpp" />
+    <ClCompile Include="Src\Toolkit\Utils\ImGui\imgui_widgets.cpp" />
     <ClCompile Include="Src\Toolkit\Utils\MH\buffer.c" />
     <ClCompile Include="Src\Toolkit\Utils\MH\hde\hde32.c" />
     <ClCompile Include="Src\Toolkit\Utils\MH\hde\hde64.c" />

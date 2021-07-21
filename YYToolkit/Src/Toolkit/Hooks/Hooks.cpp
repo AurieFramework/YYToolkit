@@ -14,7 +14,7 @@ namespace Hooks
 			// YYError Hook
 			if (void* lpFunc = YYError_Address())
 			{
-				auto Status = MH_CreateHook(lpFunc, YYError, &oYYError);
+				auto Status = MH_CreateHook(lpFunc, YYError, (PVOID*)&oYYError);
 				if (Status != MH_OK)
 					Utils::Error::Error(1, "Unable to create a hook on YYError.\nError Code: %i", MH_StatusToString(Status));
 
@@ -32,7 +32,7 @@ namespace Hooks
 				}
 
 				{
-					auto Status = MH_CreateHook(lpFunc, Code_Execute, &oCode_Execute);
+					auto Status = MH_CreateHook(lpFunc, Code_Execute, (PVOID*)&oCode_Execute);
 					if (Status != MH_OK)
 						Utils::Error::Error(1, "Unable to create a hook on Code_Execute.\nError Code: %s", MH_StatusToString(Status));
 				}
@@ -45,7 +45,7 @@ namespace Hooks
 			{
 				if (void* lpFunc = Present_Address())
 				{
-					auto Status = MH_CreateHook(lpFunc, Present, &oPresent);
+					auto Status = MH_CreateHook(lpFunc, Present, (PVOID*)&oPresent);
 					if (Status != MH_OK)
 						Utils::Error::Error(1, "Unable to create a hook on Present.\nError Code: %i", MH_StatusToString(Status));
 
@@ -57,13 +57,15 @@ namespace Hooks
 			{
 				if (void* lpFunc = EndScene_Address())
 				{
-					auto Status = MH_CreateHook(lpFunc, EndScene, &oEndScene);
+					auto Status = MH_CreateHook(lpFunc, EndScene, (PVOID*)&oEndScene);
 					if (Status != MH_OK)
 						Utils::Error::Error(1, "Unable to create a hook on EndScene.\nError Code: %i", MH_StatusToString(Status));
 
 					MH_EnableHook(lpFunc);
 				}
 			}
+
+			WindowProc_Init();
 		}
 	}
 }

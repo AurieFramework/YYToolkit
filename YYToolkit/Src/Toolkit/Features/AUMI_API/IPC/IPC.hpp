@@ -19,7 +19,6 @@ void AUMI_RunIPC();
 
 void AUMI_StopIPC();
 
-
 extern void IpcTestCommunication(IPCMessage_t* Message, IPCReply_t* OutReply);
 
 extern void IpcGetFunctionByIndex(IPCMessage_t* Message, IPCReply_t* OutReply);

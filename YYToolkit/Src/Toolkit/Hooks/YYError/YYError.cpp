@@ -5,20 +5,18 @@ namespace Hooks
 {
 	void YYError(const char* pFormat, ...)
 	{
-		using Fn = decltype(&YYError);
-
 		// Code has executed unsuccessfully!
 		va_list vaArgs;
 		va_start(vaArgs, pFormat);
 
 		char Message[2048] = { 0 };
-		strcpy_s(Message, 2048, pFormat);
+		strncpy(Message, pFormat, 2048);
 
 		vsprintf_s(Message, 2048, pFormat, vaArgs);
 
-		MessageBoxA(0, pFormat, "Code Error!", MB_OK | MB_ICONERROR | MB_TOPMOST);
+		MessageBoxA(0, Message, "Code Error!", MB_OK | MB_ICONERROR | MB_TOPMOST);
 
-		return ((Fn)oYYError)(pFormat, vaArgs);
+		return oYYError(pFormat, vaArgs);
 	}
 
 	void* YYError_Address()
