@@ -93,6 +93,21 @@
     <ClInclude Include="Src\Toolkit\Utils\ImGui\imstb_truetype.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Src\Toolkit\Hooks\EndScene\EndScene.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Toolkit\Hooks\Code_Execute\Code_Execute.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Toolkit\Hooks\Present\Present.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Toolkit\Hooks\WindowProc\WindowProc.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Toolkit\Hooks\YYError\YYError.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Src\Toolkit\Features\AUMI_API\AUMI.cpp">
@@ -143,9 +158,6 @@
     <ClCompile Include="Src\Toolkit\Hooks\Present\Present.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Src\Toolkit\Hooks\EndScene\EndScene.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Src\Toolkit\Hooks\WindowProc\WindowProc.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -174,6 +186,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Src\Toolkit\Features\Menu\Menu.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Toolkit\Hooks\EndScene\EndScene.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

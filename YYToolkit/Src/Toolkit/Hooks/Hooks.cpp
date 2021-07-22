@@ -1,7 +1,10 @@
-#include "Hooks.hpp"
 #include "../Utils/Error.hpp"
 #include "../Utils/MH/MinHook.h"
-#include "../Features/AUMI_API/Exports.hpp"
+#include "Code_Execute/Code_Execute.hpp"
+#include "EndScene/EndScene.hpp"
+#include "Present/Present.hpp"
+#include "WindowProc/WindowProc.hpp"
+#include "YYError/YYError.hpp"
 
 namespace Hooks
 {
@@ -12,30 +15,20 @@ namespace Hooks
 		MH_Initialize();
 		{
 			// YYError Hook
-			if (void* lpFunc = YYError_Address())
+			if (void* lpFunc = YYError::GetTargetAddress())
 			{
-				auto Status = MH_CreateHook(lpFunc, YYError, (PVOID*)&oYYError);
+				auto Status = MH_CreateHook(lpFunc, YYError::Function, (PVOID*)&YYError::pfnOriginal);
 				if (Status != MH_OK)
-					Utils::Error::Error(1, "Unable to create a hook on YYError.\nError Code: %i", MH_StatusToString(Status));
+					Utils::Error::Error(1, "Unable to create a hook on YYError.\nError Code: %s", MH_StatusToString(Status));
 
 				MH_EnableHook(lpFunc);
 			}
 
-			// Code_Execute hook
+			if (void* lpFunc = Code_Execute::GetTargetAddress())
 			{
-				void* lpFunc;
-
-				{
-					auto Status = AUMI_GetCodeExecuteAddress(&lpFunc);
-					if (Status != YYTK_OK)
-						Utils::Error::Error(1, "Unable to get a pointer to Code_Execute.\nError Code: %i", Status);
-				}
-
-				{
-					auto Status = MH_CreateHook(lpFunc, Code_Execute, (PVOID*)&oCode_Execute);
-					if (Status != MH_OK)
-						Utils::Error::Error(1, "Unable to create a hook on Code_Execute.\nError Code: %s", MH_StatusToString(Status));
-				}
+				auto Status = MH_CreateHook(lpFunc, Code_Execute::Function, (PVOID*)&Code_Execute::pfnOriginal);
+				if (Status != MH_OK)
+					Utils::Error::Error(1, "Unable to create a hook on Code_Execute.\nError Code: %s", MH_StatusToString(Status));
 
 				MH_EnableHook(lpFunc);
 			}
@@ -43,11 +36,11 @@ namespace Hooks
 			// Present Hook (D3D11)
 			if (GetModuleHandleA("d3d11.dll"))
 			{
-				if (void* lpFunc = Present_Address())
+				if (void* lpFunc = Present::GetTargetAddress())
 				{
-					auto Status = MH_CreateHook(lpFunc, Present, (PVOID*)&oPresent);
+					auto Status = MH_CreateHook(lpFunc, Present::Function, (PVOID*)&Present::pfnOriginal);
 					if (Status != MH_OK)
-						Utils::Error::Error(1, "Unable to create a hook on Present.\nError Code: %i", MH_StatusToString(Status));
+						Utils::Error::Error(1, "Unable to create a hook on Present.\nError Code: %s", MH_StatusToString(Status));
 
 					MH_EnableHook(lpFunc);
 				}
@@ -55,17 +48,17 @@ namespace Hooks
 
 			if (GetModuleHandleA("d3d9.dll"))
 			{
-				if (void* lpFunc = EndScene_Address())
+				if (void* lpFunc = EndScene::GetTargetAddress())
 				{
-					auto Status = MH_CreateHook(lpFunc, EndScene, (PVOID*)&oEndScene);
+					auto Status = MH_CreateHook(lpFunc, EndScene::Function, (PVOID*)&EndScene::pfnOriginal);
 					if (Status != MH_OK)
-						Utils::Error::Error(1, "Unable to create a hook on EndScene.\nError Code: %i", MH_StatusToString(Status));
+						Utils::Error::Error(1, "Unable to create a hook on EndScene.\nError Code: %s", MH_StatusToString(Status));
 
 					MH_EnableHook(lpFunc);
 				}
 			}
 
-			WindowProc_Init();
+			WindowProc::_SetWindowsHook();
 		}
 	}
 }

@@ -1,10 +1,25 @@
-#include "../Hooks.hpp"
-#include "../../Utils/SDK.hpp"
+#include "Code_Execute.hpp"
+#include "../../Features/AUMI_API/Exports.hpp"
+#include "../../Utils/Error.hpp"
 
-namespace Hooks
+namespace Hooks::Code_Execute
 {
-	bool Code_Execute(CInstance* pSelf, CInstance* pOther, CCode* Code, RValue* Res, int Flags)
+	bool Function(CInstance* pSelf, CInstance* pOther, CCode* Code, RValue* Res, int Flags)
 	{
-		return oCode_Execute(pSelf, pOther, Code, Res, Flags);
+		return pfnOriginal(pSelf, pOther, Code, Res, Flags);
+	}
+
+	void* GetTargetAddress()
+	{
+		YYTKTrace(__FUNCTION__ "()", __LINE__);
+
+		void* Buffer = nullptr;
+
+		if (auto Status = AUMI_GetCodeExecuteAddress(&Buffer))
+		{
+			Utils::Error::Error(1, "Failed to get the Code_Execute() pointer.");
+		}
+		
+		return Buffer;
 	}
 }

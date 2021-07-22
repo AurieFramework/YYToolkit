@@ -1,13 +1,13 @@
+#include "EndScene.hpp"
 #include "../../Features/AUMI_API/Exports.hpp"
 #include "../../Features/Menu/Menu.hpp"
 #include "../../Utils/Error.hpp"
-#include "../Hooks.hpp"
 
-namespace Hooks
+namespace Hooks::EndScene
 {
-	HRESULT __stdcall EndScene(LPDIRECT3DDEVICE9 _this)
-	{	
-		auto Result = oEndScene(_this);
+	HRESULT __stdcall Function(LPDIRECT3DDEVICE9 _this)
+	{
+		auto Result = pfnOriginal(_this);
 
 		Tool::Menu::Initialize(_this);
 
@@ -27,8 +27,10 @@ namespace Hooks
 		return Result;
 	}
 
-	void* EndScene_Address()
+	void* GetTargetAddress()
 	{
+		YYTKTrace(__FUNCTION__ "()", __LINE__);
+
 		void* ppTable[119];
 		RValue Result;
 
@@ -45,4 +47,4 @@ namespace Hooks
 
 		return ppTable[42];
 	}
-}
+}	

@@ -1,9 +1,10 @@
-#include "../Hooks.hpp"
+#include "YYError.hpp"
 #include "../../Features/AUMI_API/Exports.hpp"
+#include "../../Utils/Error.hpp"
 
-namespace Hooks
+namespace Hooks::YYError
 {
-	void YYError(const char* pFormat, ...)
+	void Function(const char* pFormat, ...)
 	{
 		// Code has executed unsuccessfully!
 		va_list vaArgs;
@@ -12,21 +13,22 @@ namespace Hooks
 		char Message[2048] = { 0 };
 		strncpy(Message, pFormat, 2048);
 
-		vsprintf_s(Message, 2048, pFormat, vaArgs);
+		vsprintf(Message, pFormat, vaArgs);
 
 		MessageBoxA(0, Message, "Code Error!", MB_OK | MB_ICONERROR | MB_TOPMOST);
-
-		return oYYError(pFormat, vaArgs);
 	}
 
-	void* YYError_Address()
+	void* GetTargetAddress()
 	{
 		YYTKTrace(__FUNCTION__ "()", __LINE__);
 
 		AUMIFunctionInfo mInfo;
 
-		if (AUMI_GetFunctionByName("camera_create", &mInfo))
-			return NULL;
+		if (auto Status = AUMI_GetFunctionByName("camera_create", &mInfo))
+		{
+			Utils::Error::Error(1, "Failed to find the camera_create function.\nError Code: %s", Utils::Error::YYTKStatus_ToString(Status).data());
+			return nullptr;
+		}
 
 		unsigned long Pattern = 0;
 

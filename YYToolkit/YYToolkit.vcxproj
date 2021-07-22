@@ -151,8 +151,13 @@
     <ClInclude Include="Src\Toolkit\Features\AUMI_API\IPC\IPC.hpp" />
     <ClInclude Include="Src\Toolkit\Core.hpp" />
     <ClInclude Include="Src\Toolkit\Features\Menu\Menu.hpp" />
+    <ClInclude Include="Src\Toolkit\Hooks\Code_Execute\Code_Execute.hpp" />
+    <ClInclude Include="Src\Toolkit\Hooks\EndScene\EndScene.hpp" />
     <ClInclude Include="Src\Toolkit\Hooks\Hooks.hpp" />
     <ClInclude Include="Src\Toolkit\Features\AUMI_API\Exports.hpp" />
+    <ClInclude Include="Src\Toolkit\Hooks\Present\Present.hpp" />
+    <ClInclude Include="Src\Toolkit\Hooks\WindowProc\WindowProc.hpp" />
+    <ClInclude Include="Src\Toolkit\Hooks\YYError\YYError.hpp" />
     <ClInclude Include="Src\Toolkit\Utils\Error.hpp" />
     <ClInclude Include="Src\Toolkit\Utils\ImGui\imconfig.h" />
     <ClInclude Include="Src\Toolkit\Utils\ImGui\imgui.h" />
