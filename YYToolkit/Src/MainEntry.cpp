@@ -1,10 +1,14 @@
+#include "Toolkit/Core.hpp"
 #include "Toolkit/Features/AUMI_API/Exports.hpp"
 #include "Toolkit/Features/AUMI_API/IPC/IPC.hpp"
-#include "Toolkit/Core.hpp"
+#include "Toolkit/Hooks/Present/Present.hpp"
+#include "Toolkit/Hooks/WindowProc/WindowProc.hpp"
+#include "Toolkit/Utils/ImGui/imgui_impl_dx11.h"
+#include "Toolkit/Utils/ImGui/imgui_impl_win32.h"
+#include "Toolkit/Utils/MH/MinHook.h"
 #include "Toolkit/Utils/StackTrace.hpp"
 #include <thread>
 #include <Windows.h>
-#include "Toolkit/Utils/MH/MinHook.h"
 
 #if _WIN64
 #error Don't compile in x64!
@@ -36,6 +40,21 @@ void Main()
 		MH_DisableHook(MH_ALL_HOOKS);
 		Sleep(100);
 		MH_Uninitialize();
+		
+		{
+			RValue Result;
+			AUMI_CallBuiltinFunction("window_handle", &Result, 0, 0, 0, 0);
+			SetWindowLong((HWND)(Result.Pointer), GWL_WNDPROC, (LONG)Hooks::WindowProc::pfnOriginal);
+		}
+		
+		ImGui_ImplDX11_Shutdown();
+		ImGui_ImplWin32_Shutdown();
+		ImGui::DestroyContext();
+
+		Hooks::Present::pView->Release();
+		Hooks::Present::pContext->Release();
+		Hooks::Present::pDevice->Release();
+
 		AUMI_StopIPC();
 		IPCThread.join();
 		FreeLibraryAndExitThread(g_hDLL, 0);

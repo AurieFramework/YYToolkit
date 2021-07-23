@@ -108,6 +108,12 @@
     <ClInclude Include="Src\Toolkit\Hooks\YYError\YYError.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Src\Toolkit\Hooks\MessageBoxW\MessageBoxW.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Toolkit\Hooks\ResizeBuffers\ResizeBuffers.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Src\Toolkit\Features\AUMI_API\AUMI.cpp">
@@ -189,6 +195,15 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Src\Toolkit\Hooks\EndScene\EndScene.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Toolkit\Features\Menu\Overlay.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Toolkit\Hooks\MessageBoxW\MessageBoxW.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Toolkit\Hooks\ResizeBuffers\ResizeBuffers.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

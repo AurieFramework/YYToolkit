@@ -28,7 +28,7 @@ namespace Utils::Error
 		String.append("\n\nStack Trace:\n");
 		String.append(Utils::Stack::Unwind());
 
-		MessageBoxA(0, String.c_str(), "Sorry!", MB_TOPMOST | MB_ICONERROR | MB_OK);
+		MessageBoxA(0, String.c_str(), "Sorry!", MB_TOPMOST | (critical ? MB_ICONERROR : MB_ICONWARNING) | MB_OK);
 
 		if (critical)
 			exit(0);

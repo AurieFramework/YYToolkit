@@ -155,7 +155,9 @@
     <ClInclude Include="Src\Toolkit\Hooks\EndScene\EndScene.hpp" />
     <ClInclude Include="Src\Toolkit\Hooks\Hooks.hpp" />
     <ClInclude Include="Src\Toolkit\Features\AUMI_API\Exports.hpp" />
+    <ClInclude Include="Src\Toolkit\Hooks\MessageBoxW\MessageBoxW.hpp" />
     <ClInclude Include="Src\Toolkit\Hooks\Present\Present.hpp" />
+    <ClInclude Include="Src\Toolkit\Hooks\ResizeBuffers\ResizeBuffers.hpp" />
     <ClInclude Include="Src\Toolkit\Hooks\WindowProc\WindowProc.hpp" />
     <ClInclude Include="Src\Toolkit\Hooks\YYError\YYError.hpp" />
     <ClInclude Include="Src\Toolkit\Utils\Error.hpp" />
@@ -187,10 +189,13 @@
     <ClCompile Include="Src\MainEntry.cpp" />
     <ClCompile Include="Src\Toolkit\Core.cpp" />
     <ClCompile Include="Src\Toolkit\Features\Menu\Menu.cpp" />
+    <ClCompile Include="Src\Toolkit\Features\Menu\Overlay.cpp" />
     <ClCompile Include="Src\Toolkit\Hooks\Code_Execute\Code_Execute.cpp" />
     <ClCompile Include="Src\Toolkit\Hooks\EndScene\EndScene.cpp" />
     <ClCompile Include="Src\Toolkit\Hooks\Hooks.cpp" />
+    <ClCompile Include="Src\Toolkit\Hooks\MessageBoxW\MessageBoxW.cpp" />
     <ClCompile Include="Src\Toolkit\Hooks\Present\Present.cpp" />
+    <ClCompile Include="Src\Toolkit\Hooks\ResizeBuffers\ResizeBuffers.cpp" />
     <ClCompile Include="Src\Toolkit\Hooks\WindowProc\WindowProc.cpp" />
     <ClCompile Include="Src\Toolkit\Hooks\YYError\YYError.cpp" />
     <ClCompile Include="Src\Toolkit\Utils\Error.cpp" />

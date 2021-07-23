@@ -3,28 +3,30 @@
 #include "../../Utils/StackTrace.hpp"
 #include "../../Utils/Error.hpp"
 #include "../AUMI_API/Exports.hpp"
+#include "../../Utils/ImGui/imgui_internal.h"
 
-static void InitializeFont()
+void Tool::Menu::InitializeFont()
 {
 	auto& IO = ImGui::GetIO();
 
 	char FontPath[MAX_PATH] = { 0 };
 	GetEnvironmentVariableA("SystemRoot", FontPath, MAX_PATH);
 
-	strcat(FontPath, "\\Fonts\\verdana.ttf");
+	strcat(FontPath, "\\Fonts\\verdana.ttf"); // set to 'verdanab.ttf' for bold
 
-	Tool::Menu::pBaseFont = IO.Fonts->AddFontFromFileTTF(FontPath, 16.0f, 0, 0);
-
+	Tool::Menu::pBaseFont = IO.Fonts->AddFontFromFileTTF(FontPath, 18.0f * flGuiScale, 0, 0);
+	Tool::Menu::pSmallerFont = IO.Fonts->AddFontFromFileTTF(FontPath, 15.0f * flGuiScale, 0, 0);
+	Tool::Menu::pBiggerFont = IO.Fonts->AddFontFromFileTTF(FontPath, 24.0f * flGuiScale, 0, 0);
 	IO.Fonts->Build();
 }
 
-void Tool::Menu::Initialize(IDXGISwapChain* pSwap, ID3D11Device* pDevice, ID3D11DeviceContext* pContext, ID3D11RenderTargetView** pView)
+void Tool::Menu::Initialize(IDXGISwapChain* pSwap, ID3D11Device* pDevice, ID3D11DeviceContext* pContext, ID3D11RenderTargetView** pView, bool force)
 {
 	YYTKTrace("(Async) " __FUNCTION__ "()", __LINE__);
 
 	static bool sbInitialized = false;
 
-	if (sbInitialized)
+	if (sbInitialized && !force)
 		return;
 
 	if (!pDevice || !pContext)
@@ -86,7 +88,10 @@ void Tool::Menu::Initialize(LPDIRECT3DDEVICE9 pDevice)
 	sbInitialized = true;
 }
 
-void Tool::Menu::Run()
+bool ImGui::ButtonColored(const ImVec4& Color, const char* Label, const ImVec2& Size)
 {
-	ImGui::ShowDemoWindow();
+	PushStyleColor(ImGuiCol_Text, Color);
+	bool Pressed = ImGui::Button(Label, Size);
+	ImGui::PopStyleColor();
+	return Pressed;
 }
