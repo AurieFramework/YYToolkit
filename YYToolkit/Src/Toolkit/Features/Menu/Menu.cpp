@@ -14,19 +14,19 @@ void Tool::Menu::InitializeFont()
 
 	strcat(FontPath, "\\Fonts\\verdana.ttf"); // set to 'verdanab.ttf' for bold
 
-	Tool::Menu::pBaseFont = IO.Fonts->AddFontFromFileTTF(FontPath, 18.0f * flGuiScale, 0, 0);
-	Tool::Menu::pSmallerFont = IO.Fonts->AddFontFromFileTTF(FontPath, 15.0f * flGuiScale, 0, 0);
-	Tool::Menu::pBiggerFont = IO.Fonts->AddFontFromFileTTF(FontPath, 24.0f * flGuiScale, 0, 0);
+	Tool::Menu::pBaseFont = IO.Fonts->AddFontFromFileTTF(FontPath, 18.0f, 0, 0);
+	Tool::Menu::pSmallerFont = IO.Fonts->AddFontFromFileTTF(FontPath, 15.0f, 0, 0);
+	Tool::Menu::pBiggerFont = IO.Fonts->AddFontFromFileTTF(FontPath, 24.0f, 0, 0);
 	IO.Fonts->Build();
 }
 
-void Tool::Menu::Initialize(IDXGISwapChain* pSwap, ID3D11Device* pDevice, ID3D11DeviceContext* pContext, ID3D11RenderTargetView** pView, bool force)
+void Tool::Menu::Initialize(IDXGISwapChain* pSwap, ID3D11Device* pDevice, ID3D11DeviceContext* pContext, ID3D11RenderTargetView** pView)
 {
 	YYTKTrace("(Async) " __FUNCTION__ "()", __LINE__);
 
 	static bool sbInitialized = false;
 
-	if (sbInitialized && !force)
+	if (sbInitialized)
 		return;
 
 	if (!pDevice || !pContext)

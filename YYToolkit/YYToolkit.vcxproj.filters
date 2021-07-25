@@ -114,6 +114,9 @@
     <ClInclude Include="Src\Toolkit\Hooks\ResizeBuffers\ResizeBuffers.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Src\Toolkit\Utils\tcc\libtcc.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Src\Toolkit\Features\AUMI_API\AUMI.cpp">

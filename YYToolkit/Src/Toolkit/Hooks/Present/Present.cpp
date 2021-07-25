@@ -45,7 +45,7 @@ namespace Hooks::Present
 			pDevice = (decltype(pDevice))Result.Pointer;
 			pDevice->GetImmediateContext(&pContext);
 		}
-
+		
 		Tool::Menu::Initialize(_this, pDevice, pContext, &pView);
 
 		ImGui_ImplDX11_NewFrame();

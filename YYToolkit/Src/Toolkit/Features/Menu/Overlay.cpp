@@ -1,13 +1,14 @@
 #include "Menu.hpp"
 #include "../../Utils/ImGui/imgui_internal.h"
 #include <ctime>
-#include <string>
-#include <sstream>
 #include <iomanip>
+#include <sstream>
+#include <string>
+#include "../../Utils/tcc/libtcc.h"
 
 void Tool::Menu::Run()
 {
-	ImGui::SetNextWindowSize(ImVec2(550 * flGuiScale, 520 * flGuiScale));
+	ImGui::SetNextWindowSize(ImVec2(550, 520));
 
 	constexpr ImGuiWindowFlags Flags = ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize;
 	const static ImVec4 vTextColor = ImVec4(0.8f, 0.8f, 0.8f, 1.0f);
@@ -17,7 +18,7 @@ void Tool::Menu::Run()
 
 	auto HoverBehavior = [](const ImVec4& color, bool highlight)
 	{
-		if (highlight)
+		if (highlight || ImGui::IsItemHovered())
 		{
 			ImGuiWindow* Window = ImGui::GetCurrentWindow();
 			ImDrawList* DrawList = Window->DrawList;
@@ -81,7 +82,7 @@ void Tool::Menu::Run()
 		DrawDelimiter();
 	}
 	
-	ImGui::BeginChild("##menuBar", ImVec2(550 * flGuiScale, 25 * flGuiScale), false, Flags);
+	ImGui::BeginChild("##menuBar", ImVec2(550, 25), false, Flags);
 	{
 		// YYToolkit Header
 		ImGui::PushFont(Menu::pBiggerFont);
@@ -95,7 +96,7 @@ void Tool::Menu::Run()
 
 		// Horizontal Tabs
 		{
-			if (ImGui::ButtonColored(vTextColor, "Undertale", ImVec2(0, 25 * flGuiScale)))
+			if (ImGui::ButtonColored(vTextColor, "Undertale", ImVec2(0, 25)))
 			{
 				nTabPicked = 0;
 				nSubtabPicked = 0;
@@ -104,7 +105,7 @@ void Tool::Menu::Run()
 
 			ImGui::SameLine();
 
-			if (ImGui::ButtonColored(vTextColor, "Deltarune", ImVec2(0, 25 * flGuiScale)))
+			if (ImGui::ButtonColored(vTextColor, "Deltarune", ImVec2(0, 25)))
 			{
 				nTabPicked = 1;
 				nSubtabPicked = 0;
@@ -113,7 +114,7 @@ void Tool::Menu::Run()
 
 			ImGui::SameLine();
 
-			if (ImGui::ButtonColored(vTextColor, "Scripting", ImVec2(0, 25 * flGuiScale)))
+			if (ImGui::ButtonColored(vTextColor, "Scripting", ImVec2(0, 25)))
 			{
 				nTabPicked = 2;
 				nSubtabPicked = 0;
@@ -122,7 +123,7 @@ void Tool::Menu::Run()
 
 			ImGui::SameLine();
 
-			if (ImGui::ButtonColored(vTextColor, "Misc.", ImVec2(0, 25 * flGuiScale)))
+			if (ImGui::ButtonColored(vTextColor, "Misc.", ImVec2(0, 25)))
 			{
 				nTabPicked = 3;
 				nSubtabPicked = 0;
@@ -145,44 +146,46 @@ void Tool::Menu::Run()
 			ImGui::SameLine();
 			ImGui::TextColored(vTextColor, "%s", StringStream.str().c_str());
 		}
+
+		ImGui::EndChild();
 	}
-	ImGui::EndChild();
 
 	ImGui::Separator();
 
-	ImGui::BeginChild("##subtabVBar", ImVec2(140 * flGuiScale, 460 * flGuiScale), false, Flags);
+	ImGui::BeginChild("##subtabVBar", ImVec2(140, 460), false, Flags);
 	{
 		if (nTabPicked == 0) // Undertale
 		{
-			ImGui::ButtonColored(vTextColor, "Tweaks", ImVec2(0, 30));
+			if (ImGui::ButtonColored(vTextColor, "Tweaks", ImVec2(0, 30))) nSubtabPicked = 0;
 			HoverBehavior(HoverColor, nSubtabPicked == 0);
-			ImGui::ButtonColored(vTextColor, "Fixes", ImVec2(0, 30));
+			if (ImGui::ButtonColored(vTextColor, "Fixes", ImVec2(0, 30))) nSubtabPicked = 1;
 			HoverBehavior(HoverColor, nSubtabPicked == 1);
 		}
 
 		else if (nTabPicked == 1) // Deltarune
 		{
-			ImGui::ButtonColored(vTextColor, "General", ImVec2(0, 30));
+			if (ImGui::ButtonColored(vTextColor, "General", ImVec2(0, 30))) nSubtabPicked = 0;
 			HoverBehavior(HoverColor, nSubtabPicked == 0);
 		}
 
 		else if (nTabPicked == 2) // Scripting
 		{
-			ImGui::ButtonColored(vTextColor, "Lua Scripts", ImVec2(0, 30));
+			if (ImGui::ButtonColored(vTextColor, "Lua Scripts", ImVec2(0, 30))) nSubtabPicked = 0;
 			HoverBehavior(HoverColor, nSubtabPicked == 0);
-			ImGui::ButtonColored(vTextColor, "ANSI C Scripts", ImVec2(0, 30));
+			if (ImGui::ButtonColored(vTextColor, "ANSI C Scripts", ImVec2(0, 30))) nSubtabPicked = 1;
 			HoverBehavior(HoverColor, nSubtabPicked == 1);
 		}
 
 		else if (nTabPicked == 3) // Misc.
 		{
-			ImGui::ButtonColored(vTextColor, "Cheat", ImVec2(0, 30));
+			if (ImGui::ButtonColored(vTextColor, "Cheat", ImVec2(0, 30))) nSubtabPicked = 0;
 			HoverBehavior(HoverColor, nSubtabPicked == 0);
-			ImGui::ButtonColored(vTextColor, "About", ImVec2(0, 30));
+			if (ImGui::ButtonColored(vTextColor, "About", ImVec2(0, 30))) nSubtabPicked = 1;
 			HoverBehavior(HoverColor, nSubtabPicked == 1);
 		}
+
+		ImGui::EndChild();
 	}
-	ImGui::EndChild();
 	
 	ImGui::SameLine();
 
@@ -190,6 +193,26 @@ void Tool::Menu::Run()
 
 	ImGui::SameLine();
 
+	ImGui::BeginChild("##optsWindow", ImVec2(400, 425), false, Flags);
+	{
+		if (nTabPicked == 2) // Scripting
+		{
+			if (nSubtabPicked == 1) // ANSI C Scripting
+			{
+
+			}
+		}
+
+		else if (nTabPicked == 3) // Misc.
+		{
+			if (nSubtabPicked == 0) // Cheat / Tool
+			{
+				
+			}
+		}
+		ImGui::EndChild();
+	}
+	
 	ImGui::ShowDemoWindow();
 
 	ImGui::PopStyleVar(2);
