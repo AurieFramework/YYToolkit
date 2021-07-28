@@ -117,6 +117,9 @@
     <ClInclude Include="Src\Toolkit\Utils\tcc\libtcc.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Src\Toolkit\Features\Plugin_API\PluginAPI.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Src\Toolkit\Features\AUMI_API\AUMI.cpp">
@@ -207,6 +210,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Src\Toolkit\Hooks\ResizeBuffers\ResizeBuffers.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Toolkit\Features\Plugin_API\PluginAPI.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

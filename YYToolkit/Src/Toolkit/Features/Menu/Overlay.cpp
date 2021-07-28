@@ -4,7 +4,6 @@
 #include <iomanip>
 #include <sstream>
 #include <string>
-#include "../../Utils/tcc/libtcc.h"
 
 void Tool::Menu::Run()
 {

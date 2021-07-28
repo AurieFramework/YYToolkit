@@ -92,7 +92,7 @@ struct CWADFile; // The format used for the data.win
 
 typedef void (*TRoutine)(YYRValue* Result, YYObjectBase* Self, YYObjectBase* Other, int argc, YYRValue* Args);
 typedef void (*TGMLRoutine)(YYObjectBase* Self, YYObjectBase* Other);
-typedef char (*PFUNC_CEXEC)(YYObjectBase* Self, YYObjectBase* Other, CCode* code, YYRValue* res, int flags);
+typedef bool (*PFUNC_CEXEC)(YYObjectBase* Self, YYObjectBase* Other, CCode* code, YYRValue* res, int flags);
 
 typedef void GetOwnPropertyFunc(YYObjectBase*, YYRValue*, const char*);
 typedef void DeletePropertyFunc(YYObjectBase*, YYRValue*, const char*, bool);

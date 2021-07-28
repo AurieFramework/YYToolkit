@@ -1,11 +1,20 @@
 #include "Code_Execute.hpp"
 #include "../../Features/AUMI_API/Exports.hpp"
+#include "../../Features/Plugin_API/PluginAPI.hpp"
 #include "../../Utils/Error.hpp"
 
 namespace Hooks::Code_Execute
 {
 	bool Function(CInstance* pSelf, CInstance* pOther, CCode* Code, RValue* Res, int Flags)
 	{
+		if (Tool::API::g_pExecuteCallback)
+		{
+			int _Result = Tool::API::g_pExecuteCallback((PFUNC_CEXEC)pfnOriginal, pSelf, pOther, Code, Res, Flags);
+
+			if (_Result != -1)
+				return (bool)_Result;
+		}
+
 		return pfnOriginal(pSelf, pOther, Code, Res, Flags);
 	}
 

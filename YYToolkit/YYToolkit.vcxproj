@@ -159,6 +159,7 @@
     <ClInclude Include="Src\Toolkit\Features\AUMI_API\IPC\IPC.hpp" />
     <ClInclude Include="Src\Toolkit\Core.hpp" />
     <ClInclude Include="Src\Toolkit\Features\Menu\Menu.hpp" />
+    <ClInclude Include="Src\Toolkit\Features\Plugin_API\PluginAPI.hpp" />
     <ClInclude Include="Src\Toolkit\Hooks\Code_Execute\Code_Execute.hpp" />
     <ClInclude Include="Src\Toolkit\Hooks\EndScene\EndScene.hpp" />
     <ClInclude Include="Src\Toolkit\Hooks\Hooks.hpp" />
@@ -199,6 +200,7 @@
     <ClCompile Include="Src\Toolkit\Core.cpp" />
     <ClCompile Include="Src\Toolkit\Features\Menu\Menu.cpp" />
     <ClCompile Include="Src\Toolkit\Features\Menu\Overlay.cpp" />
+    <ClCompile Include="Src\Toolkit\Features\Plugin_API\PluginAPI.cpp" />
     <ClCompile Include="Src\Toolkit\Hooks\Code_Execute\Code_Execute.cpp" />
     <ClCompile Include="Src\Toolkit\Hooks\EndScene\EndScene.cpp" />
     <ClCompile Include="Src\Toolkit\Hooks\Hooks.cpp" />
