@@ -15,9 +15,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Src\Toolkit\Features\AUMI_API\IPC\IPC.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Src\Toolkit\Core.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -25,9 +22,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Src\Toolkit\Utils\SDK.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Src\Toolkit\Features\AUMI_API\Exports.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Src\Toolkit\Utils\StackTrace.hpp">
@@ -117,24 +111,15 @@
     <ClInclude Include="Src\Toolkit\Utils\tcc\libtcc.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Src\Toolkit\Features\Plugin_API\PluginAPI.hpp">
+    <ClInclude Include="Src\Toolkit\Features\API\API.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Src\Toolkit\Features\AUMI_API\AUMI.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Src\Toolkit\Features\AUMI_API\IPC\IPC.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Src\MainEntry.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Src\Toolkit\Core.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Src\Toolkit\Features\AUMI_API\IPC\Wrappers\Wrappers.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Src\Toolkit\Utils\UnitTests.cpp">
@@ -212,7 +197,7 @@
     <ClCompile Include="Src\Toolkit\Hooks\ResizeBuffers\ResizeBuffers.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Src\Toolkit\Features\Plugin_API\PluginAPI.cpp">
+    <ClCompile Include="Src\Toolkit\Features\API\API.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

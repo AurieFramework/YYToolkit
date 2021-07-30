@@ -21,8 +21,6 @@ namespace Hooks::WindowProc
 
 	void _SetWindowsHook()
 	{
-		YYTKTrace(__FUNCTION__ "()", __LINE__);
-
 		RValue Result;
 		if (auto Status = AUMI_CallBuiltinFunction("window_handle", &Result, 0, 0, 0, 0))
 			Utils::Error::Error(1, "Failed to get the window handle.\nError Code: %s", Utils::Error::YYTKStatus_ToString(Status).data());

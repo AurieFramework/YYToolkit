@@ -1,12 +1,10 @@
 #include "Toolkit/Core.hpp"
-#include "Toolkit/Features/AUMI_API/Exports.hpp"
-#include "Toolkit/Features/AUMI_API/IPC/IPC.hpp"
 #include "Toolkit/Hooks/Present/Present.hpp"
 #include "Toolkit/Hooks/WindowProc/WindowProc.hpp"
 #include "Toolkit/Utils/ImGui/imgui_impl_dx11.h"
 #include "Toolkit/Utils/ImGui/imgui_impl_win32.h"
 #include "Toolkit/Utils/MH/MinHook.h"
-#include "Toolkit/Utils/StackTrace.hpp"
+#include "Toolkit/Features/API/API.hpp"
 #include <thread>
 #include <Windows.h>
 
@@ -18,14 +16,11 @@ static HINSTANCE g_hDLL = 0;
 
 void Main()
 {
-	YYTKTrace(__FUNCTION__ "()", __LINE__);
-
 	std::thread IPCThread;
 
 	// Phase 1 - Pre-toolkit Initialization
 	{
-		AUMI_Initialize();
-		IPCThread = std::thread(AUMI_RunIPC);
+		API_Initialize();
 	}
 
 	// Phase 2 - Toolkit Initialization

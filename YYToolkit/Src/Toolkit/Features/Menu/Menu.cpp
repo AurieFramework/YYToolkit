@@ -1,9 +1,8 @@
 #include "Menu.hpp"
 #include <Windows.h>
-#include "../../Utils/StackTrace.hpp"
 #include "../../Utils/Error.hpp"
-#include "../AUMI_API/Exports.hpp"
 #include "../../Utils/ImGui/imgui_internal.h"
+#include "../../Features/AUMI_API/Exports.hpp"
 
 void Tool::Menu::InitializeFont()
 {
@@ -22,8 +21,6 @@ void Tool::Menu::InitializeFont()
 
 void Tool::Menu::Initialize(IDXGISwapChain* pSwap, ID3D11Device* pDevice, ID3D11DeviceContext* pContext, ID3D11RenderTargetView** pView)
 {
-	YYTKTrace("(Async) " __FUNCTION__ "()", __LINE__);
-
 	static bool sbInitialized = false;
 
 	if (sbInitialized)
@@ -66,7 +63,6 @@ void Tool::Menu::Initialize(IDXGISwapChain* pSwap, ID3D11Device* pDevice, ID3D11
 
 void Tool::Menu::Initialize(LPDIRECT3DDEVICE9 pDevice)
 {
-	YYTKTrace("(Async) " __FUNCTION__ "()", __LINE__);
 	static bool sbInitialized = false;
 
 	if (sbInitialized)

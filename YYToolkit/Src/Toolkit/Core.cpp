@@ -2,14 +2,11 @@
 #include "Utils/Error.hpp"
 #include "Utils/SDK.hpp"
 #include "Utils/UnitTests.hpp"
-#include "Features/AUMI_API/Exports.hpp"
 #include "Hooks/Hooks.hpp"
 #include <Windows.h>
 
 void Tool_Initialize()
 {
-	YYTKTrace(__FUNCTION__ "()", __LINE__);
-
 	// Unit tests
 	{
 		if (int Result = Utils::Tests::FunctionIndexTest())
@@ -28,7 +25,7 @@ void Tool_Initialize()
 		}
 	}
 
-	// Initialize libraries
+	// Initialize API
 	{
 		
 	}

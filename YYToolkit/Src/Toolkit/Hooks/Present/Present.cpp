@@ -1,29 +1,21 @@
 #include "Present.hpp"
-#include "../../Features/AUMI_API/Exports.hpp"
+#include "../../Features/API/API.hpp"
 #include "../../Features/Menu/Menu.hpp"
 #include "../../Utils/Error.hpp"
 
 static void SetupDescriptor(DXGI_SWAP_CHAIN_DESC* pDesc)
 {
-	YYTKTrace(__FUNCTION__ "()", __LINE__);
-
 	RValue Result;
-
-	if (auto Status = AUMI_CallBuiltinFunction("window_handle", &Result, 0, 0, 0, 0))
-		Utils::Error::Error(1, "Failed to get the window handle.\nError Code: %s", Utils::Error::YYTKStatus_ToString(Status).data());
-
-	if (!Result.Pointer)
-		Utils::Error::Error(1, "Failed to get the window handle.");
 
 	pDesc->BufferCount = 1;
 	pDesc->BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
 	pDesc->BufferDesc = { 0, 0, { 60, 1 }, DXGI_FORMAT_R8G8B8A8_UNORM };
-	pDesc->OutputWindow = (HWND)Result.Pointer;
+	pDesc->OutputWindow = (HWND)gAPIVars.Window_Handle;
 
-	if (auto Status = AUMI_CallBuiltinFunction("window_get_fullscreen", &Result, 0, 0, 0, 0))
+	if (auto Status = CallBuiltinFunction(0, 0, Result, 0, "window_get_fullscreen", 0))
 		Utils::Error::Error(1, "Unspecified error while calling window_get_fullscreen.\nError Code: %i", Status);
 
-	pDesc->Windowed = !(bool)Result.Value;
+	pDesc->Windowed = !(bool)Result;
 
 	pDesc->Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
 	pDesc->SampleDesc = { 1, 0 };
@@ -37,7 +29,7 @@ namespace Hooks::Present
 		if (!pDevice)
 		{
 			RValue Result;
-			if (auto Status = AUMI_CallBuiltinFunction("window_device", &Result, 0, 0, 0, 0))
+			if (auto Status = CallBuiltinFunction(0, 0, Result, 0, "window_device", 0))
 			{
 				Utils::Error::Error(1, "Failed to get the window device.\nError Code: %s", Utils::Error::YYTKStatus_ToString(Status).data());
 			}
@@ -65,8 +57,6 @@ namespace Hooks::Present
 
 	void* GetTargetAddress()
 	{
-		YYTKTrace(__FUNCTION__ "()", __LINE__);
-
 		using Fn = PFN_D3D11_CREATE_DEVICE_AND_SWAP_CHAIN;
 
 		HMODULE Module = GetModuleHandleA("d3d11.dll");

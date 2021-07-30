@@ -6,8 +6,6 @@
 
 static void SetupDescriptor(DXGI_SWAP_CHAIN_DESC* pDesc)
 {
-	YYTKTrace(__FUNCTION__ "()", __LINE__);
-
 	RValue Result;
 
 	if (auto Status = AUMI_CallBuiltinFunction("window_handle", &Result, 0, 0, 0, 0))
@@ -69,8 +67,6 @@ HRESULT __stdcall Hooks::ResizeBuffers::Function(IDXGISwapChain* _this, UINT Buf
 
 void* Hooks::ResizeBuffers::GetTargetAddress()
 {
-	YYTKTrace(__FUNCTION__ "()", __LINE__);
-
 	using Fn = PFN_D3D11_CREATE_DEVICE_AND_SWAP_CHAIN;
 
 	HMODULE Module = GetModuleHandleA("d3d11.dll");

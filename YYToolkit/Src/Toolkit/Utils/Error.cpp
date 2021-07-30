@@ -25,9 +25,6 @@ namespace Utils::Error
 		auto String = ParseVA(fmt, vaArgs);
 		va_end(vaArgs);
 
-		String.append("\n\nStack Trace:\n");
-		String.append(Utils::Stack::Unwind());
-
 		MessageBoxA(0, String.c_str(), "Sorry!", MB_TOPMOST | (critical ? MB_ICONERROR : MB_ICONWARNING) | MB_OK);
 
 		if (critical)

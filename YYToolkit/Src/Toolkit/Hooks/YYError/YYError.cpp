@@ -20,8 +20,6 @@ namespace Hooks::YYError
 
 	void* GetTargetAddress()
 	{
-		YYTKTrace(__FUNCTION__ "()", __LINE__);
-
 		AUMIFunctionInfo mInfo;
 
 		if (auto Status = AUMI_GetFunctionByName("camera_create", &mInfo))

@@ -12,8 +12,6 @@ namespace Hooks
 {
 	void Initialize()
 	{
-		YYTKTrace(__FUNCTION__ "()", __LINE__);
-
 		MH_Initialize();
 		{
 			// MessageBoxW hook
@@ -31,7 +29,7 @@ namespace Hooks
 			{
 				auto Status = MH_CreateHook(lpFunc, YYError::Function, (PVOID*)&YYError::pfnOriginal);
 				if (Status != MH_OK)
-					Utils::Error::Error(1, "Unable to create a hook on YYError.\nThis means YYToolkit won't block GML errors.\nError Code: %s", MH_StatusToString(Status));
+					Utils::Error::Error(0, "Unable to create a hook on YYError.\nThis means YYToolkit won't block GML errors.\nError Code: %s", MH_StatusToString(Status));
 				else
 					MH_EnableHook(lpFunc);
 			}
@@ -79,9 +77,6 @@ namespace Hooks
 						MH_EnableHook(lpFunc);
 				}
 			}
-			
-
-
 
 			WindowProc::_SetWindowsHook();
 		}

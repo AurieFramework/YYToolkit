@@ -1,5 +1,4 @@
 #pragma once
-#include "StackTrace.hpp"
 
 #ifdef __cplusplus
 #define DllExport extern "C" __declspec(dllexport)
@@ -87,12 +86,15 @@ struct VMBuffer;
 struct CScript;
 template <typename, typename>
 struct CHashMap;
+template <typename>
+struct CDynamicArrayRef;
 struct VMExec;
 struct CWADFile; // The format used for the data.win
 
 typedef void (*TRoutine)(YYRValue* Result, YYObjectBase* Self, YYObjectBase* Other, int argc, YYRValue* Args);
 typedef void (*TGMLRoutine)(YYObjectBase* Self, YYObjectBase* Other);
-typedef bool (*PFUNC_CEXEC)(YYObjectBase* Self, YYObjectBase* Other, CCode* code, YYRValue* res, int flags);
+typedef bool (*TCodeExecuteRoutine)(YYObjectBase* Self, YYObjectBase* Other, CCode* code, YYRValue* res, int flags);
+typedef void (*TGetTheFunctionRoutine)(int id, char** bufName, void** bufRoutine, int* bufArgs, void* unused);
 
 typedef void GetOwnPropertyFunc(YYObjectBase*, YYRValue*, const char*);
 typedef void DeletePropertyFunc(YYObjectBase*, YYRValue*, const char*, bool);
@@ -101,20 +103,86 @@ typedef EJSRetValBool DefineOwnPropertyFunc(YYObjectBase*, const char*, YYRValue
 typedef unsigned int uint32;
 typedef int int32;
 typedef float float32;
+typedef __int64 int64;
 typedef unsigned __int16 uint16;
 typedef const char* String;
+
+enum RVKind
+{
+	VALUE_REAL = 0,				// Real value
+	VALUE_STRING,				// String value
+	VALUE_ARRAY,				// Array value
+	VALUE_PTR,					// Ptr value
+	VALUE_VEC3,					// Vec3 (x,y,z) value (within the RValue)
+	VALUE_UNDEFINED,			// Undefined value
+	VALUE_OBJECT,				// YYObjectBase* value 
+	VALUE_INT32,				// Int32 value
+	VALUE_VEC4,					// Vec4 (x,y,z,w) value (allocated from pool)
+	VALUE_VEC44,				// Vec44 (matrix) value (allocated from pool)
+	VALUE_INT64,				// Int64 value
+	VALUE_ACCESSOR,				// Actually an accessor
+	VALUE_NULL,					// JS Null
+	VALUE_BOOL,					// Bool value
+	VALUE_ITERATOR,				// JS For-in Iterator
+	VALUE_REF,					// Reference value (uses the ptr to point at a RefBase structure)
+	VALUE_UNSET = 0x0ffffff		// Unset value (never initialized)
+};
 
 #pragma pack(push, 4)
 struct YYRValue
 {
 	union
 	{
-		void* Pointer;
-		double Value;
+		union
+		{
+			void* Pointer;
+			YYObjectBase* pObject;
+			CDynamicArrayRef<YYRValue>* pArray;
+		};
+		
+		int I32;
+		long long I64;
+		double Val;
 	};
 
 	int Flags;
 	int Kind;
+
+	operator double()
+	{
+		switch (Kind)
+		{
+		case VALUE_REAL: /* Fallthrough */
+		case VALUE_BOOL:
+			return Val;
+		case VALUE_INT32:
+			return (double)I32;
+		case VALUE_INT64:
+			return (double)I64;
+		default:
+			return 0.0;
+		}
+	}
+
+	operator void* ()
+	{
+		switch (Kind)
+		{
+		case VALUE_ARRAY: /* Fallthrough */
+		case VALUE_PTR:
+		case VALUE_OBJECT:
+		case VALUE_REF:
+			return Pointer;
+		default:
+			return nullptr;
+		}
+	}
+
+	operator YYObjectBase*()
+	{
+		void* _curPointer = this->operator void* ();
+		return (YYObjectBase*)(_curPointer);
+	}
 };
 #pragma pack(pop)
 using RValue = YYRValue;
@@ -161,6 +229,9 @@ struct YYObjectBase : CInstanceBase
 	int m_kind;
 	int m_rvalueInitType;
 	int m_curSlot;
+
+	YYRValue& GetYYVarRefL(int index);
+	YYRValue& GetYYVarRef(int index);
 };
 
 struct alignedTo(8) CEvent
@@ -565,10 +636,18 @@ struct CWeakRef : YYObjectBase
 };
 
 template <typename T>
-struct CDynamicArray
+struct CArray
 {
 	int Length;
-	T** Array;
+	T* pArray;
+};
+
+template <typename T>
+struct CDynamicArrayRef
+{
+	int Length;
+	CArray<T>* Array;
+	T* pOwner;
 };
 
 struct RToken
@@ -596,17 +675,16 @@ struct alignedTo(8) SYYStackTrace
 	int line;
 };
 
-struct SLLVMVars
-{
-	char* pWad;
-	int nWadFileLength;
-	int nGlobalVariables;
-	int nInstanceVariables;
-	int nYYCode;
+struct SLLVMVars {
+	char* pWad;				// pointer to the Wad
+	int	nWadFileLength;		// the length of the wad
+	int	nGlobalVariables;	// global variables
+	int	nInstanceVariables;	// instance variables
+	int	nYYCode;
 	YYVAR** ppVars;
 	YYVAR** ppFuncs;
 	YYGMLFuncs* pGMLFuncs;
-	void* pYYStackTrace;
+	void* pYYStackTrace;		// pointer to the stack trace
 };
 
 struct YYGMLFuncs
@@ -710,7 +788,7 @@ struct VMExec
 struct AUMIFunctionInfo
 {
 	int Index;
-	char Name[72];
+	char* Name;
 	TRoutine Function;
 	int Arguments;
 };
@@ -722,7 +800,7 @@ struct YYGMLException
 	char Padding[8];
 	int32 Kind;
 };
-*/
+
 
 struct CWADChunk
 {
@@ -755,3 +833,12 @@ struct CGEN8Header : CWADChunk
 	char Timestamp[8];
 	int32 pDisplayName;
 };
+*/
+
+#ifdef YYSDK_YYC // Enable YYC compatibility? (WIP)
+#define YY_STACKTRACE_FUNC_ENTRY(entry, line)
+#define YY_STACKTRACE_LINE(x)
+#define FREE_RValue(rvp)
+#define PushContextStack(x)
+#define PopContextStack(x)
+#endif // YYSDK_YYC

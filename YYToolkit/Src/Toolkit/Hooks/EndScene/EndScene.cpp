@@ -29,8 +29,6 @@ namespace Hooks::EndScene
 
 	void* GetTargetAddress()
 	{
-		YYTKTrace(__FUNCTION__ "()", __LINE__);
-
 		void* ppTable[119];
 		RValue Result;
 
