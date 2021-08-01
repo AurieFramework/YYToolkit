@@ -58,6 +58,20 @@ namespace API
 			gAPIVars.Window_Device = Result;
 		}
 
+		gAPIVars.GlobalTable[0] = { CreateCodeObject, "CreateCodeObject" };
+		gAPIVars.GlobalTable[1] = { CreateYYCCodeObject, "CreateYYCCodeObject" };
+		gAPIVars.GlobalTable[2] = { FreeCodeObject, "FreeCodeObject" };
+		gAPIVars.GlobalTable[3] = { GetFunctionByIndex, "GetFunctionByIndex" };
+		gAPIVars.GlobalTable[4] = { GetAPIVars, "GetAPIVars" };
+		gAPIVars.GlobalTable[5] = { GetCodeExecuteAddr, "GetCodeExecuteAddr" };
+		gAPIVars.GlobalTable[6] = { GetCodeFunctionAddr, "GetCodeFunctionAddr" };
+		gAPIVars.GlobalTable[7] = { FindPattern, "FindPattern" };
+		gAPIVars.GlobalTable[8] = { GetGlobalInstance, "GetGlobalInstance" };
+		gAPIVars.GlobalTable[9] = { CallBuiltinFunction, "CallBuiltinFunction" };
+
+		auto Plugin = Plugins::LoadPlugin("ExamplePlugin.dll");
+		Plugins::UnloadPlugin(Plugin, true);
+
 		return ErrorOccured ? YYTK_FAIL : YYTK_OK;
 	}
 
@@ -283,3 +297,49 @@ namespace API
 		return static_cast<unsigned char>(string[std::min(Length, _index)]); // Implicit cast to double
 	}
 }
+
+namespace Plugins
+{
+	DllExport YYTKPlugin* LoadPlugin(const char* Path)
+	{
+		char Buffer[MAX_PATH] = { 0 };
+		PLUGIN_ENTRY lpPluginEntry = nullptr;
+
+		GetFullPathNameA(Path, MAX_PATH, Buffer, 0);
+		HMODULE PluginModule = LoadLibraryA(Buffer);
+
+		if (!PluginModule)
+			return nullptr;
+
+		lpPluginEntry = (PLUGIN_ENTRY)GetProcAddress(PluginModule, "PluginEntry");
+
+		if (!lpPluginEntry)
+			return nullptr;
+
+		// Emplace in map scope
+		{
+			auto PluginObject = YYTKPlugin(Path);
+			PluginObject.Entry = lpPluginEntry;
+			PluginObject.Functions = &gAPIVars.GlobalTable;
+			PluginObject.PluginModule = PluginModule;
+
+			gAPIVars.Plugins.emplace(std::make_pair((unsigned long)PluginObject.PluginModule, PluginObject));
+		}
+		
+		YYTKPlugin* refVariableInMap = &gAPIVars.Plugins.at((unsigned long)PluginModule);
+
+		lpPluginEntry(refVariableInMap);
+
+		return refVariableInMap;
+	}
+
+	bool UnloadPlugin(YYTKPlugin* pPlugin, bool Notify)
+	{
+		if (pPlugin->Unload && Notify)
+			pPlugin->Unload(pPlugin);
+
+		gAPIVars.Plugins.erase((unsigned long)pPlugin->PluginModule);
+		return true;
+	}
+}
+

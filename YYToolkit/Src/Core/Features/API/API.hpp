@@ -1,5 +1,6 @@
 #pragma once
 #include "../../Utils/SDK.hpp"
+#include <map>
 // One API to unite them all.
 // If you want IPC for legacy AUMI, use the dedicated plugin.
 
@@ -17,11 +18,12 @@ inline struct APIVars_t
 	TGetTheFunctionRoutine Code_Function_GET_the_function = nullptr;
 	void* Window_Handle = nullptr;
 	void* Window_Device = nullptr;
-	
+	FUNCTION_TABLE GlobalTable = { nullptr, nullptr };
+	std::map<unsigned long, YYTKPlugin> Plugins;
 } gAPIVars;
 
-/* The actual API functions */
 
+/* The actual API functions */
 namespace API
 {
 	// This function gets called once at the start of YYToolkit, so no need to export it.
@@ -63,5 +65,12 @@ namespace API
 	DllExport void YYGML_window_set_caption(const char* _pStr);
 
 	DllExport double YYGML_StringByteAt(const char* string, int _index);
+}
+
+namespace Plugins
+{
+	DllExport YYTKPlugin* LoadPlugin(const char* Path);
+
+	DllExport bool UnloadPlugin(YYTKPlugin* pPlugin, bool Notify);
 }
 

@@ -90,6 +90,7 @@ template <typename>
 struct CDynamicArrayRef;
 struct VMExec;
 struct CWADFile; // The format used for the data.win
+struct YYTKPlugin;
 
 typedef void (*TRoutine)(YYRValue* Result, YYObjectBase* Self, YYObjectBase* Other, int argc, YYRValue* Args);
 typedef void (*TGMLRoutine)(YYObjectBase* Self, YYObjectBase* Other);
@@ -793,6 +794,53 @@ struct FunctionInfo_t
 	char* Name;
 	TRoutine Function;
 	int Arguments;
+};
+
+constexpr int CALLBACK_TABLE_MAX_ENTRIES = 3;
+constexpr int FUNCTION_TABLE_MAX_ENTRIES = 10;
+
+// Indices into the CALLBACK_TABLE array
+constexpr int CTIDX_CodeExecute = 0;
+constexpr int CTIDX_EndScene = 1;
+constexpr int CTIDX_Present = 2;
+
+struct FUNCTION_ENTRY
+{
+	void* Function;
+	const char* Name;
+};
+
+using PLUGIN_UNLOAD = YYTKStatus(*)(YYTKPlugin* pPlugin);
+using PLUGIN_ENTRY = YYTKStatus(*)(YYTKPlugin* pPlugin);
+using CALLBACK_TABLE = void*[CALLBACK_TABLE_MAX_ENTRIES];
+using FUNCTION_TABLE = FUNCTION_ENTRY[FUNCTION_TABLE_MAX_ENTRIES];
+
+struct YYTKPlugin
+{
+	const char* Path;
+	PLUGIN_ENTRY Entry;
+	PLUGIN_UNLOAD Unload;
+	CALLBACK_TABLE Callbacks;
+	FUNCTION_TABLE* Functions;
+	void* PluginModule;
+
+	YYTKPlugin() : Entry(nullptr), Unload(nullptr), Path(nullptr), Functions(nullptr), PluginModule(nullptr)
+	{
+		// Duplicate code my beloved
+		for (int i = 0; i < CALLBACK_TABLE_MAX_ENTRIES; i++)
+		{
+			Callbacks[i] = nullptr;
+		}
+	}
+
+	YYTKPlugin(const char* Path) : Path(Path), Entry(nullptr), Unload(nullptr), Functions(nullptr), PluginModule(nullptr)
+	{
+		// Duplicate comments my beloved
+		for (int i = 0; i < CALLBACK_TABLE_MAX_ENTRIES; i++)
+		{
+			Callbacks[i] = nullptr;
+		}
+	}
 };
 
 /*
