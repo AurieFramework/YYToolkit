@@ -12,16 +12,9 @@ YYToolkit Features:
   - Internal tools can directly call the API using ``GetProcAddress``
     - This allows for more features, like drawing your own overlay with ImGui, or executing your C / C++ function as game code
   - External tools like UndertaleModTool can pull limited information through AUMI's IPC
+    - This only works if the legacy AUMI IPC plugin is loaded.
 - Scripting support
   - Dynamically inject GML bytecode or use YYLua!
-- Internal UI
-  - Can potentially be disabled
-  - Plugins can also come with external UIs
-- YYC Disassembler
-  - And a partial decompiler, too
-- Hex Editor
-  - Yes, you can mod the data.win without modifying the actual file now!
-- String cross-referencer
-  - Helpful for finding YYC code entries
+- And whatever else you make!
 
 **Note:** GML Compilation is only supported if UndertaleModTool v0.4.0-pre2 or newer is running.
