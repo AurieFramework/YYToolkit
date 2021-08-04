@@ -7,6 +7,8 @@ namespace Utils::Error
 {
 	void Error(bool critical, const char* fmt, ...);
 
+	void Message(const char* Header, const char* Message);
+
 	// Apparently this has to be inline and here, or else you get link errors
 	// I don't understand the linker
 	inline std::string_view YYTKStatus_ToString(YYTKStatus Status) 

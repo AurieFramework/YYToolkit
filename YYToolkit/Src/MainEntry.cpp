@@ -10,12 +10,13 @@ static HINSTANCE g_hDLL = 0;
 
 void Main()
 {
-	API::Initialize();
+	API::Initialize(g_hDLL);
 	Hooks::Initialize();
 
 	while (!GetAsyncKeyState(VK_END)) { Sleep(1); }
 
 	Hooks::Uninitialize();
+	API::Uninitialize();
 
 	FreeLibraryAndExitThread(g_hDLL, 0);
 }

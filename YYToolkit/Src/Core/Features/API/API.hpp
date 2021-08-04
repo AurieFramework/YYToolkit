@@ -20,6 +20,7 @@ inline struct APIVars_t
 	void* Window_Device = nullptr;
 	FUNCTION_TABLE GlobalTable = { nullptr, nullptr };
 	std::map<unsigned long, YYTKPlugin> Plugins;
+	void* MainModule = nullptr;
 } gAPIVars;
 
 
@@ -27,7 +28,9 @@ inline struct APIVars_t
 namespace API
 {
 	// This function gets called once at the start of YYToolkit, so no need to export it.
-	YYTKStatus Initialize();
+	YYTKStatus Initialize(void* pModule);
+
+	YYTKStatus Uninitialize();
 
 	// Create a VM code object which can be passed to Code_Execute.
 	DllExport YYTKStatus CreateCodeObject(CCode& out, char* pBytecode, size_t BytecodeSize, unsigned int Locals, const char* pName);
@@ -72,5 +75,13 @@ namespace Plugins
 	DllExport YYTKPlugin* LoadPlugin(const char* Path);
 
 	DllExport bool UnloadPlugin(YYTKPlugin* pPlugin, bool Notify);
+
+	DllExport void RunCodeExecuteCallbacks(CInstance*& pSelf, CInstance*& pOther, CCode*& Code, RValue*& Res, int& Flags);
+
+	DllExport void RunPresentCallbacks(void*& IDXGISwapChain, unsigned int& Sync, unsigned int& Flags);
+
+	DllExport void RunEndSceneCallbacks(void*& LPDIRECT3DDEVICE);
+
+	DllExport void RunDrawingCallbacks(float& x, float& y, const char*& str, int& linesep, int& linewidth);
 }
 

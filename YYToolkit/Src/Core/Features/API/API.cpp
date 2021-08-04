@@ -4,6 +4,8 @@
 #undef min
 #undef max
 #include <utility>
+#include <filesystem>
+#include "../../Utils/Error.hpp"
 
 static ModuleInfo_t GetModuleInfo()
 {
@@ -22,7 +24,7 @@ static ModuleInfo_t GetModuleInfo()
 
 namespace API
 {
-	YYTKStatus Initialize()
+	YYTKStatus Initialize(void* pModule)
 	{
 		bool ErrorOccured = false;
 		if (!gAPIVars.Code_Execute)
@@ -69,10 +71,32 @@ namespace API
 		gAPIVars.GlobalTable[8] = { GetGlobalInstance, "GetGlobalInstance" };
 		gAPIVars.GlobalTable[9] = { CallBuiltinFunction, "CallBuiltinFunction" };
 
-		auto Plugin = Plugins::LoadPlugin("ExamplePlugin.dll");
-		Plugins::UnloadPlugin(Plugin, true);
+		gAPIVars.MainModule = pModule;
+
+
+		namespace fs = std::filesystem;
+		if (fs::is_directory("autoexec"))
+		{
+			for (auto& entry : fs::directory_iterator("autoexec"))
+			{
+				if (entry.path().extension().string().find(".dll") != std::string::npos)
+				{
+					// We have a DLL, try loading it
+					if (!Plugins::LoadPlugin(entry.path().string().c_str()))
+						Utils::Error::Message("YYToolkit", std::string("Plugin " + entry.path().filename().string() + " failed to load!").c_str());
+				}
+			}
+		}
 
 		return ErrorOccured ? YYTK_FAIL : YYTK_OK;
+	}
+
+	YYTKStatus Uninitialize()
+	{
+		for (auto& entry : gAPIVars.Plugins)
+			Plugins::UnloadPlugin(&entry.second, true);
+
+		return YYTK_OK;
 	}
 
 	DllExport YYTKStatus CreateCodeObject(CCode& out, char* pBytecode, size_t BytecodeSize, unsigned int Locals, const char* pName)
@@ -314,7 +338,10 @@ namespace Plugins
 		lpPluginEntry = (PLUGIN_ENTRY)GetProcAddress(PluginModule, "PluginEntry");
 
 		if (!lpPluginEntry)
+		{
+			FreeLibraryAndExitThread(PluginModule, 1);
 			return nullptr;
+		}
 
 		// Emplace in map scope
 		{
@@ -335,11 +362,49 @@ namespace Plugins
 
 	bool UnloadPlugin(YYTKPlugin* pPlugin, bool Notify)
 	{
+		if (!pPlugin)
+			return false;
+
 		if (pPlugin->Unload && Notify)
 			pPlugin->Unload(pPlugin);
 
 		gAPIVars.Plugins.erase((unsigned long)pPlugin->PluginModule);
 		return true;
+	}
+
+	DllExport void RunCodeExecuteCallbacks(CInstance*& pSelf, CInstance*& pOther, CCode*& Code, RValue*& Res, int& Flags)
+	{
+		for (auto& Plugin : gAPIVars.Plugins)
+		{
+			if (Plugin.second.Callbacks[CTIDX_CodeExecute])
+				((TPluginCodeExecuteRoutine)Plugin.second.Callbacks[CTIDX_CodeExecute])(pSelf, pOther, Code, Res, Flags);
+		}
+	}
+	DllExport void RunPresentCallbacks(void*& IDXGISwapChain, unsigned int& Sync, unsigned int& Flags)
+	{
+		for (auto& Plugin : gAPIVars.Plugins)
+		{
+			if (Plugin.second.Callbacks[CTIDX_Present])
+				((TPluginPresentRoutine)Plugin.second.Callbacks[CTIDX_Present])(IDXGISwapChain, Sync, Flags);
+		}
+	}
+
+	DllExport void RunEndSceneCallbacks(void*& LPDIRECT3DDEVICE)
+	{
+		for (auto& Plugin : gAPIVars.Plugins)
+		{
+			if (Plugin.second.Callbacks[CTIDX_EndScene])
+				((TPluginEndSceneRoutine)Plugin.second.Callbacks[CTIDX_EndScene])(LPDIRECT3DDEVICE);
+		}
+	}
+
+	DllExport void RunDrawingCallbacks(float& x, float& y, const char*& str, int& linesep, int& linewidth)
+	{
+		for (auto& Plugin : gAPIVars.Plugins)
+		{
+			if (Plugin.second.Callbacks[CTIDX_Drawing])
+				((TPluginDrawTextRoutine)Plugin.second.Callbacks[CTIDX_Drawing])(x, y, str, linesep, linewidth);
+		}
 	}
 }
 

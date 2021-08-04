@@ -158,6 +158,7 @@
   <ItemGroup>
     <ClInclude Include="Src\Core\Features\API\API.hpp" />
     <ClInclude Include="Src\Core\Hooks\Code_Execute\Code_Execute.hpp" />
+    <ClInclude Include="Src\Core\Hooks\Drawing\GR_Draw_Text_Color\GR_Draw_Text_Color.hpp" />
     <ClInclude Include="Src\Core\Hooks\EndScene\EndScene.hpp" />
     <ClInclude Include="Src\Core\Hooks\Hooks.hpp" />
     <ClInclude Include="Src\Core\Hooks\MessageBoxW\MessageBoxW.hpp" />
@@ -165,6 +166,7 @@
     <ClInclude Include="Src\Core\Hooks\ResizeBuffers\ResizeBuffers.hpp" />
     <ClInclude Include="Src\Core\Hooks\WindowProc\WindowProc.hpp" />
     <ClInclude Include="Src\Core\Hooks\YYError\YYError.hpp" />
+    <ClInclude Include="Src\Core\Hooks\Drawing\GR_Draw_Text\GR_Draw_Text.hpp" />
     <ClInclude Include="Src\Core\Utils\Error.hpp" />
     <ClInclude Include="Src\Core\Utils\MH\buffer.h" />
     <ClInclude Include="Src\Core\Utils\MH\hde\hde32.h" />
@@ -180,6 +182,7 @@
   <ItemGroup>
     <ClCompile Include="Src\Core\Features\API\API.cpp" />
     <ClCompile Include="Src\Core\Hooks\Code_Execute\Code_Execute.cpp" />
+    <ClCompile Include="Src\Core\Hooks\Drawing\GR_Draw_Text_Color\GR_Draw_Text_Color.cpp" />
     <ClCompile Include="Src\Core\Hooks\EndScene\EndScene.cpp" />
     <ClCompile Include="Src\Core\Hooks\Hooks.cpp" />
     <ClCompile Include="Src\Core\Hooks\MessageBoxW\MessageBoxW.cpp" />
@@ -187,6 +190,7 @@
     <ClCompile Include="Src\Core\Hooks\ResizeBuffers\ResizeBuffers.cpp" />
     <ClCompile Include="Src\Core\Hooks\WindowProc\WindowProc.cpp" />
     <ClCompile Include="Src\Core\Hooks\YYError\YYError.cpp" />
+    <ClCompile Include="Src\Core\Hooks\Drawing\GR_Draw_Text\GR_Draw_Text.cpp" />
     <ClCompile Include="Src\Core\Utils\Error.cpp" />
     <ClCompile Include="Src\Core\Utils\MH\buffer.c" />
     <ClCompile Include="Src\Core\Utils\MH\hde\hde32.c" />

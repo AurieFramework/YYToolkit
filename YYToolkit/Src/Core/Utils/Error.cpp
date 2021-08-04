@@ -1,6 +1,7 @@
 #include <Windows.h>
 #include <string>
 #include "Error.hpp"
+#include "../Features/API/API.hpp"
 
 static std::string ParseVA(const char* fmt, va_list Args)
 {
@@ -29,5 +30,17 @@ namespace Utils::Error
 
 		if (critical)
 			exit(0);
+	}
+
+	void Message(const char* Header, const char* Message)
+	{
+		NOTIFYICONDATAA IconNotifyData = { sizeof(NOTIFYICONDATAA) };
+		IconNotifyData.hWnd = (HWND)gAPIVars.Window_Handle;
+		IconNotifyData.uFlags = NIF_INFO;
+		IconNotifyData.dwInfoFlags = NIIF_INFO;
+		strncpy(IconNotifyData.szInfoTitle, Header, 64);
+		strncpy(IconNotifyData.szInfo, Message, 256);
+		Shell_NotifyIconA(NIM_DELETE, &IconNotifyData);
+		Shell_NotifyIconA(NIM_ADD, &IconNotifyData);
 	}
 }

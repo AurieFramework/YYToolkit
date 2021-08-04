@@ -97,6 +97,12 @@ typedef void (*TGMLRoutine)(YYObjectBase* Self, YYObjectBase* Other);
 typedef bool (*TCodeExecuteRoutine)(YYObjectBase* Self, YYObjectBase* Other, CCode* code, YYRValue* res, int flags);
 typedef void (*TGetTheFunctionRoutine)(int id, char** bufName, void** bufRoutine, int* bufArgs, void* unused);
 
+typedef void (*TPluginCodeExecuteRoutine)(CInstance*& pSelf, CInstance*& pOther, CCode*& Code, YYRValue*& res, int& flags);
+typedef void (*TPluginPresentRoutine)(void*& IDXGISwapChain, unsigned int& Sync, unsigned int& Flags);
+typedef void (*TPluginEndSceneRoutine)(void*& DIRECT3DDEVICE9);
+typedef void (*TPluginDrawTextRoutine)(float& x, float& y, const char*& str, int& linesep, int& linewidth);
+
+
 typedef void GetOwnPropertyFunc(YYObjectBase*, YYRValue*, const char*);
 typedef void DeletePropertyFunc(YYObjectBase*, YYRValue*, const char*, bool);
 typedef EJSRetValBool DefineOwnPropertyFunc(YYObjectBase*, const char*, YYRValue*, bool);
@@ -796,13 +802,14 @@ struct FunctionInfo_t
 	int Arguments;
 };
 
-constexpr int CALLBACK_TABLE_MAX_ENTRIES = 3;
+constexpr int CALLBACK_TABLE_MAX_ENTRIES = 4;
 constexpr int FUNCTION_TABLE_MAX_ENTRIES = 10;
 
 // Indices into the CALLBACK_TABLE array
 constexpr int CTIDX_CodeExecute = 0;
 constexpr int CTIDX_EndScene = 1;
 constexpr int CTIDX_Present = 2;
+constexpr int CTIDX_Drawing = 3;
 
 struct FUNCTION_ENTRY
 {
