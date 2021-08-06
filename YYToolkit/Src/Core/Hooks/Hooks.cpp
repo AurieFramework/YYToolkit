@@ -10,6 +10,8 @@
 #include "YYError/YYError.hpp"
 #include "Drawing/GR_Draw_Text/GR_Draw_Text.hpp"
 #include "Drawing/GR_Draw_Text_Color/GR_Draw_Text_Color.hpp"
+#include "Drawing/GR_Draw_Text_Transformed/GR_Draw_Text_Transformed.hpp"
+#include "Drawing/GR_Draw_Text_Transformed_Color/GR_Draw_Text_Transformed_Color.hpp"
 #include "../Features/API/API.hpp"
 
 
@@ -69,6 +71,26 @@ namespace Hooks
 					MH_EnableHook(lpFunc);
 			}
 
+			// GR_Draw_Text_Transformed Hook - intercepts draw_text_transformed()
+			if (void* lpFunc = GR_Draw_Text_Transformed::GetTargetAddress())
+			{
+				auto Status = MH_CreateHook(lpFunc, GR_Draw_Text_Transformed::Function, reinterpret_cast<void**>(&GR_Draw_Text_Transformed::pfnOriginal));
+				if (Status != MH_OK)
+					Utils::Error::Error(false, "Unable to create a hook on GR_Draw_Text_Transformed.\nThis means YYToolkit won't intercept certain drawing calls.\nError Code: %s", MH_StatusToString(Status));
+				else
+					MH_EnableHook(lpFunc);
+			}
+
+			// GR_Draw_Text_Transformed_Color Hook - intercepts draw_text_transformed_color()
+			if (void* lpFunc = GR_Draw_Text_Transformed_Color::GetTargetAddress())
+			{
+				auto Status = MH_CreateHook(lpFunc, GR_Draw_Text_Transformed_Color::Function, reinterpret_cast<void**>(&GR_Draw_Text_Transformed_Color::pfnOriginal));
+				if (Status != MH_OK)
+					Utils::Error::Error(false, "Unable to create a hook on GR_Draw_Text_Transformed_Color.\nThis means YYToolkit won't intercept certain drawing calls.\nError Code: %s", MH_StatusToString(Status));
+				else
+					MH_EnableHook(lpFunc);
+			}
+
 			// Present Hook (D3D11)
 			if (GetModuleHandleA("d3d11.dll"))
 			{
@@ -123,6 +145,7 @@ namespace Hooks
 			Hooks::Present::pView->Release();
 
 
+		// Remove the notification icon
 		NOTIFYICONDATAA IconNotifyData = { sizeof(NOTIFYICONDATAA) };
 		IconNotifyData.hWnd = (HWND)gAPIVars.Window_Handle;
 		IconNotifyData.uFlags = NIF_INFO;

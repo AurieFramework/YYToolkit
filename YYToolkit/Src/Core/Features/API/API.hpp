@@ -57,6 +57,8 @@ namespace API
 
 	DllExport YYTKStatus CallBuiltinFunction(CInstance* _pSelf, CInstance* _pOther, YYRValue& _result, int _argc, const char* Name, YYRValue* Args);
 
+	DllExport TRoutine GetBuiltin(const char* Name);
+
 	/* Reconstructed YYGML Functions */
 	// Note to self: YYRValue** are actually **, not references, they're passing arrays of pointers...
 	DllExport YYRValue& YYGML_CallLegacyFunction(CInstance* _pSelf, CInstance* _pOther, YYRValue& _result, int _argc, int _id, YYRValue** _args);

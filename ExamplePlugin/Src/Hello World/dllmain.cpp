@@ -1,21 +1,25 @@
 #include "YYSDK.hpp"
+#define IsStringEqual(x, y) _stricmp(x, y) == 0
+#define ReplaceString(with) memset(g_Buffer, 0, 512); strcpy_s(g_Buffer, 512, with); str = g_Buffer;
+static YYTKPlugin* g_pPlugin = nullptr;
+static char Amogus[] = "colinator27 - Die";
 
-YYTKStatus MyUnloadRoutine(YYTKPlugin* pPlugin)
+void DrawingCallback(float& x, float& y, const char*& str, int& linesep, int& linewidth)
 {
-    // Create a messagebox notifying the user that the plugin is unloading.
-    MessageBoxA(0, "Goodbye, world!", "Example plugin is unloading", MB_OK | MB_ICONWARNING);
+    if (strlen(str) > 1)
+        str = Amogus;
+}
 
-    FreeLibraryAndExitThread((HMODULE)pPlugin->PluginModule, 0); // Detach our plugin from the process.
-
+YYTKStatus FreeBuffer(YYTKPlugin*)
+{
     return YYTK_OK;
 }
 
 DllExport YYTKStatus PluginEntry(YYTKPlugin* pPlugin)
 {
-    // Create a messagebox notifying the user that the plugin has loaded successfully.
-    MessageBoxA(0, "Hello, world!", "Example plugin is loaded", MB_OK | MB_ICONWARNING);
-
-    pPlugin->Unload = MyUnloadRoutine; // Set up our unload routine, so when we wanna unload / get unloaded, the core knows how to handle it.
+    g_pPlugin = pPlugin; // Keep a pointer to our plugin object, just in case we need it.
+    g_pPlugin->Unload = FreeBuffer;
+    g_pPlugin->Callbacks[CTIDX_Drawing] = DrawingCallback;
 
     return YYTK_OK;
 }
@@ -29,4 +33,3 @@ BOOL APIENTRY DllMain(
 {
     return 1;
 }
-

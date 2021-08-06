@@ -19,18 +19,25 @@ enum YYTKStatus : int
 	YYTK_INVALID = 6			// One or more arguments were invalid.
 };
 
-constexpr int CALLBACK_TABLE_MAX_ENTRIES = 3;
-constexpr int FUNCTION_TABLE_MAX_ENTRIES = 10;
+constexpr int CALLBACK_TABLE_MAX_ENTRIES = 4;
+constexpr int FUNCTION_TABLE_MAX_ENTRIES = 11;
 
 // Indices into the CALLBACK_TABLE array
 constexpr int CTIDX_CodeExecute = 0;
 constexpr int CTIDX_EndScene = 1;
 constexpr int CTIDX_Present = 2;
+constexpr int CTIDX_Drawing = 3;
 
 using PLUGIN_UNLOAD = YYTKStatus(*)(YYTKPlugin* pPlugin);
 using PLUGIN_ENTRY = YYTKStatus(*)(YYTKPlugin* pPlugin);
 using CALLBACK_TABLE = void*[CALLBACK_TABLE_MAX_ENTRIES];
 using FUNCTION_TABLE = FUNCTION_ENTRY[FUNCTION_TABLE_MAX_ENTRIES];
+
+struct FUNCTION_ENTRY
+{
+	const char* Name;
+	void* Routine;
+};
 
 struct YYTKPlugin
 {
@@ -42,4 +49,18 @@ struct YYTKPlugin
 	void* PluginModule;
 
 	YYTKPlugin() = delete;
+	
+	template <typename Fn>
+	inline Fn LookupFunction(const char* Name)
+	{
+		for (int n = 0; n < FUNCTION_TABLE_MAX_ENTRIES; n++)
+		{
+			if (_stricmp(Name, Functions[n]->Name) == 0)
+				return (Fn)Functions[n]->Routine;
+		}
+
+		return nullptr;
+	}
 };
+
+typedef void (*TPluginDrawTextRoutine)(float& x, float& y, const char*& str, int& linesep, int& linewidth);

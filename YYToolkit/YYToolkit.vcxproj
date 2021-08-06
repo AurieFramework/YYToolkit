@@ -72,9 +72,13 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
+    <OutDir>$(SolutionDir)Build\Core\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)Build\Core\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
+    <OutDir>$(SolutionDir)Build\Core\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)Build\Core\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
@@ -159,6 +163,7 @@
     <ClInclude Include="Src\Core\Features\API\API.hpp" />
     <ClInclude Include="Src\Core\Hooks\Code_Execute\Code_Execute.hpp" />
     <ClInclude Include="Src\Core\Hooks\Drawing\GR_Draw_Text_Color\GR_Draw_Text_Color.hpp" />
+    <ClInclude Include="Src\Core\Hooks\Drawing\GR_Draw_Text_Transformed\GR_Draw_Text_Transformed.hpp" />
     <ClInclude Include="Src\Core\Hooks\EndScene\EndScene.hpp" />
     <ClInclude Include="Src\Core\Hooks\Hooks.hpp" />
     <ClInclude Include="Src\Core\Hooks\MessageBoxW\MessageBoxW.hpp" />
@@ -183,6 +188,9 @@
     <ClCompile Include="Src\Core\Features\API\API.cpp" />
     <ClCompile Include="Src\Core\Hooks\Code_Execute\Code_Execute.cpp" />
     <ClCompile Include="Src\Core\Hooks\Drawing\GR_Draw_Text_Color\GR_Draw_Text_Color.cpp" />
+    <ClCompile Include="Src\Core\Hooks\Drawing\GR_Draw_Text_Transformed\GR_Draw_Text_Transformed.cpp" />
+    <ClCompile Include="Src\Core\Hooks\Drawing\GR_Draw_Text_Transformed_Color\GR_Draw_Text_Transformed_Color.cpp" />
+    <ClCompile Include="Src\Core\Hooks\Drawing\GR_Draw_Text_Transformed_Color\GR_Draw_Text_Transformed_Color.hpp" />
     <ClCompile Include="Src\Core\Hooks\EndScene\EndScene.cpp" />
     <ClCompile Include="Src\Core\Hooks\Hooks.cpp" />
     <ClCompile Include="Src\Core\Hooks\MessageBoxW\MessageBoxW.cpp" />

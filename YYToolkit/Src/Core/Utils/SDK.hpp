@@ -803,7 +803,7 @@ struct FunctionInfo_t
 };
 
 constexpr int CALLBACK_TABLE_MAX_ENTRIES = 4;
-constexpr int FUNCTION_TABLE_MAX_ENTRIES = 10;
+constexpr int FUNCTION_TABLE_MAX_ENTRIES = 11;
 
 // Indices into the CALLBACK_TABLE array
 constexpr int CTIDX_CodeExecute = 0;

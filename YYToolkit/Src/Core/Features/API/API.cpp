@@ -70,6 +70,7 @@ namespace API
 		gAPIVars.GlobalTable[7] = { FindPattern, "FindPattern" };
 		gAPIVars.GlobalTable[8] = { GetGlobalInstance, "GetGlobalInstance" };
 		gAPIVars.GlobalTable[9] = { CallBuiltinFunction, "CallBuiltinFunction" };
+		gAPIVars.GlobalTable[10] = { GetBuiltin, "GetBuiltin" };
 
 		gAPIVars.MainModule = pModule;
 
@@ -93,9 +94,13 @@ namespace API
 
 	YYTKStatus Uninitialize()
 	{
-		for (auto& entry : gAPIVars.Plugins)
-			Plugins::UnloadPlugin(&entry.second, true);
+		for (auto& Plugin : gAPIVars.Plugins)
+		{
+			Plugins::UnloadPlugin(&Plugin.second, true);
+		}
 
+		gAPIVars.Plugins.clear();
+		
 		return YYTK_OK;
 	}
 
@@ -286,6 +291,16 @@ namespace API
 		return YYTK_NOT_FOUND;
 	}
 
+	DllExport TRoutine GetBuiltin(const char* Name)
+	{
+		FunctionInfo_t Info;
+		if (GetFunctionByName(Name, Info) == YYTK_OK)
+		{
+			return Info.Function;
+		}
+		return nullptr;
+	}
+
 	DllExport YYRValue& YYGML_CallLegacyFunction(CInstance* _pSelf, CInstance* _pOther, YYRValue& _result, int _argc, int _id, YYRValue** _args)
 	{
 		FunctionInfo_t Info;
@@ -368,7 +383,8 @@ namespace Plugins
 		if (pPlugin->Unload && Notify)
 			pPlugin->Unload(pPlugin);
 
-		gAPIVars.Plugins.erase((unsigned long)pPlugin->PluginModule);
+		FreeLibrary((HMODULE)pPlugin->PluginModule);
+
 		return true;
 	}
 
