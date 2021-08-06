@@ -2,7 +2,7 @@
 #define IsStringEqual(x, y) _stricmp(x, y) == 0
 #define ReplaceString(with) memset(g_Buffer, 0, 512); strcpy_s(g_Buffer, 512, with); str = g_Buffer;
 static YYTKPlugin* g_pPlugin = nullptr;
-static char Amogus[] = "colinator27 - Die";
+static char Amogus[] = "Amogus";
 
 void DrawingCallback(float& x, float& y, const char*& str, int& linesep, int& linewidth)
 {
