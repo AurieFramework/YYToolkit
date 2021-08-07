@@ -57,27 +57,42 @@ enum eGML_TYPE : unsigned int
 
 // Forward Declarations
 struct YYRValue;
+struct DValue;
 struct CInstanceBase;
 struct YYObjectBase;
-template <typename, typename>
-struct CHashMap;
+struct CEvent;
+struct CPhysicsDataGM;
+struct CObjectGM;
+struct b2Vec2;
+struct b2Rot;
+struct b2Transform;
+struct b2Sweep;
+struct b2Body;
+struct CPhysicsObject;
+struct CSkeletonInstance;
+struct CSeqStackSnapshot;
+struct CSeqTrackAudioInfo;
+struct TrackAudio;
 struct yyMatrix;
+struct YYGMLFuncs;
 struct YYRect;
+struct cInstancePathAndTimeline;
 struct SLink;
 struct CInstance;
+struct CSequence;
 struct CWeakRef;
-template <typename T>
-struct CArray;
-template <typename T>
-struct CDynamicArrayRef;
-struct RToken;
-struct YYVAR;
-struct SYYStackTrace;
 struct SLLVMVars;
-struct YYGMLFuncs;
-struct VMBuffer;
-struct YYTKPlugin;
 struct CCode;
+struct CStream;
+struct VMBuffer;
+struct CScript;
+template <typename, typename>
+struct CHashMap;
+template <typename>
+struct CDynamicArrayRef;
+struct VMExec;
+struct CWADFile; // The format used for the data.win
+struct YYTKPlugin;
 
 typedef void (*TRoutine)(YYRValue* Result, YYObjectBase* Self, YYObjectBase* Other, int argc, YYRValue* Args);
 typedef void (*TGMLRoutine)(YYObjectBase* Self, YYObjectBase* Other);
@@ -101,31 +116,10 @@ typedef __int64 int64;
 typedef unsigned __int16 uint16;
 typedef const char* String;
 
-enum RVKind
-{
-	VALUE_REAL = 0,				// Real value
-	VALUE_STRING,				// String value
-	VALUE_ARRAY,				// Array value
-	VALUE_PTR,					// Ptr value
-	VALUE_VEC3,					// Vec3 (x,y,z) value (within the RValue)
-	VALUE_UNDEFINED,			// Undefined value
-	VALUE_OBJECT,				// YYObjectBase* value 
-	VALUE_INT32,				// Int32 value
-	VALUE_VEC4,					// Vec4 (x,y,z,w) value (allocated from pool)
-	VALUE_VEC44,				// Vec44 (matrix) value (allocated from pool)
-	VALUE_INT64,				// Int64 value
-	VALUE_ACCESSOR,				// Actually an accessor
-	VALUE_NULL,					// JS Null
-	VALUE_BOOL,					// Bool value
-	VALUE_ITERATOR,				// JS For-in Iterator
-	VALUE_REF,					// Reference value (uses the ptr to point at a RefBase structure)
-	VALUE_UNSET = 0x0ffffff		// Unset value (never initialized)
-};
 
 #pragma pack(push, 4)
 struct YYRValue
 {
-private:
 	union
 	{
 		union
@@ -133,25 +127,71 @@ private:
 			YYObjectBase* pObject;
 			CDynamicArrayRef<YYRValue>* pArray;
 		};
-
+		
 		int I32;
 		long long I64;
 		double Val;
 	};
-public:
+
 	int Flags;
 	int Kind;
 
-	template <typename T>
-	T& As()
+	operator double()
 	{
-		return (T&)(*(&I64));
+		switch (Kind)
+		{
+		case VALUE_REAL: /* Fallthrough */
+		case VALUE_BOOL:
+			return Val;
+		case VALUE_INT32:
+			return (double)I32;
+		case VALUE_INT64:
+			return (double)I64;
+		default:
+			return 0.0;
+		}
+	}
+
+	operator YYObjectBase*()
+	{
+		switch (Kind)
+		{
+		case VALUE_ARRAY: /* Fallthrough */
+		case VALUE_PTR:
+		case VALUE_OBJECT:
+		case VALUE_REF:
+			return pObject;
+		default:
+			return nullptr;
+		}
+	}
+
+	operator void* ()
+	{
+		switch (Kind)
+		{
+		case VALUE_ARRAY: /* Fallthrough */
+		case VALUE_PTR:
+		case VALUE_OBJECT:
+		case VALUE_REF:
+			return (void*)pObject;
+		default:
+			return nullptr;
+		}
 	}
 };
 #pragma pack(pop)
 using RValue = YYRValue;
 
 #ifndef YYSDK_NODEFS
+
+// It's an RValue / YYRValue, except it's only a double
+struct DValue
+{
+	double val;
+	int dummy;
+	int kind;
+};
 
 #pragma pack(push, 4)
 struct CInstanceBase
@@ -187,6 +227,130 @@ struct YYObjectBase : CInstanceBase
 	int m_curSlot;
 };
 
+struct alignedTo(8) CEvent
+{
+	CCode* e_code;
+	int m_OwnerObjectID;
+};
+
+struct alignedTo(8) CPhysicsDataGM
+{
+	float* m_physicsVertices;
+	bool m_physicsObject;
+	bool m_physicsSensor;
+	bool m_physicsAwake;
+	bool m_physicsKinematic;
+	int m_physicsShape;
+	int m_physicsGroup;
+	float m_physicsDensity;
+	float m_physicsRestitution;
+	float m_physicsLinearDamping;
+	float m_physicsAngularDamping;
+	float m_physicsFriction;
+	int m_physicsVertexCount;
+};
+
+template <typename T>
+struct SLinkedListNode
+{
+	SLinkedListNode<T>* m_pNext;
+	SLinkedListNode<T>* m_pPrev;
+	T m_pObj;
+};
+
+template <typename Element>
+struct alignedTo(8) SLinkedList
+{
+	SLinkedListNode<Element>* m_pFirst;
+	SLinkedListNode<Element>* m_pLast;
+	int m_Count;
+};
+
+struct CObjectGM
+{
+	char* m_pName;
+	CObjectGM* m_pParent;
+	CHashMap<int, CObjectGM*>* m_childrenMap;
+	CHashMap<unsigned long long, CEvent*>* m_eventsMap;
+	CPhysicsDataGM m_physicsData;
+	SLinkedList<CInstance> m_Instances;
+	SLinkedList<CInstance> m_Instances_Recursive;
+	uint32 m_Flags;
+	int m_spriteindex;
+	int m_depth;
+	int m_parent;
+	int m_mask;
+	int m_ID;
+};
+
+struct b2Vec2
+{
+	float32 x;
+	float32 y;
+};
+
+struct b2Rot
+{
+	float32 s;
+	float32 c;
+};
+
+struct b2Transform
+{
+	b2Vec2 p;
+	b2Rot q;
+};
+
+struct b2Sweep
+{
+	b2Vec2 localCenter;
+	b2Vec2 c0;
+	b2Vec2 c;
+	float32 a0;
+	float32 a;
+	float32 alpha0;
+};
+
+struct b2Body
+{
+	b2BodyType m_type;
+	uint16 m_flags;
+	int32 m_islandIndex;
+	b2Transform m_xf;
+	b2Transform m_xf0;
+	b2Sweep m_sweep;
+	b2Vec2 m_linearVelocity;
+	float32 m_angularVelocity;
+	b2Vec2 m_force;
+	float32 m_torque;
+	void* m_world;
+	b2Body* m_prev;
+	b2Body* m_next;
+	void* m_fixtureList;
+	int32 m_fixtureCount;
+	void* m_jointList;
+	void* m_contactList;
+	float32 m_mass;
+	float32 m_invMass;
+	float32 m_I;
+	float32 m_invI;
+	float32 m_linearDamping;
+	float32 m_angularDamping;
+	float32 m_gravityScale;
+	float32 m_sleepTime;
+	void* m_userData;
+};
+
+struct CPhysicsObject
+{
+	b2Body* m_pBody;
+	b2Vec2 m_visualOffset;
+	b2Vec2 m_previousPosition;
+	int m_collisionCategory;
+	unsigned int m_nextFixtureIndex;
+	void* m_pFixtureMap;
+};
+
 template <typename Key, typename Value>
 struct CHashMap
 {
@@ -217,6 +381,68 @@ struct CHashMap
 	}
 };
 
+struct CSkeletonInstance
+{
+	float m_lastFrame;
+	int m_lastFrameDir;
+	bool m_drawCollisionData;
+	bool m_forceUpdate;
+	float m_skeletonScale[2];
+	int m_attachmentCount;
+	void** m_ppAttachments;
+	void** m_ppAttachmentAtlases;
+	void* m_skeleton;
+	void* m_skeletonBounds;
+	void* m_animation;
+	void* m_animationState;
+	void* m_animationStateData;
+	void* m_skeletonData;
+};
+
+struct CSequenceBaseClass : YYObjectBase
+{
+	int changeIndex;
+	int globalChangeIndex;
+};
+
+struct CSeqStackSnapshot
+{
+	int stacksize;
+	YYObjectBase** pStack;
+};
+
+struct CSeqTrackAudioInfo
+{
+	int soundindex;
+	int playdir;
+	int emitterindex;
+};
+
+struct alignedTo(8) CTrackKeyBase : CSequenceBaseClass
+{
+	int channel;
+};
+
+struct alignedTo(8) CSeqTrackInstanceInfo
+{
+	CTrackKeyBase* pKeydata;
+	int objectID;
+	int instanceID;
+	bool ownedBySequence;
+};
+
+struct TrackAudio
+{
+	int emitterIndex;
+	int soundIndex;
+};
+
+struct alignedTo(8) TrackSequence
+{
+	CSequence* pSequence;
+	int sequenceID;
+};
+
 struct yyMatrix
 {
 	union
@@ -224,6 +450,64 @@ struct yyMatrix
 		float f[4][4];
 		int n[4][4];
 	};
+};
+
+struct TrackEval
+{
+	yyMatrix matrix;
+	float matrixHeadPosition;
+	char overridden;
+	unsigned int hascreationvalue;
+	unsigned int paramset;
+	float X;
+	float Y;
+	float Rotation;
+	float ScaleX;
+	float ScaleY;
+	float colorMultiply[4];
+	float colorAdd[4];
+	float XOrigin;
+	float YOrigin;
+	float Gain;
+	float Pitch;
+	float Falloff;
+	float Width;
+	float Height;
+	float ImageIndex;
+	float ImageSpeed;
+	union
+	{
+		int spriteIndex;
+		int instanceID;
+	};
+};
+
+struct TrackEvalNode : CSequenceBaseClass
+{
+	void* track;
+	TrackEval value;
+	TrackEvalNode* next;
+	TrackEvalNode* parent;
+	TrackEvalNode* subtree;
+};
+
+struct CSequenceInstance : CSequenceBaseClass
+{
+	int id;
+	TrackEvalNode* pEvalNodeHead;
+	int sequenceID;
+	float headPosition;
+	float lastHeadPosition;
+	float headDirection;
+	float speedScale;
+	float volume;
+	bool paused;
+	bool finished;
+	bool hasPlayed;
+	bool wrapped;
+	int cachedElementID;
+	CHashMap<CSeqStackSnapshot, CSeqTrackAudioInfo> trackAudio;
+	CHashMap<CSeqStackSnapshot, CSeqTrackInstanceInfo> trackInstances;
 };
 
 struct YYRect
@@ -234,20 +518,44 @@ struct YYRect
 	int32 bottom;
 };
 
+struct cInstancePathAndTimeline
+{
+	int i_pathindex;
+	float i_pathposition;
+	float i_pathpositionprevious;
+	float i_pathspeed;
+	float i_pathscale;
+	float i_pathorientation;
+	int i_pathend;
+	float i_pathxstart;
+	float i_pathystart;
+	int i_timelineindex;
+	float i_timelineprevposition;
+	float i_timelineposition;
+	float i_timelinespeed;
+};
+
+struct alignedTo(8) SLinkListEx
+{
+	SLink* head;
+	SLink* tail;
+	int offset;
+};
+
 struct SLink
 {
 	SLink* next;
 	SLink* prev;
-	void* list;
+	SLinkListEx* list;
 };
 
 struct CInstance : YYObjectBase
 {
 	__int64 m_CreateCounter;
-	void* m_pObject;
-	void* m_pPhysicsObject;
-	void* m_pSkeletonAnimation;
-	void* m_pControllingSeqInst;
+	CObjectGM* m_pObject;
+	CPhysicsObject* m_pPhysicsObject;
+	CSkeletonInstance* m_pSkeletonAnimation;
+	CSequenceInstance* m_pControllingSeqInst;
 	unsigned int m_Instflags;
 	int i_id;
 	int i_objectindex;
@@ -277,10 +585,10 @@ struct CInstance : YYObjectBase
 	float i_vspeed;
 	YYRect i_bbox;
 	int i_timer[12];
-	void* m_pPathAndTimeline;
+	cInstancePathAndTimeline* m_pPathAndTimeline;
 	CCode* i_initcode;
 	CCode* i_precreatecode;
-	void* m_pOldObject;
+	CObjectGM* m_pOldObject;
 	int m_nLayerID;
 	int i_maskindex;
 	__int16 m_nMouseOver;
@@ -293,6 +601,26 @@ struct CInstance : YYObjectBase
 	float i_currentdepth;
 	float i_lastImageNumber;
 	unsigned int m_collisionTestNumber;
+};
+
+struct CSequence : CSequenceBaseClass
+{
+	int id;
+	char* pDisplayName;
+	int playback;
+	float playbackSpeed;
+	int playbackSpeedType;
+	float length;
+	float xorigin;
+	float yorigin;
+	float volume;
+	bool fromWAD;
+	void* pMessageEventKeyframes;
+	void* pMomentEventKeyframes;
+	void* pTracks;
+	void* pTracksTail;
+	int numEvents;
+	CHashMap<int, int> pEventToFunction;
 };
 
 struct CWeakRef : YYObjectBase
@@ -393,11 +721,57 @@ struct CCode
 	YYObjectBase* i_pPrototype;
 };
 
-struct RefString
+struct CStream
 {
-	const char* m_Thing;
-	int m_refCount;
-	int m_Size;
+	bool m_ReadOnly;
+	__int64 internal_buffer_size;
+	__int64 internal_current_position;
+	void* internal_buffer;
+};
+
+struct alignedTo(8) CScript
+{
+	int (**_vptr$CScript)(void);
+	CStream* s_text;
+	CCode* s_code;
+	YYGMLFuncs* s_pFunc;
+	CInstance* s_pStaticObject;
+	union
+	{
+		String s_script;
+		int s_compiledIndex;
+	};
+	const char* s_name;
+	int s_offset;
+};
+
+struct VMExec
+{
+	VMExec* pPrev;
+	VMExec* pNext;
+	char* pStack;
+	int localCount;
+	YYObjectBase* pLocals;
+	YYObjectBase* pSelf;
+	YYObjectBase* pOther;
+	CCode* pCCode;
+	RValue* pArgs;
+	int argumentCount;
+	const char* pCode;
+	char* pBP;
+	VMBuffer* pBuffer;
+	int line;
+	const char* pName;
+	VMBuffer* pDebugInfo;
+	const char* pScript;
+	int stackSize;
+	int offs;
+	int boffs;
+	int retCount;
+	int bufferSize;
+	int prevoffs;
+	void** buff;
+	int* jt;
 };
 
 #endif // YYSDK_NODEFS
@@ -411,7 +785,7 @@ struct FunctionInfo_t
 };
 
 constexpr int CALLBACK_TABLE_MAX_ENTRIES = 4;
-constexpr int FUNCTION_TABLE_MAX_ENTRIES = 12;
+constexpr int FUNCTION_TABLE_MAX_ENTRIES = 11;
 
 // Indices into the CALLBACK_TABLE array
 constexpr int CTIDX_CodeExecute = 0;
@@ -427,7 +801,7 @@ struct FUNCTION_ENTRY
 
 using PLUGIN_UNLOAD = YYTKStatus(*)(YYTKPlugin* pPlugin);
 using PLUGIN_ENTRY = YYTKStatus(*)(YYTKPlugin* pPlugin);
-using CALLBACK_TABLE = void* [CALLBACK_TABLE_MAX_ENTRIES];
+using CALLBACK_TABLE = void*[CALLBACK_TABLE_MAX_ENTRIES];
 using FUNCTION_TABLE = FUNCTION_ENTRY[FUNCTION_TABLE_MAX_ENTRIES];
 
 struct YYTKPlugin
@@ -462,10 +836,60 @@ struct YYTKPlugin
 	{
 		for (int n = 0; n < FUNCTION_TABLE_MAX_ENTRIES; n++)
 		{
-			if (_stricmp(Name, (*Functions)[n].Name) == 0)
-				return (Fn)(*Functions)[n].Function;
+			if (_stricmp(Name, Functions[n]->Name) == 0)
+				return (Fn)Functions[n]->Function;
 		}
 
 		return nullptr;
 	}
 };
+
+/*
+struct YYGMLException
+{
+	YYObjectBase* ExceptionObject;
+	char Padding[8];
+	int32 Kind;
+};
+
+
+struct CWADChunk
+{
+	char Header[4];
+	int32 Size;
+};
+
+struct CGEN8Header : CWADChunk
+{
+	bool DisableDebug;
+	uint8_t FormatID;
+	short Reserved;
+	int32 pFileName;
+	int32 pConfig;
+	int32 LastObjectID;
+	int32 LastTileID;
+	int32 GameID;
+	struct {
+		unsigned long  Data1;
+		unsigned short Data2;
+		unsigned short Data3;
+		unsigned char  Data4[8];
+	} GUID;
+	int32 pGameName;
+	int32 Major, Minor, Release, Build;
+	int32 WindowWidth, WindowHeight;
+	int32 Flags;
+	char MD5Hash[16];
+	int32 CRCHash;
+	char Timestamp[8];
+	int32 pDisplayName;
+};
+*/
+
+#ifdef YYSDK_YYC // Enable YYC compatibility? (WIP)
+#define YY_STACKTRACE_FUNC_ENTRY(entry, line)
+#define YY_STACKTRACE_LINE(x)
+#define FREE_RValue(rvp)
+#define PushContextStack(x)
+#define PopContextStack(x)
+#endif // YYSDK_YYC

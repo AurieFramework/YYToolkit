@@ -48,7 +48,7 @@ namespace API
 			ErrorOccured |= (GetFunctionByName("window_handle", Info) != YYTK_OK);
 
 			Info.Function(&Result, 0, 0, 0, 0);
-			gAPIVars.Window_Handle = Result;
+			gAPIVars.Window_Handle = Result.As<void*>();
 		}
 
 		if (!gAPIVars.Window_Device)
@@ -57,7 +57,7 @@ namespace API
 			ErrorOccured |= (GetFunctionByName("window_device", Info) != YYTK_OK);
 
 			Info.Function(&Result, 0, 0, 0, 0);
-			gAPIVars.Window_Device = Result;
+			gAPIVars.Window_Device = Result.As<void*>();
 		}
 
 		gAPIVars.GlobalTable[0] = { CreateCodeObject, "CreateCodeObject" };
@@ -71,6 +71,7 @@ namespace API
 		gAPIVars.GlobalTable[8] = { GetGlobalInstance, "GetGlobalInstance" };
 		gAPIVars.GlobalTable[9] = { CallBuiltinFunction, "CallBuiltinFunction" };
 		gAPIVars.GlobalTable[10] = { GetBuiltin, "GetBuiltin" };
+		gAPIVars.GlobalTable[11] = { CreateString, "CreateString" };
 
 		gAPIVars.MainModule = pModule;
 
@@ -274,7 +275,7 @@ namespace API
 
 		FunctionEntry.Function(&Result, NULL, NULL, 0, NULL);
 
-		*ppoutGlobal = Result;
+		*ppoutGlobal = Result.As<YYObjectBase*>();
 
 		return YYTK_OK;
 	}
@@ -301,6 +302,22 @@ namespace API
 		return nullptr;
 	}
 
+	DllExport YYTKStatus CreateString(RValue& Ref, const char* String)
+	{
+		Ref.Kind = VALUE_STRING;
+		RefString*& pString = Ref.As<RefString*>();
+
+		pString = new RefString;
+		pString->m_Thing = new char[strlen(String) + 1];
+		memset((void*)pString->m_Thing, 0, strlen(String) + 1);
+		pString->m_Size = strlen(String);
+		pString->m_refCount = YYTK_MAGIC;
+
+		memcpy((void*)pString->m_Thing, String, strlen(String) + 1);
+
+		return YYTK_OK;
+	}
+
 	DllExport YYRValue& YYGML_CallLegacyFunction(CInstance* _pSelf, CInstance* _pOther, YYRValue& _result, int _argc, int _id, YYRValue** _args)
 	{
 		FunctionInfo_t Info;
@@ -315,7 +332,7 @@ namespace API
 	DllExport void YYGML_array_set_owner(int64 _owner)
 	{
 		RValue Result;
-		RValue Owner; Owner.Kind = VALUE_REAL; Owner.Val = _owner;
+		RValue Owner; Owner.Kind = VALUE_REAL; Owner.As<double>() = _owner;
 		CallBuiltinFunction(0, 0, Result, 1, "@@array_set_owner@@", &Owner);
 	}
 

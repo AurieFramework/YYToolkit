@@ -1,25 +1,55 @@
 #include "YYSDK.hpp"
-#define IsStringEqual(x, y) _stricmp(x, y) == 0
-#define ReplaceString(with) memset(g_Buffer, 0, 512); strcpy_s(g_Buffer, 512, with); str = g_Buffer;
+#include <Windows.h>
+#include <string>
+
 static YYTKPlugin* g_pPlugin = nullptr;
-static char Amogus[] = "Amogus";
 
-void DrawingCallback(float& x, float& y, const char*& str, int& linesep, int& linewidth)
+void CodeCallback(CInstance*& pSelf, CInstance*& pOther, CCode*& Code, RValue*& Res, int& Flags)
 {
-    if (strlen(str) > 1)
-        str = Amogus;
-}
+    // If we're executing obj_time_Draw_64
+    if (std::string(Code->i_pName).find("obj_time_Draw_64") != std::string::npos)
+    {
+        // Prepare all our variables, including GML functions
+        YYRValue RoomString, Result;
+        TRoutine room_get_name = g_pPlugin->LookupFunction<TRoutine(*)(const char*)>("GetBuiltin")("room_get_name");
+        TRoutine variable_global_get = g_pPlugin->LookupFunction<TRoutine(*)(const char*)>("GetBuiltin")("variable_global_get");
+        TRoutine draw_set_color = g_pPlugin->LookupFunction<TRoutine(*)(const char*)>("GetBuiltin")("draw_set_color");
+        TRoutine draw_text = g_pPlugin->LookupFunction<TRoutine(*)(const char*)>("GetBuiltin")("draw_text");
 
-YYTKStatus FreeBuffer(YYTKPlugin*)
-{
-    return YYTK_OK;
+        // Create our string
+        g_pPlugin->LookupFunction<YYTKStatus(*)(RValue&, const char*)>("CreateString")(RoomString, "room");
+
+        {
+            RValue Args = 0xFFFF;
+            draw_set_color(&Result, pSelf, pOther, 1, &Args);
+        }
+
+        variable_global_get(&Result, pSelf, pOther, 1, &RoomString);
+
+        // draw_text(10, 30, room);
+        {
+            YYRValue Args[3];
+            Args[0] = 10;
+            Args[1] = 30;
+            Args[2] = Result;
+            draw_text(&Result, pSelf, pOther, 3, Args);
+        }
+
+        // draw_text(50, 30, room_get_name(room))
+        {
+            YYRValue Args[3];
+            Args[0] = 50;
+            Args[1] = 30;
+            room_get_name(&Args[2], pSelf, pOther, 1, &Result); // room_get_name(room)
+            draw_text(&Result, pSelf, pOther, 3, Args);
+        }
+    }
 }
 
 DllExport YYTKStatus PluginEntry(YYTKPlugin* pPlugin)
 {
     g_pPlugin = pPlugin; // Keep a pointer to our plugin object, just in case we need it.
-    g_pPlugin->Unload = FreeBuffer;
-    g_pPlugin->Callbacks[CTIDX_Drawing] = DrawingCallback;
+    g_pPlugin->Callbacks[CTIDX_CodeExecute] = CodeCallback;
 
     return YYTK_OK;
 }

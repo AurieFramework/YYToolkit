@@ -156,7 +156,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Src\Hello World\dllmain.cpp" />
+    <ClCompile Include="Src\Hello World\DllMain.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Src\Hello World\YYSDK.hpp" />

@@ -14,7 +14,7 @@ static void SetupDescriptor(DXGI_SWAP_CHAIN_DESC* pDesc)
 	if (auto Status = API::CallBuiltinFunction(nullptr, nullptr, Result, 0, "window_get_fullscreen", nullptr))
 		Utils::Error::Error(1, "Unspecified error while calling window_get_fullscreen.\nError Code: %i", Status);
 
-	pDesc->Windowed = !(bool)Result;
+	pDesc->Windowed = !(bool)Result.As<double>();
 
 	pDesc->Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
 	pDesc->SampleDesc = { 1, 0 };

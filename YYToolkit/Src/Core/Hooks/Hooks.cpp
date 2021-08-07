@@ -11,7 +11,7 @@
 #include "Drawing/GR_Draw_Text/GR_Draw_Text.hpp"
 #include "Drawing/GR_Draw_Text_Color/GR_Draw_Text_Color.hpp"
 #include "Drawing/GR_Draw_Text_Transformed/GR_Draw_Text_Transformed.hpp"
-#include "Drawing/GR_Draw_Text_Transformed_Color/GR_Draw_Text_Transformed_Color.hpp"
+#include "Drawing/GR_Draw_Text_Transformed_Color/GR_Draw_Text_TC.hpp"
 #include "../Features/API/API.hpp"
 
 
