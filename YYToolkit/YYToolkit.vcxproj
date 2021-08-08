@@ -174,7 +174,9 @@
     <ClInclude Include="Src\Core\Hooks\Drawing\GR_Draw_Text\GR_Draw_Text.hpp" />
     <ClInclude Include="Src\Core\SDK\Enums\Enums.hpp" />
     <ClInclude Include="Src\Core\SDK\FwdDecls\FwdDecls.hpp" />
+    <ClInclude Include="Src\Core\SDK\Plugins\Plugins.hpp" />
     <ClInclude Include="Src\Core\SDK\SDK.hpp" />
+    <ClInclude Include="Src\Core\SDK\Structures\Objects\RefThing\RefThing.hpp" />
     <ClInclude Include="Src\Core\SDK\Structures\Objects\YYRValue\YYRValue.hpp" />
     <ClInclude Include="Src\Core\Utils\Error.hpp" />
     <ClInclude Include="Src\Core\Utils\MH\buffer.h" />
@@ -204,6 +206,8 @@
     <ClCompile Include="Src\Core\Hooks\WindowProc\WindowProc.cpp" />
     <ClCompile Include="Src\Core\Hooks\YYError\YYError.cpp" />
     <ClCompile Include="Src\Core\Hooks\Drawing\GR_Draw_Text\GR_Draw_Text.cpp" />
+    <ClCompile Include="Src\Core\SDK\Structures\Objects\RefThing\RefThing.cpp" />
+    <ClCompile Include="Src\Core\SDK\Structures\Objects\YYRValue\YYRValue.cpp" />
     <ClCompile Include="Src\Core\Utils\Error.cpp" />
     <ClCompile Include="Src\Core\Utils\MH\buffer.c" />
     <ClCompile Include="Src\Core\Utils\MH\hde\hde32.c" />
