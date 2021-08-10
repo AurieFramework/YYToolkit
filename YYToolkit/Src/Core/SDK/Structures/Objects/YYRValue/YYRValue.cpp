@@ -1,4 +1,5 @@
 #include "YYRValue.hpp"
+#include "../RefThing/RefThing.hpp"
 
 YYRValue::YYRValue() noexcept(true)
 {
@@ -34,14 +35,14 @@ YYRValue::YYRValue(const char* Value) noexcept(true)
 {
 	this->Kind = VALUE_STRING;
 	this->Flags = 0;
-	// TODO: Create the string
+	this->String = RefString::Alloc(Value, strlen(Value) + 1);
 }
 
 YYRValue::YYRValue(const std::string& Value) noexcept(true)
 {
 	this->Kind = VALUE_STRING;
 	this->Flags = 0;
-	// TODO: Create the string
+	this->String = RefString::Alloc(Value.c_str(), Value.length() + 1);
 }
 
 YYRValue::operator double() const noexcept(true)
@@ -71,12 +72,39 @@ YYRValue::operator bool() const noexcept(true)
 
 YYRValue::operator const char* () const noexcept(true)
 {
-	return "";
+	if (Kind == VALUE_STRING)
+	{
+		if (String)
+		{
+			return String->Get();
+		}
+	}
+
+	return nullptr;
 }
 
 YYRValue::operator std::string() const noexcept(true)
 {
+	if (Kind == VALUE_STRING)
+	{
+		if (String)
+		{
+			const char* pString = String->Get();
+			
+			if (pString)
+				return std::string(pString);
+		}
+	}
+
 	return "";
+}
+
+YYRValue::operator RefString* () const noexcept(true)
+{
+	if (Kind == VALUE_STRING)
+		return String;
+	// else
+	return nullptr;
 }
 
 YYRValue& YYRValue::operator+=(const double& Value)
