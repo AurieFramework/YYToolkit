@@ -1,4 +1,5 @@
 #include "YYRValue.hpp"
+#include "../CDynamicArray/CDynamicArray.hpp"
 #include "../RefThing/RefThing.hpp"
 
 YYRValue::YYRValue() noexcept(true)
@@ -43,6 +44,51 @@ YYRValue::YYRValue(const std::string& Value) noexcept(true)
 	this->Kind = VALUE_STRING;
 	this->Flags = 0;
 	this->String = RefString::Alloc(Value.c_str(), Value.length() + 1);
+}
+
+YYRValue::YYRValue(const YYRValue& Value) noexcept(true)
+{
+	this->Kind = Value.Kind;
+	this->Flags = 0;
+
+	switch (Kind)
+	{
+	case VALUE_REAL: /* Fallthrough */
+	case VALUE_BOOL:
+		this->Real = Value.Real;
+		break;
+	case VALUE_PTR: /* Fallthrough */
+	case VALUE_OBJECT:
+		this->Object = Value.Object;
+		break;
+	case VALUE_INT32:
+	case VALUE_INT64:
+		this->I64 = Value.I64;
+		break;
+	case VALUE_ARRAY:
+		this->Array = CDynamicArrayRef<RValue>::Assign(Value.Array);
+		break;
+	case VALUE_STRING:
+		this->String = RefString::Assign(Value.String);
+		break;
+	default:
+		memcpy(this, &Value, sizeof(double)); // Copy the entire union and be done with it.
+	}
+}
+
+YYRValue::operator int() const noexcept(true)
+{
+	switch (Kind)
+	{
+	case VALUE_REAL:
+		return static_cast<int>(Real);
+	case VALUE_BOOL: /* Fallthrough */
+	case VALUE_INT32:
+	case VALUE_INT64:
+		return static_cast<int>(I64);
+	default:
+		return 0.0;
+	}
 }
 
 YYRValue::operator double() const noexcept(true)
@@ -104,6 +150,14 @@ YYRValue::operator RefString* () const noexcept(true)
 	if (Kind == VALUE_STRING)
 		return String;
 	// else
+	return nullptr;
+}
+
+YYRValue::operator YYObjectBase* () const noexcept(true)
+{
+	if (Kind == VALUE_OBJECT)
+		return Object;
+
 	return nullptr;
 }
 

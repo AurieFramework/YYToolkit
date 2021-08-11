@@ -3,6 +3,6 @@
 #include "FwdDecls/FwdDecls.hpp"
 
 // Objects
-#include "Structures/Objects/CDynamicArray/CDynamicArray.hpp"
-#include "Structures/Objects/RefThing/RefThing.hpp"
-#include "Structures/Objects/YYRValue/YYRValue.hpp"
+#include "Structures/Documented/CDynamicArray/CDynamicArray.hpp"
+#include "Structures/Documented/RefThing/RefThing.hpp"
+#include "Structures/Documented/YYRValue/YYRValue.hpp"

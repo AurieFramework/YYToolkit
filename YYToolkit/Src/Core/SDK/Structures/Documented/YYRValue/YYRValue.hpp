@@ -52,6 +52,12 @@ struct YYRValue : protected RValue
 	// YYRValue V = std::string("Hello, std::string!");
 	YYRValue(const std::string& Value) noexcept(true);
 
+	// Copy constructor
+	YYRValue(const YYRValue& Value) noexcept(true);
+
+	// static_cast<int>(V);	
+	operator int() const noexcept(true);
+
 	// static_cast<double>(V);
 	operator double() const noexcept(true);
 
@@ -67,7 +73,10 @@ struct YYRValue : protected RValue
 	// static_cast<std::string>(V);
 	operator std::string() const noexcept(true);
 
+	// static_cast<RefString*>(V);
 	operator RefString*() const noexcept(true);
+
+	operator YYObjectBase* () const noexcept(true);
 
 	// V += 30.0;
 	YYRValue& operator +=(const double& Value);
@@ -80,4 +89,8 @@ struct YYRValue : protected RValue
 
 	// V /= 30.0;
 	YYRValue& operator /=(const double& Value);
+
+	// You really shouldn't use this unless you know what you're doing.
+	template <typename T>
+	inline T& As() const { return *((T*)this); }
 };

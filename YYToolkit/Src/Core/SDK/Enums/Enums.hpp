@@ -19,3 +19,12 @@ enum RVKind
 	VALUE_REF,					// Reference value (uses the ptr to point at a RefBase structure)
 	VALUE_UNSET = 0x0ffffff		// Unset value (never initialized)
 };
+
+enum eGMLKind : unsigned int
+{
+	eGMLK_NONE = 0x0,
+	eGMLK_ERROR = 0xFFFF0000,
+	eGMLK_DOUBLE = 0x1,
+	eGMLK_STRING = 0x2,
+	eGMLK_INT32 = 0x4,
+};
