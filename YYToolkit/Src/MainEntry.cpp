@@ -8,7 +8,7 @@
 
 static HINSTANCE g_hDLL = 0;
 
-void Main()
+void __stdcall Main()
 {
 	API::Initialize(g_hDLL);
 	Hooks::Initialize();

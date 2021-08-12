@@ -1,11 +1,10 @@
 #pragma once
-#include "../../Documented/YYRValue/YYRValue.hpp"
-#include "../../../Enums/Enums.hpp"
+#include "../YYRValue/YYRValue.hpp"
 
 struct RToken
 {
 	int kind;
-	eGMLKind type;
+	unsigned int type;
 	int ind;
 	int ind2;
 	RValue value;

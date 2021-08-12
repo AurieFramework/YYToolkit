@@ -28,3 +28,14 @@ enum eGMLKind : unsigned int
 	eGMLK_STRING = 0x2,
 	eGMLK_INT32 = 0x4,
 };
+
+enum YYTKStatus : int
+{
+	YYTK_OK = 0,				// The operation completed successfully.
+	YYTK_FAIL = 1,				// Unspecified error occured, see source code.
+	YYTK_UNAVAILABLE = 2,		// The called function is not available in the current context.
+	YYTK_NO_MEMORY = 3,			// No more memory is available to the process.
+	YYTK_NOT_FOUND = 4,			// The specified value could not be found.
+	YYTK_NOT_IMPLEMENTED = 5,	// The specified function doesn't exist. (IPC error)
+	YYTK_INVALID = 6			// One or more arguments were invalid.
+};

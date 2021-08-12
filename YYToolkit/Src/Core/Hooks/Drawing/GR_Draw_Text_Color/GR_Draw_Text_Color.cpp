@@ -14,7 +14,7 @@ void* Hooks::GR_Draw_Text_Color::GetTargetAddress()
 
 	if (auto Status = API::GetFunctionByName("draw_text_color", mInfo))
 	{
-		Utils::Error::Error(1, "Failed to find the draw_text_color function.\nError Code: %s", Utils::Error::YYTKStatus_ToString(Status).data());
+		Utils::Error::Error(1, "Failed to find the draw_text_color function.\nError Code: %s", Utils::Error::YYTKStatus_ToString(Status));
 		return nullptr;
 	}
 

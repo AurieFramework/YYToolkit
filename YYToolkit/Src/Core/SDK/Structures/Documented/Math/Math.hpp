@@ -13,13 +13,13 @@ private:
 		};
 	};
 public:
-	inline const float& x() const { return x; }
-	inline const float& y() const { return y; }
-	inline const float& z() const { return z; }
+	inline const float& X() const { return x; }
+	inline const float& Y() const { return y; }
+	inline const float& Z() const { return z; }
 
-	inline float& x() { return x; }
-	inline float& y() { return y; }
-	inline float& z() { return z; }
+	inline float& X() { return x; }
+	inline float& Y() { return y; }
+	inline float& Z() { return z; }
 
 	inline float* operator&() { return Values; }
 	inline const float* operator&() const { return Values; }

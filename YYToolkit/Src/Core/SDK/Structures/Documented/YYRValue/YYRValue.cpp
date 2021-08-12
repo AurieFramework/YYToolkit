@@ -32,6 +32,13 @@ YYRValue::YYRValue(const bool& Value) noexcept(true)
 	this->I32 = Value; // A bool is really just a 0 or a 1, so I can freely cast it to an integer.
 }
 
+YYRValue::YYRValue(const long long& Value) noexcept(true)
+{
+	this->Kind = VALUE_INT64;
+	this->Flags = 0;
+	this->I64 = Value;
+}
+
 YYRValue::YYRValue(const char* Value) noexcept(true)
 {
 	this->Kind = VALUE_STRING;
@@ -76,19 +83,15 @@ YYRValue::YYRValue(const YYRValue& Value) noexcept(true)
 	}
 }
 
+YYRValue::YYRValue(const RValue& Value) noexcept(true)
+{
+	const YYRValue* _val = reinterpret_cast<const YYRValue*>(&Value);
+	*this = YYRValue(_val);
+}
+
 YYRValue::operator int() const noexcept(true)
 {
-	switch (Kind)
-	{
-	case VALUE_REAL:
-		return static_cast<int>(Real);
-	case VALUE_BOOL: /* Fallthrough */
-	case VALUE_INT32:
-	case VALUE_INT64:
-		return static_cast<int>(I64);
-	default:
-		return 0.0;
-	}
+	return static_cast<int>(operator double());
 }
 
 YYRValue::operator double() const noexcept(true)

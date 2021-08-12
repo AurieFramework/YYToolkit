@@ -7,7 +7,7 @@ struct RefString;
 
 template <typename T>
 struct CDynamicArrayRef;
-
+#pragma pack(push, 4)
 // Base class with no overloading, just a pure RValue.
 struct RValue
 {
@@ -46,6 +46,8 @@ struct YYRValue : protected RValue
 	// YYRValue V = true;
 	YYRValue(const bool& Value) noexcept(true);
 
+	YYRValue(const long long& Value) noexcept(true);
+
 	// YYRValue V = "Hello, World!";
 	YYRValue(const char* Value) noexcept(true);
 
@@ -54,6 +56,8 @@ struct YYRValue : protected RValue
 
 	// Copy constructor
 	YYRValue(const YYRValue& Value) noexcept(true);
+
+	YYRValue(const RValue& Value) noexcept(true);
 
 	// static_cast<int>(V);	
 	operator int() const noexcept(true);
@@ -94,3 +98,4 @@ struct YYRValue : protected RValue
 	template <typename T>
 	inline T& As() const { return *((T*)this); }
 };
+#pragma pack(pop)

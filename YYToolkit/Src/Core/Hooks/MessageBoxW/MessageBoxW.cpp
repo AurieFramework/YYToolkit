@@ -18,5 +18,5 @@ void* Hooks::MessageBoxW::GetTargetAddress()
 	if (!Module)
 		return nullptr;
 	
-	return GetProcAddress(Module, "MessageBoxW");
+	return reinterpret_cast<void*>(GetProcAddress(Module, "MessageBoxW"));
 }
