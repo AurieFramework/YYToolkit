@@ -48,6 +48,9 @@ struct YYObjectBase;
 struct CInstance;
 struct CWeakRef;
 
+// VMExec.hpp
+struct VMExec;
+
 #pragma endregion
 
 // Typedefs

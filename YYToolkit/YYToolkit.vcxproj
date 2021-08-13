@@ -184,6 +184,7 @@
     <ClInclude Include="Src\Core\SDK\Structures\Documented\RefThing\RefThing.hpp" />
     <ClInclude Include="Src\Core\SDK\Structures\Documented\RToken\RToken.hpp" />
     <ClInclude Include="Src\Core\SDK\Structures\Documented\YYRValue\YYRValue.hpp" />
+    <ClInclude Include="Src\Core\SDK\Structures\Undocumented\VMExec\VMExec.hpp" />
     <ClInclude Include="Src\Core\SDK\Structures\Undocumented\YYGMLFuncs\YYGMLFuncs.hpp" />
     <ClInclude Include="Src\Core\SDK\Structures\Undocumented\YYVAR\YYVAR.hpp" />
     <ClInclude Include="Src\Core\Utils\Error.hpp" />
