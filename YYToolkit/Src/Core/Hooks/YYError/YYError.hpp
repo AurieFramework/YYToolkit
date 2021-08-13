@@ -1,10 +1,13 @@
 #pragma once
 #include <Windows.h>
 
-namespace Hooks::YYError
+namespace Hooks
 {
-	void Function(const char* pFormat, ...);
-	void* GetTargetAddress();
+	namespace YYError
+	{
+		void Function(const char* pFormat, ...);
+		void* GetTargetAddress();
 
-	inline decltype(&Function) pfnOriginal;
+		inline decltype(&Function) pfnOriginal;
+	}
 }
