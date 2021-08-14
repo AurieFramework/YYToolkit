@@ -13,6 +13,7 @@ struct ModuleInfo_t
 
 inline struct APIVars_t
 {
+<<<<<<< Updated upstream
 	YYObjectBase* g_pGlobal = nullptr;
 	TCodeExecuteRoutine Code_Execute = nullptr;
 	TGetTheFunctionRoutine Code_Function_GET_the_function = nullptr;
@@ -21,6 +22,15 @@ inline struct APIVars_t
 	FUNCTION_TABLE GlobalTable = { nullptr, nullptr };
 	std::map<unsigned long, YYTKPlugin> Plugins;
 	void* MainModule = nullptr;
+=======
+	YYObjectBase* g_pGlobal = nullptr;			// A pointer to the global instance of the runner (globalvar)
+	FNCodeExecute Code_Execute = nullptr;		// A pointer to the Code_Execute function.
+	FNCodeFunctionGetTheFunction Code_Function_GET_the_function = nullptr;		// A pointer to a function of the same name.
+	void* Window_Handle = nullptr;				// A handle to the window (HWND).
+	void* Window_Device = nullptr;				// A D3DDevice pointer (ID3D11Device*, LPDIRECT3D9DEVICE).
+	std::map<unsigned long, YYTKPlugin> Plugins;	// A map of all plugins' base address and their corresponding plugin object.
+	void* MainModule = nullptr;					// A pointer to the main module (why?)
+>>>>>>> Stashed changes
 } gAPIVars;
 
 

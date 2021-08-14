@@ -360,10 +360,19 @@ namespace Plugins
 
 		// Emplace in map scope
 		{
+<<<<<<< Updated upstream
 			auto PluginObject = YYTKPlugin(Path);
 			PluginObject.Entry = lpPluginEntry;
 			PluginObject.Functions = &gAPIVars.GlobalTable;
 			PluginObject.PluginModule = PluginModule;
+=======
+			auto PluginObject = YYTKPlugin();
+			memset(&PluginObject, 0, sizeof(YYTKPlugin));
+
+			PluginObject.PluginEntry = lpPluginEntry;
+			PluginObject.PluginStart = PluginModule;
+			PluginObject.CoreBase = gAPIVars.MainModule;
+>>>>>>> Stashed changes
 
 			gAPIVars.Plugins.emplace(std::make_pair((unsigned long)PluginObject.PluginModule, PluginObject));
 		}
