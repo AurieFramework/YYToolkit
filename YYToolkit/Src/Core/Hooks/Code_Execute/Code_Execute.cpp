@@ -12,6 +12,6 @@ namespace Hooks::Code_Execute
 
 	void* GetTargetAddress()
 	{
-		return gAPIVars.Code_Execute;
+		return reinterpret_cast<void*>(gAPIVars.Code_Execute);
 	}
 }

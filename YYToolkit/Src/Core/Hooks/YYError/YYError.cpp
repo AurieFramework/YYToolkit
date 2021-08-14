@@ -24,7 +24,7 @@ namespace Hooks::YYError
 
 		if (auto Status = API::GetFunctionByName("camera_create", mInfo))
 		{
-			Utils::Error::Error(1, "Failed to find the camera_create function.\nError Code: %s", Utils::Error::YYTKStatus_ToString(Status).data());
+			Utils::Error::Error(1, "Failed to find the camera_create function.\nError Code: %s", Utils::Error::YYTKStatus_ToString(Status));
 			return nullptr;
 		}
 
