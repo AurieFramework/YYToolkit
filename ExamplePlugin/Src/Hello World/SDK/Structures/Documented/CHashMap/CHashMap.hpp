@@ -23,10 +23,11 @@ struct CHashMap
 	static unsigned int CalculateHash(void* val)	{ return ((signed int)val >> 8) + 1; }
 
 	static unsigned int CalculateHash(YYObjectBase* val) { return 7 * ((signed int)val >> 6) + 1; }
+  
+#ifndef YYSDK_PLUGIN
 	static unsigned int CalculateHash(const char* val, size_t Len)
 	{
-#ifndef YYSDK_PLUGIN
 		return Utils::MurMurHash(val, Len, 0);
-#endif
 	}
+#endif
 };

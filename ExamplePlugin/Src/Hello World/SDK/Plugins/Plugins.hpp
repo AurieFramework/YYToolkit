@@ -33,8 +33,8 @@ struct YYTKPlugin
 	static T GetCoreExport(const char* Name)
 	{
 		if (PluginStart) return reinterpret_cast<T>(GetProcAddress(reinterpret_cast<HMODULE>(CoreStart), Name));
-		return nullptr;
-	}
+    return nullptr;
+  }
 
 	template <typename T>
 	T GetExport(const char* Name)
