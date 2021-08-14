@@ -91,7 +91,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_WARNINGS;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
@@ -108,7 +108,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_WARNINGS;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_WARNINGS;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
@@ -157,9 +157,28 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Src\Hello World\DllMain.cpp" />
+    <ClCompile Include="Src\Hello World\SDK\Structures\Documented\CDynamicArray\CDynamicArray.cpp" />
+    <ClCompile Include="Src\Hello World\SDK\Structures\Documented\RefThing\RefThing.cpp" />
+    <ClCompile Include="Src\Hello World\SDK\Structures\Documented\YYRValue\YYRValue.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Src\Hello World\YYSDK.hpp" />
+    <ClInclude Include="Src\Hello World\SDK\Enums\Enums.hpp" />
+    <ClInclude Include="Src\Hello World\SDK\FwdDecls\FwdDecls.hpp" />
+    <ClInclude Include="Src\Hello World\SDK\Plugins\Plugins.hpp" />
+    <ClInclude Include="Src\Hello World\SDK\SDK.hpp" />
+    <ClInclude Include="Src\Hello World\SDK\Structures\Documented\CCode\CCode.hpp" />
+    <ClInclude Include="Src\Hello World\SDK\Structures\Documented\CDynamicArray\CDynamicArray.hpp" />
+    <ClInclude Include="Src\Hello World\SDK\Structures\Documented\CHashMap\CHashMap.hpp" />
+    <ClInclude Include="Src\Hello World\SDK\Structures\Documented\FunctionInfo\FunctionInfo.hpp" />
+    <ClInclude Include="Src\Hello World\SDK\Structures\Documented\Math\Math.hpp" />
+    <ClInclude Include="Src\Hello World\SDK\Structures\Documented\RefThing\RefThing.hpp" />
+    <ClInclude Include="Src\Hello World\SDK\Structures\Documented\RToken\RToken.hpp" />
+    <ClInclude Include="Src\Hello World\SDK\Structures\Documented\VMBuffer\VMBuffer.hpp" />
+    <ClInclude Include="Src\Hello World\SDK\Structures\Documented\YYRValue\YYRValue.hpp" />
+    <ClInclude Include="Src\Hello World\SDK\Structures\Undocumented\VMExec\VMExec.hpp" />
+    <ClInclude Include="Src\Hello World\SDK\Structures\Undocumented\YYGMLFuncs\YYGMLFuncs.hpp" />
+    <ClInclude Include="Src\Hello World\SDK\Structures\Undocumented\YYObjectBase\YYObjectBase.hpp" />
+    <ClInclude Include="Src\Hello World\SDK\Structures\Undocumented\YYVAR\YYVAR.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -28,4 +28,5 @@
 #include "Structures/Undocumented/YYObjectBase/YYObjectBase.hpp"
 #include "Structures/Undocumented/YYVAR/YYVAR.hpp"
 
+// Plugins.. duh
 #include "Plugins/Plugins.hpp"

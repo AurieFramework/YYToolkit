@@ -203,9 +203,9 @@
     <ClCompile Include="Src\Core\Features\API\API.cpp" />
     <ClCompile Include="Src\Core\Hooks\Code_Execute\Code_Execute.cpp" />
     <ClCompile Include="Src\Core\Hooks\Drawing\GR_Draw_Text_Color\GR_Draw_Text_Color.cpp" />
+    <ClCompile Include="Src\Core\Hooks\Drawing\GR_Draw_Text_TC\GR_Draw_Text_TC.cpp" />
     <ClCompile Include="Src\Core\Hooks\Drawing\GR_Draw_Text_Transformed\GR_Draw_Text_Transformed.cpp" />
-    <ClCompile Include="Src\Core\Hooks\Drawing\GR_Draw_Text_Transformed_Color\GR_Draw_Text_TC.cpp" />
-    <ClCompile Include="Src\Core\Hooks\Drawing\GR_Draw_Text_Transformed_Color\GR_Draw_Text_TC.hpp" />
+    <ClCompile Include="Src\Core\Hooks\Drawing\GR_Draw_Text_TC\GR_Draw_Text_TC_header.hpp" />
     <ClCompile Include="Src\Core\Hooks\EndScene\EndScene.cpp" />
     <ClCompile Include="Src\Core\Hooks\Hooks.cpp" />
     <ClCompile Include="Src\Core\Hooks\MessageBoxW\MessageBoxW.cpp" />

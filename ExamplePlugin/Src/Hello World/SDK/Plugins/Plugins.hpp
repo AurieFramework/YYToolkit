@@ -26,20 +26,20 @@ struct YYTKPlugin
 	FNDrawCallback DrawCallback;			// Pointer to the GR_Draw_*_Text() callback, called by the game.
 	FNCodeCallback CodeCallback;			// Pointer to the Code_Execute() callback, called by the game.
 
-	void* PluginStart;				// The base address of the plugin (can be casted to a HMODULE)
-	void* CoreBase;					// The base address of the core module (can be casted to a HMODULE).
+	void* PluginStart;				// The base address of the plugin (can be casted to a HMODULE).
+	void* CoreStart;				// The base address of the core (can be casted to a HMODULE).
+
+	template <typename T>
+	static T GetCoreExport(const char* Name)
+	{
+		if (PluginStart) return reinterpret_cast<T>(GetProcAddress(reinterpret_cast<HMODULE>(CoreStart), Name));
+    return nullptr;
+  }
 
 	template <typename T>
 	T GetExport(const char* Name)
 	{
 		if (PluginStart) return reinterpret_cast<T>(GetProcAddress(reinterpret_cast<HMODULE>(PluginStart), Name));
-		return nullptr;
-	}
-
-	template <typename T>
-	static T GetCoreExport(const char* Name)
-	{
-		if (CoreBase) return reinterpret_cast<T>(GetProcAddress(reinterpret_cast<HMODULE>(CoreBase), Name));
 		return nullptr;
 	}
 };

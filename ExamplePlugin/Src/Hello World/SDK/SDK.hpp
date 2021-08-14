@@ -1,5 +1,4 @@
 #pragma once
-#pragma warning(disable : 4996)
 #ifdef __cplusplus
 #define DllExport extern "C" __declspec(dllexport)
 #else //!__cplusplus
@@ -29,4 +28,5 @@
 #include "Structures/Undocumented/YYObjectBase/YYObjectBase.hpp"
 #include "Structures/Undocumented/YYVAR/YYVAR.hpp"
 
+// Plugins.. duh
 #include "Plugins/Plugins.hpp"
