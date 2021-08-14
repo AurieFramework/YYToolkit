@@ -15,7 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Src\Hello World\dllmain.cpp">
+    <ClCompile Include="Src\Hello World\DllMain.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Src\Hello World\SDK\Structures\Documented\CDynamicArray\CDynamicArray.cpp">

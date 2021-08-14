@@ -1,10 +1,13 @@
 #pragma once
 #include <Windows.h>
 
-namespace Hooks::MessageBoxW
+namespace Hooks
 {
-	int __stdcall Function(HWND Hwnd, LPCWSTR lpwText, LPCWSTR lpwCaption, UINT Type);
-	void* GetTargetAddress();
+	namespace MessageBoxW
+	{
+		int __stdcall Function(HWND Hwnd, LPCWSTR lpwText, LPCWSTR lpwCaption, UINT Type);
+		void* GetTargetAddress();
 
-	inline decltype(&Function) pfnOriginal;
+		inline decltype(&Function) pfnOriginal;
+	}
 }

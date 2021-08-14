@@ -1,5 +1,4 @@
 #pragma once
-#pragma warning(disable : 4996)
 #ifdef __cplusplus
 #define DllExport extern "C" __declspec(dllexport)
 #else //!__cplusplus

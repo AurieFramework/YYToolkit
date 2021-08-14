@@ -1,58 +1,65 @@
-<<<<<<< Updated upstream
 #include "YYSDK.hpp"
-#define IsStringEqual(x, y) _stricmp(x, y) == 0
-#define ReplaceString(with) memset(g_Buffer, 0, 512); strcpy_s(g_Buffer, 512, with); str = g_Buffer;
+#include <Windows.h>
+#include <string>
+
 static YYTKPlugin* g_pPlugin = nullptr;
-static char Amogus[] = "Amogus";
 
-void DrawingCallback(float& x, float& y, const char*& str, int& linesep, int& linewidth)
+void CodeCallback(CInstance*& pSelf, CInstance*& pOther, CCode*& Code, RValue*& Res, int& Flags)
 {
-    if (strlen(str) > 1)
-        str = Amogus;
+    // If we're executing obj_time_Draw_64
+    if (std::string(Code->i_pName).find("obj_time_Draw_64") != std::string::npos)
+    {
+        // Prepare all our variables, including GML functions
+        YYRValue RoomString, Result;
+        TRoutine room_get_name = g_pPlugin->LookupFunction<TRoutine(*)(const char*)>("GetBuiltin")("room_get_name");
+        TRoutine variable_global_get = g_pPlugin->LookupFunction<TRoutine(*)(const char*)>("GetBuiltin")("variable_global_get");
+        TRoutine draw_set_color = g_pPlugin->LookupFunction<TRoutine(*)(const char*)>("GetBuiltin")("draw_set_color");
+        TRoutine draw_text = g_pPlugin->LookupFunction<TRoutine(*)(const char*)>("GetBuiltin")("draw_text");
+
+        // Create our string
+        g_pPlugin->LookupFunction<YYTKStatus(*)(RValue&, const char*)>("CreateString")(RoomString, "room");
+
+        {
+            RValue Args = 0xFFFF;
+            draw_set_color(&Result, pSelf, pOther, 1, &Args);
+        }
+
+        variable_global_get(&Result, pSelf, pOther, 1, &RoomString);
+
+        // draw_text(10, 30, room);
+        {
+            YYRValue Args[3];
+            Args[0] = 10;
+            Args[1] = 30;
+            Args[2] = Result;
+            draw_text(&Result, pSelf, pOther, 3, Args);
+        }
+
+        // draw_text(50, 30, room_get_name(room))
+        {
+            YYRValue Args[3];
+            Args[0] = 50;
+            Args[1] = 30;
+            room_get_name(&Args[2], pSelf, pOther, 1, &Result); // room_get_name(room)
+            draw_text(&Result, pSelf, pOther, 3, Args);
+        }
+    }
 }
 
-YYTKStatus FreeBuffer(YYTKPlugin*)
+DllExport YYTKStatus PluginEntry(YYTKPlugin* pPlugin)
 {
-=======
-#define YYSDK_PLUGIN        // Tell the SDK that it's being loaded from a plugin
-#include "SDK/SDK.hpp"      // Include the SDK
-#include <Windows.h>        // Include Windows's functions
-
-YYTKStatus MyUnload(YYTKPlugin* pPlugin) // The unload routine, doesn't have to be exported
-{
-    // Create a message box
-    MessageBoxA(0, "Goodbye, cruel world!", "YYToolkit Plugin", MB_OK);
-
-    // Tell the core everything went fine
->>>>>>> Stashed changes
-    return YYTK_OK;
-}
-
-DllExport YYTKStatus PluginEntry(YYTKPlugin* pPlugin) // The init routine, HAS TO be exported
-{
-<<<<<<< Updated upstream
     g_pPlugin = pPlugin; // Keep a pointer to our plugin object, just in case we need it.
-    g_pPlugin->Unload = FreeBuffer;
-    g_pPlugin->Callbacks[CTIDX_Drawing] = DrawingCallback;
-=======
-    // Create a message box
-    MessageBoxA(0, "Hello, World!", "YYToolkit Plugin", MB_OK);
-    
-    // Set up the unload routine, gets called on YYToolkit unload (pressing END)
-    pPlugin->PluginUnload = MyUnload; 
->>>>>>> Stashed changes
+    g_pPlugin->Callbacks[CTIDX_CodeExecute] = CodeCallback;
 
-    // Tell the core everything went fine
     return YYTK_OK;
 }
 
-
-// Boilerplate setup for a Windows DLL, we just return true to shut Windows up
+// Boilerplate setup for a Windows DLL, can be empty.
 BOOL APIENTRY DllMain(
     HMODULE hModule,
     DWORD  ul_reason_for_call,
     LPVOID lpReserved
 )
 {
-    return TRUE;
+    return 1;
 }

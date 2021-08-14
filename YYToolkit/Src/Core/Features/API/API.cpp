@@ -1,4 +1,4 @@
-#define YYSDK_YYC
+
 #include "API.hpp"
 #include <Windows.h>
 #undef min
@@ -48,7 +48,7 @@ namespace API
 			ErrorOccured |= (GetFunctionByName("window_handle", Info) != YYTK_OK);
 
 			Info.Function(&Result, 0, 0, 0, 0);
-			gAPIVars.Window_Handle = Result;
+			gAPIVars.Window_Handle = Result.Pointer;
 		}
 
 		if (!gAPIVars.Window_Device)
@@ -57,24 +57,12 @@ namespace API
 			ErrorOccured |= (GetFunctionByName("window_device", Info) != YYTK_OK);
 
 			Info.Function(&Result, 0, 0, 0, 0);
-			gAPIVars.Window_Device = Result;
+			gAPIVars.Window_Device = Result.Pointer;
 		}
-
-		gAPIVars.GlobalTable[0] = { CreateCodeObject, "CreateCodeObject" };
-		gAPIVars.GlobalTable[1] = { CreateYYCCodeObject, "CreateYYCCodeObject" };
-		gAPIVars.GlobalTable[2] = { FreeCodeObject, "FreeCodeObject" };
-		gAPIVars.GlobalTable[3] = { GetFunctionByIndex, "GetFunctionByIndex" };
-		gAPIVars.GlobalTable[4] = { GetAPIVars, "GetAPIVars" };
-		gAPIVars.GlobalTable[5] = { GetCodeExecuteAddr, "GetCodeExecuteAddr" };
-		gAPIVars.GlobalTable[6] = { GetCodeFunctionAddr, "GetCodeFunctionAddr" };
-		gAPIVars.GlobalTable[7] = { FindPattern, "FindPattern" };
-		gAPIVars.GlobalTable[8] = { GetGlobalInstance, "GetGlobalInstance" };
-		gAPIVars.GlobalTable[9] = { CallBuiltinFunction, "CallBuiltinFunction" };
-		gAPIVars.GlobalTable[10] = { GetBuiltin, "GetBuiltin" };
 
 		gAPIVars.MainModule = pModule;
 
-
+		// Run autoexec
 		namespace fs = std::filesystem;
 		if (fs::is_directory("autoexec"))
 		{
@@ -131,7 +119,7 @@ namespace API
 		return YYTK_OK;
 	}
 
-	DllExport YYTKStatus CreateYYCCodeObject(CCode& out, TGMLRoutine Routine, const char* pName)
+	DllExport YYTKStatus CreateYYCCodeObject(CCode& out, PFUNC_YYGML Routine, const char* pName)
 	{
 		if (!Routine)
 			return YYTK_INVALID;
@@ -180,7 +168,7 @@ namespace API
 
 		void* pUnknown = nullptr;
 
-		gAPIVars.Code_Function_GET_the_function(index, &outInfo.Name, (PVOID*)&outInfo.Function, &outInfo.Arguments, &pUnknown);
+		gAPIVars.Code_Function_GET_the_function(index, &outInfo.Name, (PVOID*)&outInfo.Function, &outInfo.Argc, &pUnknown);
 
 		if (!outInfo.Name)
 			return YYTK_NOT_FOUND;
@@ -211,7 +199,7 @@ namespace API
 		return YYTK_OK;
 	}
 
-	DllExport YYTKStatus GetCodeExecuteAddr(TCodeExecuteRoutine& outAddress)
+	DllExport YYTKStatus GetCodeExecuteAddr(FNCodeExecute& outAddress)
 	{
 		ModuleInfo_t CurInfo = GetModuleInfo();
 		unsigned long Base = FindPattern("\x8A\xD8\x83\xC4\x14\x80\xFB\x01\x74", "xxxxxxxxx", CurInfo.Base, CurInfo.Size);
@@ -224,16 +212,16 @@ namespace API
 
 		Base += 2; // Compensate for the extra CC bytes
 
-		outAddress = (TCodeExecuteRoutine)Base;
+		outAddress = (FNCodeExecute)Base;
 
 		return YYTK_OK;
 	}
 
-	DllExport YYTKStatus GetCodeFunctionAddr(TGetTheFunctionRoutine& outAddress)
+	DllExport YYTKStatus GetCodeFunctionAddr(FNCodeFunctionGetTheFunction& outAddress)
 	{
 		ModuleInfo_t CurInfo = GetModuleInfo();
 
-		if (outAddress = (TGetTheFunctionRoutine)FindPattern("\x8B\x44\x24\x04\x3B\x05\x00\x00\x00\x00\x7F", "xxxxxx????x", CurInfo.Base, CurInfo.Size))
+		if ((outAddress = (FNCodeFunctionGetTheFunction)FindPattern("\x8B\x44\x24\x04\x3B\x05\x00\x00\x00\x00\x7F", "xxxxxx????x", CurInfo.Base, CurInfo.Size)))
 			return YYTK_OK;
 
 		return YYTK_NOT_FOUND;
@@ -274,7 +262,7 @@ namespace API
 
 		FunctionEntry.Function(&Result, NULL, NULL, 0, NULL);
 
-		*ppoutGlobal = Result;
+		*ppoutGlobal = Result.Object;
 
 		return YYTK_OK;
 	}
@@ -284,7 +272,7 @@ namespace API
 		FunctionInfo_t Info;
 		if (GetFunctionByName(Name, Info) == YYTK_OK)
 		{
-			YYGML_CallLegacyFunction(_pSelf, _pOther, _result, _argc, Info.Index, &Args);
+			YYGML_CallLegacyFunction(_pSelf, _pOther, _result.As<RValue>(), _argc, Info.Index, reinterpret_cast<RValue**>(&Args));
 			return YYTK_OK;
 		}
 
@@ -301,7 +289,7 @@ namespace API
 		return nullptr;
 	}
 
-	DllExport YYRValue& YYGML_CallLegacyFunction(CInstance* _pSelf, CInstance* _pOther, YYRValue& _result, int _argc, int _id, YYRValue** _args)
+	DllExport RValue* YYGML_CallLegacyFunction(CInstance* _pSelf, CInstance* _pOther, RValue& _result, int _argc, int _id, RValue** _args)
 	{
 		FunctionInfo_t Info;
 		if (GetFunctionByIndex(_id, Info) == YYTK_OK)
@@ -309,31 +297,24 @@ namespace API
 			Info.Function(&_result, _pSelf, _pOther, _argc, *_args);
 		}
 
-		return _result;
+		return &_result;
 	}
 
-	DllExport void YYGML_array_set_owner(int64 _owner)
+	DllExport void YYGML_array_set_owner(long long _owner)
 	{
-		RValue Result;
-		RValue Owner; Owner.Kind = VALUE_REAL; Owner.Val = _owner;
+		YYRValue Result;
+		YYRValue Owner = _owner;
 		CallBuiltinFunction(0, 0, Result, 1, "@@array_set_owner@@", &Owner);
 	}
 
-	DllExport YYRValue& YYGML_method(CInstance* _pSelf, YYRValue& _result, YYRValue& _pRef)
+	DllExport YYRValue* YYGML_method(CInstance* _pSelf, YYRValue& _result, YYRValue& _pRef)
 	{
-		return _result;
+		return &_result;
 	}
 
 	DllExport void YYGML_window_set_caption(const char* _pStr)
 	{
 		SetWindowTextA((HWND)gAPIVars.Window_Handle, _pStr);
-	}
-
-	DllExport double YYGML_StringByteAt(const char* string, int _index)
-	{
-		int Length = strlen(string) + 1;
-
-		return static_cast<unsigned char>(string[std::min(Length, _index)]); // Implicit cast to double
 	}
 }
 
@@ -342,7 +323,7 @@ namespace Plugins
 	DllExport YYTKPlugin* LoadPlugin(const char* Path)
 	{
 		char Buffer[MAX_PATH] = { 0 };
-		PLUGIN_ENTRY lpPluginEntry = nullptr;
+		FNPluginEntry lpPluginEntry = nullptr;
 
 		GetFullPathNameA(Path, MAX_PATH, Buffer, 0);
 		HMODULE PluginModule = LoadLibraryA(Buffer);
@@ -350,7 +331,7 @@ namespace Plugins
 		if (!PluginModule)
 			return nullptr;
 
-		lpPluginEntry = (PLUGIN_ENTRY)GetProcAddress(PluginModule, "PluginEntry");
+		lpPluginEntry = (FNPluginEntry)GetProcAddress(PluginModule, "PluginEntry");
 
 		if (!lpPluginEntry)
 		{
@@ -360,24 +341,16 @@ namespace Plugins
 
 		// Emplace in map scope
 		{
-<<<<<<< Updated upstream
-			auto PluginObject = YYTKPlugin(Path);
-			PluginObject.Entry = lpPluginEntry;
-			PluginObject.Functions = &gAPIVars.GlobalTable;
-			PluginObject.PluginModule = PluginModule;
-=======
 			auto PluginObject = YYTKPlugin();
 			memset(&PluginObject, 0, sizeof(YYTKPlugin));
 
 			PluginObject.PluginEntry = lpPluginEntry;
 			PluginObject.PluginStart = PluginModule;
-			PluginObject.CoreBase = gAPIVars.MainModule;
->>>>>>> Stashed changes
 
-			gAPIVars.Plugins.emplace(std::make_pair((unsigned long)PluginObject.PluginModule, PluginObject));
+			gAPIVars.Plugins.emplace(std::make_pair(reinterpret_cast<unsigned long>(PluginObject.PluginStart), PluginObject));
 		}
 		
-		YYTKPlugin* refVariableInMap = &gAPIVars.Plugins.at((unsigned long)PluginModule);
+		YYTKPlugin* refVariableInMap = &gAPIVars.Plugins.at(reinterpret_cast<unsigned long>(PluginModule));
 
 		lpPluginEntry(refVariableInMap);
 
@@ -389,10 +362,10 @@ namespace Plugins
 		if (!pPlugin)
 			return false;
 
-		if (pPlugin->Unload && Notify)
-			pPlugin->Unload(pPlugin);
+		if (pPlugin->PluginUnload && Notify)
+			pPlugin->PluginUnload(pPlugin);
 
-		FreeLibrary((HMODULE)pPlugin->PluginModule);
+		FreeLibrary(reinterpret_cast<HMODULE>(pPlugin->PluginStart));
 
 		return true;
 	}
@@ -401,16 +374,16 @@ namespace Plugins
 	{
 		for (auto& Plugin : gAPIVars.Plugins)
 		{
-			if (Plugin.second.Callbacks[CTIDX_CodeExecute])
-				((TPluginCodeExecuteRoutine)Plugin.second.Callbacks[CTIDX_CodeExecute])(pSelf, pOther, Code, Res, Flags);
+			if (Plugin.second.CodeCallback)
+				Plugin.second.CodeCallback(pSelf, pOther, Code, reinterpret_cast<YYRValue*&>(Res), Flags);
 		}
 	}
 	DllExport void RunPresentCallbacks(void*& IDXGISwapChain, unsigned int& Sync, unsigned int& Flags)
 	{
 		for (auto& Plugin : gAPIVars.Plugins)
 		{
-			if (Plugin.second.Callbacks[CTIDX_Present])
-				((TPluginPresentRoutine)Plugin.second.Callbacks[CTIDX_Present])(IDXGISwapChain, Sync, Flags);
+			if (Plugin.second.PresentCallback)
+				Plugin.second.PresentCallback(IDXGISwapChain, Sync, Flags);
 		}
 	}
 
@@ -418,8 +391,8 @@ namespace Plugins
 	{
 		for (auto& Plugin : gAPIVars.Plugins)
 		{
-			if (Plugin.second.Callbacks[CTIDX_EndScene])
-				((TPluginEndSceneRoutine)Plugin.second.Callbacks[CTIDX_EndScene])(LPDIRECT3DDEVICE);
+			if (Plugin.second.EndSceneCallback)
+				Plugin.second.EndSceneCallback(LPDIRECT3DDEVICE);
 		}
 	}
 
@@ -427,8 +400,8 @@ namespace Plugins
 	{
 		for (auto& Plugin : gAPIVars.Plugins)
 		{
-			if (Plugin.second.Callbacks[CTIDX_Drawing])
-				((TPluginDrawTextRoutine)Plugin.second.Callbacks[CTIDX_Drawing])(x, y, str, linesep, linewidth);
+			if (Plugin.second.DrawCallback)
+				Plugin.second.DrawCallback(x, y, str, linesep, linewidth);
 		}
 	}
 }

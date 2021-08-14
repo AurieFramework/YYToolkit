@@ -10,11 +10,11 @@ static void SetupDescriptor(DXGI_SWAP_CHAIN_DESC* pDesc)
 	pDesc->BufferDesc = { 0, 0, { 60, 1 }, DXGI_FORMAT_R8G8B8A8_UNORM };
 	pDesc->OutputWindow = (HWND)gAPIVars.Window_Handle;
 
-	RValue Result;
+	YYRValue Result;
 	if (auto Status = API::CallBuiltinFunction(nullptr, nullptr, Result, 0, "window_get_fullscreen", nullptr))
 		Utils::Error::Error(1, "Unspecified error while calling window_get_fullscreen.\nError Code: %i", Status);
 
-	pDesc->Windowed = !(bool)Result;
+	pDesc->Windowed = static_cast<bool>(Result);
 
 	pDesc->Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
 	pDesc->SampleDesc = { 1, 0 };

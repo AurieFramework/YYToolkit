@@ -1,10 +1,13 @@
 #pragma once
 #include <Windows.h>
 
-namespace Hooks::WindowProc
+namespace Hooks
 {
-	LRESULT __stdcall Function(HWND hwnd, unsigned int Msg, WPARAM w, LPARAM l);
-	void _SetWindowsHook();
+	namespace WindowProc
+	{
+		LRESULT __stdcall Function(HWND hwnd, unsigned int Msg, WPARAM w, LPARAM l);
+		void _SetWindowsHook();
 
-	inline decltype(&Function) pfnOriginal;
+		inline decltype(&Function) pfnOriginal;
+	}
 }
