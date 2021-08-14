@@ -346,6 +346,7 @@ namespace Plugins
 
 			PluginObject.PluginEntry = lpPluginEntry;
 			PluginObject.PluginStart = PluginModule;
+			PluginObject.CoreStart = gAPIVars.MainModule;
 
 			gAPIVars.Plugins.emplace(std::make_pair(reinterpret_cast<unsigned long>(PluginObject.PluginStart), PluginObject));
 		}

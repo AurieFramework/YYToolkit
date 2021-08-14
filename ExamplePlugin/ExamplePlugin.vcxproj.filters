@@ -18,9 +18,66 @@
     <ClCompile Include="Src\Hello World\DllMain.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Src\Hello World\SDK\Structures\Documented\CDynamicArray\CDynamicArray.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Hello World\SDK\Structures\Documented\RefThing\RefThing.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Hello World\SDK\Structures\Documented\YYRValue\YYRValue.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Src\Hello World\YYSDK.hpp">
+    <ClInclude Include="Src\Hello World\SDK\Enums\Enums.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Hello World\SDK\FwdDecls\FwdDecls.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Hello World\SDK\Plugins\Plugins.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Hello World\SDK\Structures\Documented\CCode\CCode.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Hello World\SDK\Structures\Documented\CDynamicArray\CDynamicArray.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Hello World\SDK\Structures\Documented\FunctionInfo\FunctionInfo.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Hello World\SDK\Structures\Documented\CHashMap\CHashMap.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Hello World\SDK\Structures\Documented\Math\Math.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Hello World\SDK\Structures\Documented\RefThing\RefThing.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Hello World\SDK\Structures\Documented\RToken\RToken.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Hello World\SDK\Structures\Documented\VMBuffer\VMBuffer.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Hello World\SDK\Structures\Documented\YYRValue\YYRValue.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Hello World\SDK\Structures\Undocumented\VMExec\VMExec.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Hello World\SDK\Structures\Undocumented\YYGMLFuncs\YYGMLFuncs.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Hello World\SDK\Structures\Undocumented\YYObjectBase\YYObjectBase.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Hello World\SDK\Structures\Undocumented\YYVAR\YYVAR.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Hello World\SDK\SDK.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -1,60 +1,34 @@
-#include "YYSDK.hpp"
-#include <Windows.h>
-#include <string>
+#define YYSDK_PLUGIN    // This is needed so the SDK knows not to include core-specific headers. Always define it before including the SDK!
+#include "SDK/SDK.hpp"  // Include the SDK.
+#include <Windows.h>    // Include Windows's mess.
 
-static YYTKPlugin* g_pPlugin = nullptr;
-
-void CodeCallback(CInstance*& pSelf, CInstance*& pOther, CCode*& Code, RValue*& Res, int& Flags)
+// The unload function doesn't have to be exported, but still has to return YYTKStatus and accept a YYTKPlugin argument.
+YYTKStatus MyUnloadFunc(YYTKPlugin* pPlugin)
 {
-    // If we're executing obj_time_Draw_64
-    if (std::string(Code->i_pName).find("obj_time_Draw_64") != std::string::npos)
-    {
-        // Prepare all our variables, including GML functions
-        YYRValue RoomString, Result;
-        TRoutine room_get_name = g_pPlugin->LookupFunction<TRoutine(*)(const char*)>("GetBuiltin")("room_get_name");
-        TRoutine variable_global_get = g_pPlugin->LookupFunction<TRoutine(*)(const char*)>("GetBuiltin")("variable_global_get");
-        TRoutine draw_set_color = g_pPlugin->LookupFunction<TRoutine(*)(const char*)>("GetBuiltin")("draw_set_color");
-        TRoutine draw_text = g_pPlugin->LookupFunction<TRoutine(*)(const char*)>("GetBuiltin")("draw_text");
+    // Create a message box
+    MessageBoxA(0, "Goodbye, cruel world!", "An example plugin", MB_OK); 
 
-        // Create our string
-        g_pPlugin->LookupFunction<YYTKStatus(*)(RValue&, const char*)>("CreateString")(RoomString, "room");
-
-        {
-            RValue Args = 0xFFFF;
-            draw_set_color(&Result, pSelf, pOther, 1, &Args);
-        }
-
-        variable_global_get(&Result, pSelf, pOther, 1, &RoomString);
-
-        // draw_text(10, 30, room);
-        {
-            YYRValue Args[3];
-            Args[0] = 10;
-            Args[1] = 30;
-            Args[2] = Result;
-            draw_text(&Result, pSelf, pOther, 3, Args);
-        }
-
-        // draw_text(50, 30, room_get_name(room))
-        {
-            YYRValue Args[3];
-            Args[0] = 50;
-            Args[1] = 30;
-            room_get_name(&Args[2], pSelf, pOther, 1, &Result); // room_get_name(room)
-            draw_text(&Result, pSelf, pOther, 3, Args);
-        }
-    }
-}
-
-DllExport YYTKStatus PluginEntry(YYTKPlugin* pPlugin)
-{
-    g_pPlugin = pPlugin; // Keep a pointer to our plugin object, just in case we need it.
-    g_pPlugin->Callbacks[CTIDX_CodeExecute] = CodeCallback;
-
+    // Tell the core everything went fine.
     return YYTK_OK;
 }
 
-// Boilerplate setup for a Windows DLL, can be empty.
+// Create an entry routine - it has to be named exactly this, and has to accept these arguments.
+// It also has to be declared DllExport (notice how the other functions are not).
+DllExport YYTKStatus PluginEntry(YYTKPlugin* pPlugin)
+{
+    // Set 'MyUnloadFunc' as the function to call when we get unloaded / unload. 
+    // This is not required if you don't need to cleanup after yourself (free buffers, unhook stuff, etc.)
+    pPlugin->PluginUnload = MyUnloadFunc; 
+
+    // Create a message box
+    MessageBoxA(0, "Hello, nice world!", "An example plugin", MB_OK); 
+
+    // Tell the core everything went fine.
+    return YYTK_OK;
+}
+
+// Boilerplate setup for a Windows DLL, can just return TRUE.
+// This has to be here or else you get linker errors (unless you disable the main method)
 BOOL APIENTRY DllMain(
     HMODULE hModule,
     DWORD  ul_reason_for_call,

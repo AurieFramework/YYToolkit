@@ -11,7 +11,7 @@
 #include "Drawing/GR_Draw_Text/GR_Draw_Text.hpp"
 #include "Drawing/GR_Draw_Text_Color/GR_Draw_Text_Color.hpp"
 #include "Drawing/GR_Draw_Text_Transformed/GR_Draw_Text_Transformed.hpp"
-#include "Drawing/GR_Draw_Text_Transformed_Color/GR_Draw_Text_TC.hpp"
+#include "Drawing/GR_Draw_Text_TC/GR_Draw_Text_TC_header.hpp"
 #include "../Features/API/API.hpp"
 
 namespace Hooks
@@ -81,9 +81,9 @@ namespace Hooks
 			}
 
 			// GR_Draw_Text_Transformed_Color Hook - intercepts draw_text_transformed_color()
-			if (void* lpFunc = GR_Draw_Text_Transformed_Color::GetTargetAddress())
+			if (void* lpFunc = GR_Draw_Text_TC::GetTargetAddress())
 			{
-				auto Status = MH_CreateHook(lpFunc, reinterpret_cast<void*>(GR_Draw_Text_Transformed_Color::Function), reinterpret_cast<void**>(&GR_Draw_Text_Transformed_Color::pfnOriginal));
+				auto Status = MH_CreateHook(lpFunc, reinterpret_cast<void*>(GR_Draw_Text_TC::Function), reinterpret_cast<void**>(&GR_Draw_Text_TC::pfnOriginal));
 				if (Status != MH_OK)
 					Utils::Error::Error(false, "Unable to create a hook on GR_Draw_Text_Transformed_Color.\nThis means YYToolkit won't intercept certain drawing calls.\nError Code: %s", MH_StatusToString(Status));
 				else

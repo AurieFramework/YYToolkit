@@ -188,10 +188,7 @@
     <ClCompile Include="Src\Core\Hooks\Drawing\GR_Draw_Text_Transformed\GR_Draw_Text_Transformed.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Src\Core\Hooks\Drawing\GR_Draw_Text_Transformed_Color\GR_Draw_Text_TC.hpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Src\Core\Hooks\Drawing\GR_Draw_Text_Transformed_Color\GR_Draw_Text_TC.cpp">
+    <ClCompile Include="Src\Core\Hooks\Drawing\GR_Draw_Text_TC\GR_Draw_Text_TC_header.hpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Src\Core\SDK\Structures\Documented\YYRValue\YYRValue.cpp">
@@ -207,6 +204,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Src\Core\Utils\MurMurHash.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Core\Hooks\Drawing\GR_Draw_Text_TC\GR_Draw_Text_TC.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
