@@ -32,9 +32,14 @@ namespace Utils::Error
 			exit(0);
 	}
 
-	void Message(const char* Header, const char* Message)
+	void Message(const char* fmt, ...)
 	{
-		// TODO
+		va_list vaArgs;
+		va_start(vaArgs, fmt);
+		auto String = ParseVA(fmt, vaArgs);
+		va_end(vaArgs);
+
+		printf("[INFO] %s\n", String.c_str());
 	}
 
 	const char* YYTKStatus_ToString(YYTKStatus Status)

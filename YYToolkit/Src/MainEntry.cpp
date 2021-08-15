@@ -13,10 +13,12 @@ void __stdcall Main()
 	API::Initialize(g_hDLL);
 	Hooks::Initialize();
 
-	while (!GetAsyncKeyState(VK_END)) { Sleep(1); }
+	while (!GetAsyncKeyState(VK_END)) { Sleep(5); }
 
 	Hooks::Uninitialize();
 	API::Uninitialize();
+
+	MessageBoxA((HWND)gAPIVars.Window_Handle, "Unloaded successfully.", "YYToolkit", MB_OK | MB_ICONINFORMATION | MB_TOPMOST);
 
 	FreeLibraryAndExitThread(g_hDLL, 0);
 }

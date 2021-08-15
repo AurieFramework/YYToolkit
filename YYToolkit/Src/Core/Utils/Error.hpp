@@ -6,7 +6,7 @@ namespace Utils
 	{
 		void Error(bool critical, const char* fmt, ...);
 
-		void Message(const char* Header, const char* Message);
+		void Message(const char* fmt, ...);
 
 		// Apparently this has to be inline and here, or else you get link errors
 		// I don't understand the linker

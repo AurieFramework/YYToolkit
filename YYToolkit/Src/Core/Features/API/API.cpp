@@ -62,6 +62,15 @@ namespace API
 
 		gAPIVars.MainModule = pModule;
 
+		AllocConsole();
+		FILE* fDummy;
+		freopen_s(&fDummy, "CONIN$", "r", stdin);
+		freopen_s(&fDummy, "CONOUT$", "w", stderr);
+		freopen_s(&fDummy, "CONOUT$", "w", stdout);
+
+		SetConsoleTitleA("YYToolkit Log");
+		printf("YYToolkit version %s - Hello from API::Initialize()!\n", YYSDK_VERSION);
+
 		// Run autoexec
 		namespace fs = std::filesystem;
 		if (fs::is_directory("autoexec"))
@@ -72,7 +81,9 @@ namespace API
 				{
 					// We have a DLL, try loading it
 					if (!Plugins::LoadPlugin(entry.path().string().c_str()))
-						Utils::Error::Message("YYToolkit", std::string("Plugin " + entry.path().filename().string() + " failed to load!").c_str());
+						Utils::Error::Message("Plugin %s failed to load!", entry.path().filename().string().c_str());
+					else
+						Utils::Error::Message("Plugin %s loaded!", entry.path().filename().string().c_str());
 				}
 			}
 		}
@@ -89,6 +100,9 @@ namespace API
 
 		gAPIVars.Plugins.clear();
 		
+		ShowWindow(GetConsoleWindow(), SW_HIDE);
+		FreeConsole();
+
 		return YYTK_OK;
 	}
 

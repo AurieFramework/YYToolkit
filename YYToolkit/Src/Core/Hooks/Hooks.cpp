@@ -13,6 +13,10 @@
 #include "Drawing/GR_Draw_Text_Transformed/GR_Draw_Text_Transformed.hpp"
 #include "Drawing/GR_Draw_Text_TC/GR_Draw_Text_TC_header.hpp"
 #include "../Features/API/API.hpp"
+#include <chrono>
+#include <array>
+
+#define ReCa reinterpret_cast
 
 namespace Hooks
 {
@@ -20,116 +24,113 @@ namespace Hooks
 	{
 		MH_Initialize();
 		{
-			// MessageBoxW Hook - intercepts generic errors
-			if (void* lpFunc = MessageBoxW::GetTargetAddress())
+			auto Hook = [](void* NewFunc, void* GetTargetFunc, void** pfnOriginal, const char* Name)
 			{
-				auto Status = MH_CreateHook(lpFunc, reinterpret_cast<void*>(MessageBoxW::Function), reinterpret_cast<void**>(&MessageBoxW::pfnOriginal));
-				if (Status != MH_OK)
-					Utils::Error::Error(false, "Unable to create a hook on MessageBoxW.\nThis means YYToolkit won't block game message boxes.\nError Code: %s", MH_StatusToString(Status));
-				else
-					MH_EnableHook(lpFunc);
-			}
+				if (void* lpFunc = reinterpret_cast<void*(*)()>(GetTargetFunc)()) // "C isn't that hard" moment
+				{
+					auto Status = MH_CreateHook(lpFunc, NewFunc, pfnOriginal);
+					if (Status != MH_OK)
+						Utils::Error::Error(false, "Cannot create a hook on %s!\nError Code: %s", Name, MH_StatusToString(Status));
+					else
+						MH_EnableHook(lpFunc);
 
-			// YYError Hook - intercepts code errors
-			if (void* lpFunc = YYError::GetTargetAddress())
-			{
-				auto Status = MH_CreateHook(lpFunc, reinterpret_cast<void*>(YYError::Function), reinterpret_cast<void**>(&YYError::pfnOriginal));
-				if (Status != MH_OK)
-					Utils::Error::Error(false, "Unable to create a hook on YYError.\nThis means YYToolkit won't block GML errors.\nError Code: %s", MH_StatusToString(Status));
-				else
-					MH_EnableHook(lpFunc);
-			}
+					Utils::Error::Message("&%s = %p", Name, Name, lpFunc);
+				}
+			};
 
-			// Code_Execute Hook - intercepts code execution
-			if (void* lpFunc = Code_Execute::GetTargetAddress())
-			{
-				auto Status = MH_CreateHook(lpFunc, reinterpret_cast<void*>(Code_Execute::Function), reinterpret_cast<void**>(&Code_Execute::pfnOriginal));
-				if (Status != MH_OK)
-					Utils::Error::Error(false, "Unable to create a hook on Code_Execute.\nThis means YYToolkit won't intercept code entries.\nError Code: %s", MH_StatusToString(Status));
-				else
-					MH_EnableHook(lpFunc);
-			}
+			auto TimeStart = std::chrono::high_resolution_clock::now();
 
-			// GR_Draw_Text Hook - intercepts draw_text()
-			if (void* lpFunc = GR_Draw_Text::GetTargetAddress())
-			{
-				auto Status = MH_CreateHook(lpFunc, reinterpret_cast<void*>(GR_Draw_Text::Function), reinterpret_cast<void**>(&GR_Draw_Text::pfnOriginal));
-				if (Status != MH_OK)
-					Utils::Error::Error(false, "Unable to create a hook on GR_Draw_Text.\nThis means YYToolkit won't intercept certain drawing calls.\nError Code: %s", MH_StatusToString(Status));
-				else
-					MH_EnableHook(lpFunc);
-			}
+			Hook
+			(
+				ReCa<void*>(&Hooks::Code_Execute::Function), 
+				ReCa<void*>(&Hooks::Code_Execute::GetTargetAddress), 
+				ReCa<void**>(&Hooks::Code_Execute::pfnOriginal),
+				"Code_Execute"
+			);
 
-			// GR_Draw_Text_Color Hook - intercepts draw_text_color()
-			if (void* lpFunc = GR_Draw_Text_Color::GetTargetAddress())
-			{
-				auto Status = MH_CreateHook(lpFunc, reinterpret_cast<void*>(GR_Draw_Text_Color::Function), reinterpret_cast<void**>(&GR_Draw_Text_Color::pfnOriginal));
-				if (Status != MH_OK)
-					Utils::Error::Error(false, "Unable to create a hook on GR_Draw_Text_Color.\nThis means YYToolkit won't intercept certain drawing calls.\nError Code: %s", MH_StatusToString(Status));
-				else
-					MH_EnableHook(lpFunc);
-			}
+			Hook
+			(
+				ReCa<void*>(&Hooks::YYError::Function), 
+				ReCa<void*>(&Hooks::YYError::GetTargetAddress),	
+				ReCa<void**>(&Hooks::YYError::pfnOriginal),
+				"YYError"
+			);
 
-			// GR_Draw_Text_Transformed Hook - intercepts draw_text_transformed()
-			if (void* lpFunc = GR_Draw_Text_Transformed::GetTargetAddress())
-			{
-				auto Status = MH_CreateHook(lpFunc, reinterpret_cast<void*>(GR_Draw_Text_Transformed::Function), reinterpret_cast<void**>(&GR_Draw_Text_Transformed::pfnOriginal));
-				if (Status != MH_OK)
-					Utils::Error::Error(false, "Unable to create a hook on GR_Draw_Text_Transformed.\nThis means YYToolkit won't intercept certain drawing calls.\nError Code: %s", MH_StatusToString(Status));
-				else
-					MH_EnableHook(lpFunc);
-			}
+			Hook
+			(
+				ReCa<void*>(&Hooks::GR_Draw_Text::Function), 
+				ReCa<void*>(&Hooks::GR_Draw_Text::GetTargetAddress), 
+				ReCa<void**>(&Hooks::GR_Draw_Text::pfnOriginal),
+				"GR_Draw_Text"
+			);
 
-			// GR_Draw_Text_Transformed_Color Hook - intercepts draw_text_transformed_color()
-			if (void* lpFunc = GR_Draw_Text_TC::GetTargetAddress())
-			{
-				auto Status = MH_CreateHook(lpFunc, reinterpret_cast<void*>(GR_Draw_Text_TC::Function), reinterpret_cast<void**>(&GR_Draw_Text_TC::pfnOriginal));
-				if (Status != MH_OK)
-					Utils::Error::Error(false, "Unable to create a hook on GR_Draw_Text_Transformed_Color.\nThis means YYToolkit won't intercept certain drawing calls.\nError Code: %s", MH_StatusToString(Status));
-				else
-					MH_EnableHook(lpFunc);
-			}
+			Hook
+			(
+				ReCa<void*>(&Hooks::GR_Draw_Text_Color::Function),	
+				ReCa<void*>(&Hooks::GR_Draw_Text_Color::GetTargetAddress),	
+				ReCa<void**>(&Hooks::GR_Draw_Text_Color::pfnOriginal),
+				"GR_Draw_Text_Color"
+			);
 
-			// Present Hook (D3D11)
+			Hook
+			(
+				ReCa<void*>(&Hooks::GR_Draw_Text_Transformed::Function),	
+				ReCa<void*>(&Hooks::GR_Draw_Text_Transformed::GetTargetAddress),	
+				ReCa<void**>(&Hooks::GR_Draw_Text_Transformed::pfnOriginal),
+				"GR_Draw_Text_Transformed"
+			);
+
+			Hook
+			(
+				ReCa<void*>(&Hooks::GR_Draw_Text_TC::Function), 
+				ReCa<void*>(&Hooks::GR_Draw_Text_TC::GetTargetAddress),	
+				ReCa<void**>(&Hooks::GR_Draw_Text_TC::pfnOriginal), 
+				"GR_Draw_Text_TC"
+			);
+
+			Hook
+			(
+				ReCa<void*>(&Hooks::MessageBoxW::Function),
+				ReCa<void*>(&Hooks::MessageBoxW::GetTargetAddress),
+				ReCa<void**>(&Hooks::MessageBoxW::pfnOriginal),
+				"MessageBoxW"
+			);
+
 			if (GetModuleHandleA("d3d11.dll"))
 			{
-				if (void* lpFunc = Present::GetTargetAddress())
-				{
-					auto Status = MH_CreateHook(lpFunc, reinterpret_cast<void*>(Present::Function), reinterpret_cast<void**>(&Present::pfnOriginal));
-					if (Status != MH_OK)
-						Utils::Error::Error(false, "Unable to create a hook on Present.\nError Code: %s", MH_StatusToString(Status));
-					else
-						MH_EnableHook(lpFunc);
-				}
-				
-				// ResizeBuffers Hook (D3D11)
-				if (void* lpFunc = ResizeBuffers::GetTargetAddress())
-				{
-					auto Status = MH_CreateHook(lpFunc, reinterpret_cast<void*>(ResizeBuffers::Function), reinterpret_cast<void**>(&ResizeBuffers::pfnOriginal));
-					if (Status != MH_OK)
-						Utils::Error::Error(false, "Unable to create a hook on ResizeBuffers.\nError Code: %s", MH_StatusToString(Status));
-					else
-						MH_EnableHook(lpFunc);
-				}
+				Hook
+				(
+					ReCa<void*>(Hooks::Present::Function),
+					ReCa<void*>(&Hooks::Present::GetTargetAddress),
+					ReCa<void**>(&Hooks::Present::pfnOriginal),
+					"Present"
+				);
+
+				Hook
+				(
+					ReCa<void*>(Hooks::ResizeBuffers::Function),
+					ReCa<void*>(&Hooks::ResizeBuffers::GetTargetAddress),
+					ReCa<void**>(&Hooks::ResizeBuffers::pfnOriginal),
+					"ResizeBuffers"
+				);
 			}
 
-			// EndScene Hook (D3D9)
-			if (GetModuleHandleA("d3d9.dll"))
+			else if (GetModuleHandleA("d3d9.dll"))
 			{
-				if (void* lpFunc = EndScene::GetTargetAddress())
-				{
-					auto Status = MH_CreateHook(lpFunc, reinterpret_cast<void*>(EndScene::Function), reinterpret_cast<void**>(&EndScene::pfnOriginal));
-					if (Status != MH_OK)
-						Utils::Error::Error(false, "Unable to create a hook on EndScene.\nError Code: %s", MH_StatusToString(Status));
-					else
-						MH_EnableHook(lpFunc);
-				}
+				Hook
+				(
+					ReCa<void*>(Hooks::EndScene::Function),
+					ReCa<void*>(&Hooks::EndScene::GetTargetAddress),
+					ReCa<void**>(&Hooks::EndScene::pfnOriginal),
+					"EndScene"
+				);
 			}
 
 			WindowProc::_SetWindowsHook();
-		}
 
-		Utils::Error::Message("YYToolkit", "Loaded!");
+			auto TimeEnd = std::chrono::high_resolution_clock::now();
+			Utils::Error::Message("All hooks enabled - took %.2f seconds!", static_cast<float>(std::chrono::duration_cast<std::chrono::milliseconds>(TimeEnd - TimeStart).count()) / 1000.0f);
+		}
 	}
 
 	void Uninitialize()
@@ -142,7 +143,5 @@ namespace Hooks
 
 		if (Hooks::Present::pView)
 			Hooks::Present::pView->Release();
-
-		MessageBoxA((HWND)gAPIVars.Window_Handle, "Unloaded successfully.", "YYToolkit", MB_OK | MB_ICONINFORMATION | MB_TOPMOST);
 	}
 }
