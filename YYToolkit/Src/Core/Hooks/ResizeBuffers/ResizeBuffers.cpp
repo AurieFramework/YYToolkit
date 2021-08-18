@@ -28,6 +28,8 @@ HRESULT __stdcall Hooks::ResizeBuffers::Function(IDXGISwapChain* _this, UINT Buf
 	if (gAPIVars.RenderView)
 		reinterpret_cast<ID3D11RenderTargetView*>(gAPIVars.RenderView)->Release();
 
+	Plugins::RunResizeCallbacks(reinterpret_cast<void*&>(_this), BufferCount, Width, Height, NewFormat, SwapChainFlags);
+
 	HRESULT _Result = pfnOriginal(_this, BufferCount, Width, Height, NewFormat, SwapChainFlags);
 
 	{
@@ -38,7 +40,7 @@ HRESULT __stdcall Hooks::ResizeBuffers::Function(IDXGISwapChain* _this, UINT Buf
 		if (FAILED(ret))
 			Utils::Error::Error(1, "Getting the back buffer failed.");
 
-		ret = ((ID3D11Device*)gAPIVars.Window_Device)->CreateRenderTargetView(pBackBuffer, NULL, reinterpret_cast<ID3D11RenderTargetView**>(&gAPIVars.RenderView));
+		ret = static_cast<ID3D11Device*>(gAPIVars.Window_Device)->CreateRenderTargetView(pBackBuffer, NULL, reinterpret_cast<ID3D11RenderTargetView**>(&gAPIVars.RenderView));
 
 		if (FAILED(ret))
 			Utils::Error::Error(1, "Creating the target view failed.");

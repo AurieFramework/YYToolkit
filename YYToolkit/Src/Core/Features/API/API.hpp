@@ -74,5 +74,7 @@ namespace Plugins
 	DllExport void RunEndSceneCallbacks(void*& LPDIRECT3DDEVICE);
 
 	DllExport void RunDrawingCallbacks(float& x, float& y, const char*& str, int& linesep, int& linewidth);
+
+	DllExport void RunResizeCallbacks(void*& IDXGISwapChain, unsigned int& BufferCount, unsigned int& Width, unsigned int& Height, DXGI_FORMAT& NewFormat, unsigned int& SwapChainFlags);
 }
 

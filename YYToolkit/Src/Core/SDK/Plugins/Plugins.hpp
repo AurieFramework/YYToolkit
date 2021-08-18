@@ -14,7 +14,7 @@ using FNPresentCallback = void(*)(void*& IDXGISwapChain, unsigned int& Sync, uns
 using FNEndSceneCallback = void(*)(void*& LPDIRECT3DDEVICE);
 using FNDrawCallback = void(*)(float& x, float& y, const char*& str, int& linesep, int& linewidth);
 using FNCodeCallback = void(*)(CInstance*& pSelf, CInstance*& pOther, CCode*& Code, YYRValue*& Res, int& Flags);
-using FNResizeCallback = void(*)(void*& IDXGISwapChain, unsigned int& BufferCount, unsigned int& Width, unsigned int& Height, unsigned int& NewFormat, unsigned int& SwapChainFlags);
+using FNResizeCallback = void(*)(void*& IDXGISwapChain, unsigned int& BufferCount, unsigned int& Width, unsigned int& Height, DXGI_FORMAT& NewFormat, unsigned int& SwapChainFlags);
 using FNPluginEntry = YYTKStatus(*)(YYTKPlugin* pPlugin);
 using FNPluginUnload = YYTKStatus(*)(YYTKPlugin* pPlugin);
 
