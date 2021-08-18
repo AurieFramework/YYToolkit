@@ -11,17 +11,7 @@ struct ModuleInfo_t
 	unsigned long EntryPoint;
 };
 
-inline struct APIVars_t
-{
-	YYObjectBase* g_pGlobal = nullptr;				// A pointer to the global game instance
-	FNCodeExecute Code_Execute = nullptr;			// A pointer to the Code_Execute function
-	FNCodeFunctionGetTheFunction Code_Function_GET_the_function = nullptr;	// A pointer to a function with a long-ass name
-	void* Window_Handle = nullptr;					// A pointer to the window handle (HWND)
-	void* Window_Device = nullptr;					// A pointer to either a D3D11Device*, or an DIRECT3DDEVICE9
-	std::map<unsigned long, YYTKPlugin> Plugins;	// A map of all plugins loaded (Key = Base address, Value = YYTKPlugin object)
-	void* MainModule = nullptr;						// A pointer to the core module (can be casted to an HMODULE)
-} gAPIVars;
-
+inline APIVars_t gAPIVars;
 
 /* The actual API functions */
 namespace API
@@ -71,6 +61,8 @@ namespace API
 
 namespace Plugins
 {
+	DllExport void* GetPluginRoutine(const char* Name);
+
 	DllExport YYTKPlugin* LoadPlugin(const char* Path);
 
 	DllExport bool UnloadPlugin(YYTKPlugin* pPlugin, bool Notify);

@@ -121,7 +121,7 @@ namespace API
 		if (!out.i_pVM->m_pBuffer)
 			return YYTK_NO_MEMORY;
 
-		out.i_compiled = 1;
+		out.i_compiled = true;
 		out.i_kind = 1;
 		out.i_pName = pName;
 		out.i_pVM->m_size = BytecodeSize;
@@ -201,6 +201,7 @@ namespace API
 			{
 				return YYTK_OK;
 			}
+
 			Index++;
 		}
 
@@ -334,6 +335,17 @@ namespace API
 
 namespace Plugins
 {
+	DllExport void* GetPluginRoutine(const char* Name)
+	{
+		for (auto& Element : gAPIVars.Plugins)
+		{
+			if (void* Result = Element.second.GetExport<void*>(Name))
+				return Result;
+		}
+
+		return nullptr;
+	}
+
 	DllExport YYTKPlugin* LoadPlugin(const char* Path)
 	{
 		char Buffer[MAX_PATH] = { 0 };

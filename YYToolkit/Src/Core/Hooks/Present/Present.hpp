@@ -5,8 +5,6 @@ namespace Hooks
 {
 	namespace Present
 	{
-		inline ID3D11RenderTargetView* pView = nullptr;
-
 		HRESULT __stdcall Function(IDXGISwapChain* _this, unsigned int Sync, unsigned int Flags);
 		void* GetTargetAddress();
 

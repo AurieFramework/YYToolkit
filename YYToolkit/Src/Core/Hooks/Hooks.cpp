@@ -141,7 +141,7 @@ namespace Hooks
 
 		SetWindowLong((HWND)(gAPIVars.Window_Handle), GWL_WNDPROC, (LONG)Hooks::WindowProc::pfnOriginal);
 
-		if (Hooks::Present::pView)
-			Hooks::Present::pView->Release();
+		if (gAPIVars.RenderView)
+			reinterpret_cast<ID3D11RenderTargetView*>(gAPIVars.RenderView)->Release();
 	}
 }

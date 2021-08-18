@@ -1,5 +1,8 @@
 #pragma once
 #pragma region Documented
+// APIVars.hpp
+struct APIVars_t;
+
 // CCode.hpp
 struct CCode;
 
@@ -62,5 +65,5 @@ typedef void (*FNCodeFunctionGetTheFunction)(int id, char** bufName, void** bufR
 // Macros
 
 #define WIN32_LEAN_AND_MEAN 1
-#define YYSDK_VERSION "0.0.1" // YYToolkit version - don't change this!
+#define YYSDK_VERSION "0.0.2" // YYToolkit version - don't change this!
 #define YYTK_MAGIC 'TFSI'
