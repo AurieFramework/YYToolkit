@@ -33,7 +33,7 @@ struct YYTKPlugin
 	void* CoreStart;				// The base address of the core (can be casted to a HMODULE).
 
 	template <typename T>
-	static T GetCoreExport(const char* Name)
+	T GetCoreExport(const char* Name)
 	{
 		if (CoreStart) return reinterpret_cast<T>(GetProcAddress(reinterpret_cast<HMODULE>(CoreStart), Name));
 		return nullptr;
