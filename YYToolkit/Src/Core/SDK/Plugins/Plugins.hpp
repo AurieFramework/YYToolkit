@@ -15,6 +15,7 @@ using FNEndSceneCallback = void(*)(void*& LPDIRECT3DDEVICE);
 using FNDrawCallback = void(*)(float& x, float& y, const char*& str, int& linesep, int& linewidth);
 using FNCodeCallback = void(*)(CInstance*& pSelf, CInstance*& pOther, CCode*& Code, YYRValue*& Res, int& Flags);
 using FNResizeCallback = void(*)(void*& IDXGISwapChain, unsigned int& BufferCount, unsigned int& Width, unsigned int& Height, DXGI_FORMAT& NewFormat, unsigned int& SwapChainFlags);
+using FNWindowCallback = void(*)(HWND& Window, unsigned int& Msg, WPARAM& w, LPARAM& l);
 using FNPluginEntry = YYTKStatus(*)(YYTKPlugin* pPlugin);
 using FNPluginUnload = YYTKStatus(*)(YYTKPlugin* pPlugin);
 
@@ -28,6 +29,7 @@ struct YYTKPlugin
 	FNDrawCallback DrawCallback;			// Pointer to the GR_Draw_*_Text() callback, called by the game if set.
 	FNCodeCallback CodeCallback;			// Pointer to the Code_Execute() callback, called by the game if set.
 	FNResizeCallback ResizeCallback;		// Pointer to the ResizeBuffers() callback, called on window resize if set.
+	FNWindowCallback WindowCallback;		// Pointer to the WndProc() callback, called on window events if set.
 
 	void* PluginStart;				// The base address of the plugin (can be casted to a HMODULE).
 	void* CoreStart;				// The base address of the core (can be casted to a HMODULE).

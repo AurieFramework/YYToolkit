@@ -6,6 +6,7 @@ namespace Hooks::WindowProc
 {
 	LRESULT __stdcall Function(HWND hwnd, unsigned int Msg, WPARAM w, LPARAM l)
 	{
+		Plugins::RunWindowCallbacks(hwnd, Msg, w, l);
 		return CallWindowProc(pfnOriginal, hwnd, Msg, w, l);
 	}
 

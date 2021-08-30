@@ -439,5 +439,14 @@ namespace Plugins
 				Plugin.second.ResizeCallback(IDXGISwapChain, BufferCount, Width, Height, NewFormat, SwapChainFlags);
 		}
 	}
+
+	DllExport void RunWindowCallbacks(HWND& hwnd, unsigned int& Msg, WPARAM& w, LPARAM& l)
+	{
+		for (auto& Plugin : gAPIVars.Plugins)
+		{
+			if (Plugin.second.WindowCallback)
+				Plugin.second.WindowCallback(hwnd, Msg, w, l);
+		}
+	}
 }
 

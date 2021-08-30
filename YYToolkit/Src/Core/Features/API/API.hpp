@@ -76,5 +76,7 @@ namespace Plugins
 	DllExport void RunDrawingCallbacks(float& x, float& y, const char*& str, int& linesep, int& linewidth);
 
 	DllExport void RunResizeCallbacks(void*& IDXGISwapChain, unsigned int& BufferCount, unsigned int& Width, unsigned int& Height, DXGI_FORMAT& NewFormat, unsigned int& SwapChainFlags);
+
+	DllExport void RunWindowCallbacks(HWND& hwnd, unsigned int& Msg, WPARAM& w, LPARAM& l);
 }
 
