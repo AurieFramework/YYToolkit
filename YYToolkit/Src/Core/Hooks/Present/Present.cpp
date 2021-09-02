@@ -25,7 +25,6 @@ namespace Hooks::Present
 {
 	HRESULT __stdcall Function(IDXGISwapChain* _this, unsigned int Sync, unsigned int Flags)
 	{
-		Plugins::RunPresentCallbacks((void*&)_this, Sync, Flags);
 		return pfnOriginal(_this, Sync, Flags);
 	}
 

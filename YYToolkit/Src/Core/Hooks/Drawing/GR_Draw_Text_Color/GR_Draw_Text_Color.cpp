@@ -4,7 +4,6 @@
 
 void Hooks::GR_Draw_Text_Color::Function(float x, float y, const char* str, int linesep, int linewidth, unsigned int c1, unsigned int c2, unsigned int c3, float alpha, unsigned int c4)
 {
-	Plugins::RunDrawingCallbacks(x, y, str, linesep, linewidth);
 	return pfnOriginal(x, y, str, linesep, linewidth, c1, c2, c3, alpha, c4);
 }
 

@@ -34,7 +34,7 @@ namespace Hooks
 					else
 						MH_EnableHook(lpFunc);
 
-					Utils::Error::Message("&%s = %p", Name, Name, lpFunc);
+					Utils::Error::Message("&%s = %p", Name, lpFunc);
 				}
 			};
 

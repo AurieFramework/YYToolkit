@@ -6,11 +6,7 @@ namespace Hooks::EndScene
 {
 	HRESULT __stdcall Function(LPDIRECT3DDEVICE9 _this)
 	{
-		auto Result = pfnOriginal(_this);
-
-		Plugins::RunEndSceneCallbacks((void*&)_this); // Run after the original to help with UI drawing stuff
-
-		return Result;
+		return pfnOriginal(_this);
 	}
 
 	void* GetTargetAddress()

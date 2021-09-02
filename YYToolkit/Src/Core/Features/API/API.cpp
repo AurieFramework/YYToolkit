@@ -396,57 +396,5 @@ namespace Plugins
 
 		return true;
 	}
-
-	DllExport void RunCodeExecuteCallbacks(CInstance*& pSelf, CInstance*& pOther, CCode*& Code, RValue*& Res, int& Flags)
-	{
-		for (auto& Plugin : gAPIVars.Plugins)
-		{
-			if (Plugin.second.CodeCallback)
-				Plugin.second.CodeCallback(pSelf, pOther, Code, reinterpret_cast<YYRValue*&>(Res), Flags);
-		}
-	}
-	DllExport void RunPresentCallbacks(void*& IDXGISwapChain, unsigned int& Sync, unsigned int& Flags)
-	{
-		for (auto& Plugin : gAPIVars.Plugins)
-		{
-			if (Plugin.second.PresentCallback)
-				Plugin.second.PresentCallback(IDXGISwapChain, Sync, Flags);
-		}
-	}
-
-	DllExport void RunEndSceneCallbacks(void*& LPDIRECT3DDEVICE)
-	{
-		for (auto& Plugin : gAPIVars.Plugins)
-		{
-			if (Plugin.second.EndSceneCallback)
-				Plugin.second.EndSceneCallback(LPDIRECT3DDEVICE);
-		}
-	}
-
-	DllExport void RunDrawingCallbacks(float& x, float& y, const char*& str, int& linesep, int& linewidth)
-	{
-		for (auto& Plugin : gAPIVars.Plugins)
-		{
-			if (Plugin.second.DrawCallback)
-				Plugin.second.DrawCallback(x, y, str, linesep, linewidth);
-		}
-	}
-	DllExport void RunResizeCallbacks(void*& IDXGISwapChain, unsigned int& BufferCount, unsigned int& Width, unsigned int& Height, DXGI_FORMAT& NewFormat, unsigned int& SwapChainFlags)
-	{
-		for (auto& Plugin : gAPIVars.Plugins)
-		{
-			if (Plugin.second.ResizeCallback)
-				Plugin.second.ResizeCallback(IDXGISwapChain, BufferCount, Width, Height, NewFormat, SwapChainFlags);
-		}
-	}
-
-	DllExport void RunWindowCallbacks(HWND& hwnd, unsigned int& Msg, WPARAM& w, LPARAM& l)
-	{
-		for (auto& Plugin : gAPIVars.Plugins)
-		{
-			if (Plugin.second.WindowCallback)
-				Plugin.second.WindowCallback(hwnd, Msg, w, l);
-		}
-	}
 }
 

@@ -26,10 +26,15 @@ namespace Utils::Error
 		auto String = ParseVA(fmt, vaArgs);
 		va_end(vaArgs);
 
-		MessageBoxA(0, String.c_str(), "Sorry!", MB_TOPMOST | (critical ? MB_ICONERROR : MB_ICONWARNING) | MB_OK);
-
 		if (critical)
+		{
+			MessageBoxA(0, String.c_str(), "Sorry!", MB_TOPMOST | (critical ? MB_ICONERROR : MB_ICONWARNING) | MB_OK);
 			exit(0);
+		}
+		else
+		{
+			printf("[ERROR] %s\n", String.c_str());
+		}
 	}
 
 	void Message(const char* fmt, ...)

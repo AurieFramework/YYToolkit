@@ -6,7 +6,6 @@ namespace Hooks::Code_Execute
 {
 	bool Function(CInstance* pSelf, CInstance* pOther, CCode* Code, RValue* Res, int Flags)
 	{
-		Plugins::RunCodeExecuteCallbacks(pSelf, pOther, Code, Res, Flags);
 		return pfnOriginal(pSelf, pOther, Code, Res, Flags);
 	}
 
