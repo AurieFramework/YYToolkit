@@ -6,7 +6,12 @@ namespace Hooks::Code_Execute
 {
 	bool Function(CInstance* pSelf, CInstance* pOther, CCode* Code, RValue* Res, int Flags)
 	{
-		return pfnOriginal(pSelf, pOther, Code, Res, Flags);
+		YYTKEvent Event("CodeEvent", reinterpret_cast<void*>(pfnOriginal), {&pSelf, &pOther, &Code, &Res, &Flags});
+		
+		Plugins::RunCallback(&Event);
+
+		if (!Event.CalledOriginal())
+			return pfnOriginal(pSelf, pOther, Code, Res, Flags);
 	}
 
 	void* GetTargetAddress()

@@ -59,8 +59,8 @@ struct VMExec;
 // Typedefs
 using TRoutine = void(__cdecl*)(RValue* _result, CInstance* _self, CInstance* _other, int _argc, RValue* _args);
 using PFUNC_YYGML = void(__cdecl*)(CInstance* _self, CInstance* _other);
-typedef bool (*FNCodeExecute)(YYObjectBase* Self, YYObjectBase* Other, CCode* code, YYRValue* res, int flags);
 typedef void (*FNCodeFunctionGetTheFunction)(int id, char** bufName, void** bufRoutine, int* bufArgs, void* unused);
+typedef bool (*FNCodeExecute)(YYObjectBase* Self, YYObjectBase* Other, CCode* code, YYRValue* res, int flags);
 
 // Macros
 

@@ -199,6 +199,7 @@
     <ClInclude Include="Src\Core\Utils\MH\trampoline.h" />
     <ClInclude Include="Src\Core\Utils\MurMurHash.hpp" />
     <ClInclude Include="Src\Toolkit\Utils\StackTrace.hpp" />
+    <ClInclude Include="Src\Core\SDK\Plugins\YYTKEvent\YYTKEvent.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Src\Core\Features\API\API.cpp" />
@@ -227,6 +228,7 @@
     <ClCompile Include="Src\Core\Utils\MH\trampoline.c" />
     <ClCompile Include="Src\Core\Utils\MurMurHash.cpp" />
     <ClCompile Include="Src\MainEntry.cpp" />
+    <ClCompile Include="Src\Core\SDK\Plugins\YYTKEvent\YYTKEvent.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Src\Core\SDK\Structures\Undocumented\YYObjectBase\YYObjectBase.hpp" />
