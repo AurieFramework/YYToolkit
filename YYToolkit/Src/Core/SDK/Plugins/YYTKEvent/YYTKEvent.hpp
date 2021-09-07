@@ -1,7 +1,11 @@
 #pragma once
+#ifdef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN 1
+#endif
+
 #include "../../Enums/Enums.hpp"
 #include "../../FwdDecls/FwdDecls.hpp"
-#include <minwindef.h>
+#include <Windows.h>
 #include <string>
 #include <tuple>
 
@@ -23,21 +27,31 @@ protected:
 	bool s_CalledOriginal;
 
 public:
-	virtual _ReturnValue& Call(_FunctionArgs... Args) const
+	_ReturnValue& Call(_FunctionArgs... Args) const
 	{
 		s_ReturnValue = reinterpret_cast<_ReturnValue>(pfnOriginal(Args...));
 		s_CalledOriginal = true;
 		return s_ReturnValue;
 	}
 
-	virtual _Function Function() const
+	_Function Function() const
 	{
 		return s_tpfnOriginal;
 	}
 
-	virtual std::tuple<_FunctionArgs...>& Arguments()
+	std::tuple<_FunctionArgs...>& Arguments()
 	{
 		return s_tArguments;
+	}
+
+	bool& CalledOriginal()
+	{
+		return s_CalledOriginal;
+	}
+
+	_ReturnValue& GetReturn()
+	{
+		return s_tReturnValue;
 	}
 
 	virtual EventType GetEventType() const override
@@ -53,8 +67,3 @@ public:
 		this->s_tOriginal = Original;
 	}
 };
-
-using YYTKCodeEvent = YYTKEvent<bool, bool(*)(CInstance*, CInstance*, CCode*, RValue*, int), EventType::EVT_CODE_EXECUTE, CInstance*, CInstance*, CCode*, RValue*, int>;
-using YYTKPresentEvent = YYTKEvent<HRESULT, HRESULT(__stdcall*)(void*, UINT, UINT), EventType::EVT_PRESENT, void*, UINT, UINT>;
-
-// add more events
