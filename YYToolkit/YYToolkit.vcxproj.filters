@@ -81,7 +81,7 @@
     <ClInclude Include="Src\Core\Hooks\Drawing\GR_Draw_Text_Transformed\GR_Draw_Text_Transformed.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Src\Core\SDK\SDK.hpp">
+    <ClInclude Include="Src\Core\Utils\MurMurHash.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Src\Core\SDK\Enums\Enums.hpp">
@@ -90,46 +90,55 @@
     <ClInclude Include="Src\Core\SDK\FwdDecls\FwdDecls.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Src\Core\SDK\Structures\Documented\YYRValue\YYRValue.hpp">
+    <ClInclude Include="Src\Core\SDK\Plugins\YYTKEvent\YYTKEvent.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Src\Core\SDK\Plugins\Plugins.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Src\Core\SDK\Structures\Documented\RefThing\RefThing.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Src\Core\SDK\Structures\Documented\CDynamicArray\CDynamicArray.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Src\Core\SDK\Structures\Documented\Math\Math.hpp">
+    <ClInclude Include="Src\Core\SDK\Structures\Documented\APIVars\APIVars.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Src\Core\SDK\Structures\Documented\CCode\CCode.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Src\Core\SDK\Structures\Documented\RToken\RToken.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Src\Core\SDK\Structures\Undocumented\YYGMLFuncs\YYGMLFuncs.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Src\Core\SDK\Structures\Undocumented\YYVAR\YYVAR.hpp">
+    <ClInclude Include="Src\Core\SDK\Structures\Documented\CDynamicArray\CDynamicArray.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Src\Core\SDK\Structures\Documented\CHashMap\CHashMap.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Src\Core\Utils\MurMurHash.hpp">
+    <ClInclude Include="Src\Core\SDK\Structures\Documented\FunctionInfo\FunctionInfo.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Src\Core\SDK\Structures\Documented\FunctionInfo\FunctionInfo.hpp">
+    <ClInclude Include="Src\Core\SDK\Structures\Documented\Math\Math.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Core\SDK\Structures\Documented\RefThing\RefThing.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Core\SDK\Structures\Documented\RToken\RToken.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Core\SDK\Structures\Documented\VMBuffer\VMBuffer.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Core\SDK\Structures\Documented\YYRValue\YYRValue.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Src\Core\SDK\Structures\Undocumented\VMExec\VMExec.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Src\Core\SDK\Structures\Documented\APIVars\APIVars.hpp">
+    <ClInclude Include="Src\Core\SDK\Structures\Undocumented\YYGMLFuncs\YYGMLFuncs.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Core\SDK\Structures\Undocumented\YYObjectBase\YYObjectBase.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Core\SDK\Structures\Undocumented\YYVAR\YYVAR.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Core\SDK\SDK.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -194,26 +203,20 @@
     <ClCompile Include="Src\Core\Hooks\Drawing\GR_Draw_Text_TC\GR_Draw_Text_TC_header.hpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Src\Core\SDK\Structures\Documented\YYRValue\YYRValue.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Src\Core\SDK\Structures\Documented\RefThing\RefThing.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Src\Core\SDK\Structures\Documented\CDynamicArray\CDynamicArray.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Src\Core\SDK\Structures\Documented\VMBuffer\VMBuffer.hpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Src\Core\Utils\MurMurHash.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Src\Core\Hooks\Drawing\GR_Draw_Text_TC\GR_Draw_Text_TC.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Src\Core\SDK\Structures\Undocumented\YYObjectBase\YYObjectBase.hpp" />
+    <ClCompile Include="Src\Core\SDK\Structures\Documented\CDynamicArray\CDynamicArray.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Core\SDK\Structures\Documented\RefThing\RefThing.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Core\SDK\Structures\Documented\YYRValue\YYRValue.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

@@ -12,6 +12,7 @@
 #include "Enums/Enums.hpp"
 
 // Documented
+#include "Structures/Documented/APIVars/APIVars.hpp"
 #include "Structures/Documented/CCode/CCode.hpp"
 #include "Structures/Documented/CDynamicArray/CDynamicArray.hpp"
 #include "Structures/Documented/FunctionInfo/FunctionInfo.hpp"

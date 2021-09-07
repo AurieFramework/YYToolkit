@@ -175,6 +175,7 @@
     <ClInclude Include="Src\Core\SDK\Enums\Enums.hpp" />
     <ClInclude Include="Src\Core\SDK\FwdDecls\FwdDecls.hpp" />
     <ClInclude Include="Src\Core\SDK\Plugins\Plugins.hpp" />
+    <ClInclude Include="Src\Core\SDK\Plugins\YYTKEvent\YYTKEvent.hpp" />
     <ClInclude Include="Src\Core\SDK\SDK.hpp" />
     <ClInclude Include="Src\Core\SDK\Structures\Documented\APIVars\APIVars.hpp" />
     <ClInclude Include="Src\Core\SDK\Structures\Documented\CCode\CCode.hpp" />
@@ -184,9 +185,11 @@
     <ClInclude Include="Src\Core\SDK\Structures\Documented\Math\Math.hpp" />
     <ClInclude Include="Src\Core\SDK\Structures\Documented\RefThing\RefThing.hpp" />
     <ClInclude Include="Src\Core\SDK\Structures\Documented\RToken\RToken.hpp" />
+    <ClInclude Include="Src\Core\SDK\Structures\Documented\VMBuffer\VMBuffer.hpp" />
     <ClInclude Include="Src\Core\SDK\Structures\Documented\YYRValue\YYRValue.hpp" />
     <ClInclude Include="Src\Core\SDK\Structures\Undocumented\VMExec\VMExec.hpp" />
     <ClInclude Include="Src\Core\SDK\Structures\Undocumented\YYGMLFuncs\YYGMLFuncs.hpp" />
+    <ClInclude Include="Src\Core\SDK\Structures\Undocumented\YYObjectBase\YYObjectBase.hpp" />
     <ClInclude Include="Src\Core\SDK\Structures\Undocumented\YYVAR\YYVAR.hpp" />
     <ClInclude Include="Src\Core\Utils\Error.hpp" />
     <ClInclude Include="Src\Core\Utils\MH\buffer.h" />
@@ -217,7 +220,6 @@
     <ClCompile Include="Src\Core\Hooks\Drawing\GR_Draw_Text\GR_Draw_Text.cpp" />
     <ClCompile Include="Src\Core\SDK\Structures\Documented\CDynamicArray\CDynamicArray.cpp" />
     <ClCompile Include="Src\Core\SDK\Structures\Documented\RefThing\RefThing.cpp" />
-    <ClCompile Include="Src\Core\SDK\Structures\Documented\VMBuffer\VMBuffer.hpp" />
     <ClCompile Include="Src\Core\SDK\Structures\Documented\YYRValue\YYRValue.cpp" />
     <ClCompile Include="Src\Core\Utils\Error.cpp" />
     <ClCompile Include="Src\Core\Utils\MH\buffer.c" />
@@ -227,9 +229,6 @@
     <ClCompile Include="Src\Core\Utils\MH\trampoline.c" />
     <ClCompile Include="Src\Core\Utils\MurMurHash.cpp" />
     <ClCompile Include="Src\MainEntry.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Src\Core\SDK\Structures\Undocumented\YYObjectBase\YYObjectBase.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

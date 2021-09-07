@@ -59,11 +59,11 @@ struct VMExec;
 // Typedefs
 using TRoutine = void(__cdecl*)(RValue* _result, CInstance* _self, CInstance* _other, int _argc, RValue* _args);
 using PFUNC_YYGML = void(__cdecl*)(CInstance* _self, CInstance* _other);
-typedef bool (*FNCodeExecute)(YYObjectBase* Self, YYObjectBase* Other, CCode* code, YYRValue* res, int flags);
 typedef void (*FNCodeFunctionGetTheFunction)(int id, char** bufName, void** bufRoutine, int* bufArgs, void* unused);
+typedef bool (*FNCodeExecute)(YYObjectBase* Self, YYObjectBase* Other, CCode* code, YYRValue* res, int flags);
 
 // Macros
 
 #define WIN32_LEAN_AND_MEAN 1
-#define YYSDK_VERSION "0.0.2" // YYToolkit version - don't change this!
+#define YYSDK_VERSION "0.0.3" // YYToolkit version - don't change this!
 #define YYTK_MAGIC 'TFSI'

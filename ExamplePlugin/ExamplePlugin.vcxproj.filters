@@ -35,7 +35,13 @@
     <ClInclude Include="Src\Hello World\SDK\FwdDecls\FwdDecls.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Src\Hello World\SDK\Plugins\YYTKEvent\YYTKEvent.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="Src\Hello World\SDK\Plugins\Plugins.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Hello World\SDK\Structures\Documented\APIVars\APIVars.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Src\Hello World\SDK\Structures\Documented\CCode\CCode.hpp">
@@ -44,10 +50,10 @@
     <ClInclude Include="Src\Hello World\SDK\Structures\Documented\CDynamicArray\CDynamicArray.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Src\Hello World\SDK\Structures\Documented\FunctionInfo\FunctionInfo.hpp">
+    <ClInclude Include="Src\Hello World\SDK\Structures\Documented\CHashMap\CHashMap.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Src\Hello World\SDK\Structures\Documented\CHashMap\CHashMap.hpp">
+    <ClInclude Include="Src\Hello World\SDK\Structures\Documented\FunctionInfo\FunctionInfo.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Src\Hello World\SDK\Structures\Documented\Math\Math.hpp">

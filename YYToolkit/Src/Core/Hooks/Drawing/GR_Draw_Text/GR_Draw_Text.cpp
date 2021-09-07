@@ -4,7 +4,6 @@
 
 void Hooks::GR_Draw_Text::Function(float x, float y, const char* str, int linesep, int linewidth)
 {
-	Plugins::RunDrawingCallbacks(x, y, str, linesep, linewidth);
 	return pfnOriginal(x, y, str, linesep, linewidth);
 }
 

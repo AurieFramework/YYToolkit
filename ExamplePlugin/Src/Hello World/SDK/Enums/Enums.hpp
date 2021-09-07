@@ -39,3 +39,14 @@ enum YYTKStatus : int
 	YYTK_NOT_IMPLEMENTED = 5,	// The specified function doesn't exist. (IPC error)
 	YYTK_INVALID = 6			// One or more arguments were invalid.
 };
+
+enum EventType : int
+{
+	EVT_CODE_EXECUTE = 0,
+	EVT_DRAWING = 1,
+	EVT_ENDSCENE = 2,
+	EVT_MESSAGEBOX = 3,
+	EVT_PRESENT = 4,
+	EVT_RESIZEBUFFERS = 5,
+	EVT_WNDPROC = 6,
+};

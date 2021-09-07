@@ -6,11 +6,13 @@ namespace Hooks::EndScene
 {
 	HRESULT __stdcall Function(LPDIRECT3DDEVICE9 _this)
 	{
-		auto Result = pfnOriginal(_this);
+		YYTKEndSceneEvent Event = YYTKEndSceneEvent(pfnOriginal, _this);
+		Plugins::RunCallback(&Event);
 
-		Plugins::RunEndSceneCallbacks((void*&)_this); // Run after the original to help with UI drawing stuff
+		if (Event.CalledOriginal())
+			return Event.GetReturn();
 
-		return Result;
+		return pfnOriginal(_this);
 	}
 
 	void* GetTargetAddress()

@@ -67,16 +67,6 @@ namespace Plugins
 
 	DllExport bool UnloadPlugin(YYTKPlugin* pPlugin, bool Notify);
 
-	DllExport void RunCodeExecuteCallbacks(CInstance*& pSelf, CInstance*& pOther, CCode*& Code, RValue*& Res, int& Flags);
-
-	DllExport void RunPresentCallbacks(void*& IDXGISwapChain, unsigned int& Sync, unsigned int& Flags);
-
-	DllExport void RunEndSceneCallbacks(void*& LPDIRECT3DDEVICE);
-
-	DllExport void RunDrawingCallbacks(float& x, float& y, const char*& str, int& linesep, int& linewidth);
-
-	DllExport void RunResizeCallbacks(void*& IDXGISwapChain, unsigned int& BufferCount, unsigned int& Width, unsigned int& Height, DXGI_FORMAT& NewFormat, unsigned int& SwapChainFlags);
-
-	DllExport void RunWindowCallbacks(HWND& hwnd, unsigned int& Msg, WPARAM& w, LPARAM& l);
+	DllExport void RunCallback(YYTKEventBase* pEvent);
 }
 
