@@ -397,12 +397,12 @@ namespace Plugins
 		return true;
 	}
 
-	DllExport void RunCallback(YYTKEvent* pEvent)
+	DllExport void RunCallback(YYTKEventBase* pEvent)
 	{
 		for (auto& Pair : gAPIVars.Plugins)
 		{
 			if (Pair.second.PluginHandler)
-				Pair.second.PluginHandler(&gAPIVars.Plugins.at(Pair.first), pEvent);
+				Pair.second.PluginHandler(&Pair.second, pEvent);
 		}
 	}
 }

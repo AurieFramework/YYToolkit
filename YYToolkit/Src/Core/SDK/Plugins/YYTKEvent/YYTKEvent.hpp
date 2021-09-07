@@ -1,23 +1,26 @@
 #pragma once
 #include "../../Enums/Enums.hpp"
 #include "../../FwdDecls/FwdDecls.hpp"
+#include <minwindef.h>
 #include <string>
 #include <tuple>
 
-// what
+// can we escape this template hell
 
-template <typename _ReturnValue, typename _Function, typename... _FunctionArgs>
-class YYTKEvent
+class YYTKEventBase
 {
-private:
-	// need somehow to store the args
-	// maybe a tuple
+public:
+	virtual EventType GetEventType() const = 0;
+};
 
+template <typename _ReturnValue, typename _Function, EventType _Event, typename... _FunctionArgs>
+class YYTKEvent : public YYTKEventBase
+{
 protected:
+	std::tuple<_FunctionArgs...> s_tArguments;
 	_ReturnValue s_tReturnValue;
 	_Function s_tOriginal;
 	bool s_CalledOriginal;
-	
 
 public:
 	virtual _ReturnValue& Call(_FunctionArgs... Args) const
@@ -32,20 +35,26 @@ public:
 		return s_tpfnOriginal;
 	}
 
-	virtual EventType GetEventType() const = 0;
-
-	YYTKEvent(_Function Original, _FunctionArgs...)
+	virtual std::tuple<_FunctionArgs...>& Arguments()
 	{
-		// construct stuff
+		return s_tArguments;
 	}
-};
 
-class YYTKCodeEvent : public YYTKEvent<bool, bool(*)(CInstance* pSelf, CInstance* pOther, CCode* pCode, YYRValue* Res, int Flags), CInstance*, CInstance*, CCode*, YYRValue*, int>
-{
 	virtual EventType GetEventType() const override
 	{
-		return EventType::EVT_CODE_EXECUTE;
+		return _Event;
+	}
+
+	YYTKEvent(_Function Original, _FunctionArgs... Args)
+	{
+		this->s_CalledOriginal = false;
+		this->s_tReturnValue = 0; // Might be UB, who knows
+		this->s_tArguments = std::make_tuple<_FunctionArgs>(Args);
+		this->s_tOriginal = Original;
 	}
 };
+
+using YYTKCodeEvent = YYTKEvent<bool, bool(*)(CInstance*, CInstance*, CCode*, RValue*, int), EventType::EVT_CODE_EXECUTE, CInstance*, CInstance*, CCode*, RValue*, int>;
+using YYTKPresentEvent = YYTKEvent<HRESULT, HRESULT(__stdcall*)(void*, UINT, UINT), EventType::EVT_PRESENT, void*, UINT, UINT>;
 
 // add more events

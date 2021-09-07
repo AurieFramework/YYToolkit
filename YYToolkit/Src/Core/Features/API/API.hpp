@@ -67,6 +67,6 @@ namespace Plugins
 
 	DllExport bool UnloadPlugin(YYTKPlugin* pPlugin, bool Notify);
 
-	DllExport void RunCallback(YYTKEvent* pEvent);
+	DllExport void RunCallback(YYTKEventBase* pEvent);
 }
 

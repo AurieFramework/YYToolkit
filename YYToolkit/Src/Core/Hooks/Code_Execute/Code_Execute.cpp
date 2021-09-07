@@ -1,17 +1,15 @@
 #include "Code_Execute.hpp"
 #include "../../Features/API/API.hpp"
 #include "../../Utils/Error.hpp"
+#include "../../SDK/Plugins/YYTKEvent/YYTKEvent.hpp"
 
 namespace Hooks::Code_Execute
 {
 	bool Function(CInstance* pSelf, CInstance* pOther, CCode* Code, RValue* Res, int Flags)
 	{
-		YYTKEvent Event("CodeEvent", reinterpret_cast<void*>(pfnOriginal), {&pSelf, &pOther, &Code, &Res, &Flags});
-		
-		Plugins::RunCallback(&Event);
+		YYTKCodeEvent Event = YYTKCodeEvent(&Function, pSelf, pOther, Code, Res, Flags);
 
-		if (!Event.CalledOriginal())
-			return pfnOriginal(pSelf, pOther, Code, Res, Flags);
+		return pfnOriginal(pSelf, pOther, Code, Res, Flags);
 	}
 
 	void* GetTargetAddress()
