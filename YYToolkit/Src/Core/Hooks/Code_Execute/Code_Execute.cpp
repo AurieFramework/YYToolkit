@@ -7,9 +7,7 @@ namespace Hooks::Code_Execute
 {
 	bool Function(CInstance* pSelf, CInstance* pOther, CCode* Code, RValue* Res, int Flags)
 	{
-		using YYTKCodeEvent = YYTKEvent<bool, bool(*)(CInstance*, CInstance*, CCode*, RValue*, int), EventType::EVT_CODE_EXECUTE, CInstance*, CInstance*, CCode*, RValue*, int>;
-
-		YYTKCodeEvent Event = YYTKCodeEvent(&Function, pSelf, pOther, Code, Res, Flags);
+		YYTKCodeEvent Event = YYTKCodeEvent(pfnOriginal, pSelf, pOther, Code, Res, Flags);
 		Plugins::RunCallback(&Event);
 
 		if (Event.CalledOriginal())

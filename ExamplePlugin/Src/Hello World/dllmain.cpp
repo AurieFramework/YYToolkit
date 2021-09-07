@@ -2,13 +2,28 @@
 #include "SDK/SDK.hpp"  // Include the SDK.
 #include <Windows.h>    // Include Windows's mess.
 
-// The unload function doesn't have to be exported, but still has to return YYTKStatus and accept a YYTKPlugin argument.
-YYTKStatus MyUnloadFunc(YYTKPlugin* pPlugin)
+// Handles all events that happen inside the game.
+// Previously, callbacks served this purpose, however in 0.0.3, an object-oriented design was implemented.
+// If you want to modify a code entry, you're gonna need this function.
+YYTKStatus PluginEventHandler(YYTKPlugin* pPlugin, YYTKEventBase* pEvent)
 {
-    // Create a message box
-    MessageBoxA(0, "Goodbye, cruel world!", "An example plugin", MB_OK); 
+    // Check if the event currently raised is a code event
+    if (pEvent->GetEventType() == EventType::EVT_CODE_EXECUTE)
+    {
+        // Convert the base event to the actual event object based on it's type.
+        // Tip: Use dynamic_cast to catch issues with exceptions!
+        YYTKCodeEvent* pCodeEvent = dynamic_cast<YYTKCodeEvent*>(pEvent);
 
-    // Tell the core everything went fine.
+        // Prepare variables with which the function was called.
+        CInstance* Self; CInstance* Other; CCode* pCode; RValue* Args; int Flags;
+
+        // Extract arguments from the tuple into individual objects. C++ rules apply.
+        std::tie(Self, Other, pCode, Args, Flags) = pCodeEvent->Arguments();
+
+        // Swap the arguments for Other and Self, effectively breaking any game.
+        pCodeEvent->Call(Other, Self, pCode, Args, Flags);
+    }
+
     return YYTK_OK;
 }
 
@@ -16,9 +31,9 @@ YYTKStatus MyUnloadFunc(YYTKPlugin* pPlugin)
 // It also has to be declared DllExport (notice how the other functions are not).
 DllExport YYTKStatus PluginEntry(YYTKPlugin* pPlugin)
 {
-    // Set 'MyUnloadFunc' as the function to call when we get unloaded / unload. 
-    // This is not required if you don't need to cleanup after yourself (free buffers, unhook stuff, etc.)
-    pPlugin->PluginUnload = MyUnloadFunc; 
+    // Set 'PluginEventHandler' as the function to call when we a game event happens.
+    // This is not required if you don't need to modify code entries / draw with D3D / anything else that requires precise timing.
+    pPlugin->PluginHandler = PluginEventHandler;
 
     // Create a message box
     MessageBoxA(0, "Hello, nice world!", "An example plugin", MB_OK); 

@@ -6,9 +6,7 @@ namespace Hooks::EndScene
 {
 	HRESULT __stdcall Function(LPDIRECT3DDEVICE9 _this)
 	{
-		using YYTKEndSceneEvent = YYTKEvent<HRESULT, HRESULT(__stdcall*)(LPDIRECT3DDEVICE9), EventType::EVT_ENDSCENE, LPDIRECT3DDEVICE9>;
-
-		YYTKEndSceneEvent Event = YYTKEndSceneEvent(&Function, _this);
+		YYTKEndSceneEvent Event = YYTKEndSceneEvent(pfnOriginal, _this);
 		Plugins::RunCallback(&Event);
 
 		if (Event.CalledOriginal())

@@ -65,5 +65,5 @@ typedef bool (*FNCodeExecute)(YYObjectBase* Self, YYObjectBase* Other, CCode* co
 // Macros
 
 #define WIN32_LEAN_AND_MEAN 1
-#define YYSDK_VERSION "0.0.2" // YYToolkit version - don't change this!
+#define YYSDK_VERSION "0.0.3" // YYToolkit version - don't change this!
 #define YYTK_MAGIC 'TFSI'

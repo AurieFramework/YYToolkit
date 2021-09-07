@@ -25,9 +25,7 @@ namespace Hooks::Present
 {
 	HRESULT __stdcall Function(IDXGISwapChain* _this, unsigned int Sync, unsigned int Flags)
 	{
-		using YYTKPresentEvent = YYTKEvent<HRESULT, HRESULT(__stdcall*)(IDXGISwapChain*, UINT, UINT), EventType::EVT_PRESENT, IDXGISwapChain*, UINT, UINT>;
-
-		YYTKPresentEvent Event = YYTKPresentEvent(&Function, _this, Sync, Flags);
+		YYTKPresentEvent Event = YYTKPresentEvent(pfnOriginal, _this, Sync, Flags);
 		Plugins::RunCallback(&Event);
 
 		if (Event.CalledOriginal())

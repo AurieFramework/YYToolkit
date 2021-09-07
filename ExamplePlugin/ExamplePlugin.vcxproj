@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -165,7 +165,9 @@
     <ClInclude Include="Src\Hello World\SDK\Enums\Enums.hpp" />
     <ClInclude Include="Src\Hello World\SDK\FwdDecls\FwdDecls.hpp" />
     <ClInclude Include="Src\Hello World\SDK\Plugins\Plugins.hpp" />
+    <ClInclude Include="Src\Hello World\SDK\Plugins\YYTKEvent\YYTKEvent.hpp" />
     <ClInclude Include="Src\Hello World\SDK\SDK.hpp" />
+    <ClInclude Include="Src\Hello World\SDK\Structures\Documented\APIVars\APIVars.hpp" />
     <ClInclude Include="Src\Hello World\SDK\Structures\Documented\CCode\CCode.hpp" />
     <ClInclude Include="Src\Hello World\SDK\Structures\Documented\CDynamicArray\CDynamicArray.hpp" />
     <ClInclude Include="Src\Hello World\SDK\Structures\Documented\CHashMap\CHashMap.hpp" />

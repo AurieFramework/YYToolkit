@@ -73,9 +73,13 @@ namespace API
 
 		// Run autoexec
 		namespace fs = std::filesystem;
-		if (fs::is_directory("autoexec"))
+
+		std::wstring Path = fs::current_path().wstring().append(L"\\autoexec");
+
+		if (fs::is_directory(Path))
 		{
-			for (auto& entry : fs::directory_iterator("autoexec"))
+			printf("Found autoexec folder - will try to start plugins!\n");
+			for (auto& entry : fs::directory_iterator(Path))
 			{
 				if (entry.path().extension().string().find(".dll") != std::string::npos)
 				{

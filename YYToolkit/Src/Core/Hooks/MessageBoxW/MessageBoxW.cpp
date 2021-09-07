@@ -4,9 +4,7 @@
 
 int __stdcall Hooks::MessageBoxW::Function(HWND Hwnd, LPCWSTR lpwText, LPCWSTR lpwCaption, UINT Type)
 {
-	using YYTKMessageBoxEvent = YYTKEvent<int, int(__stdcall*)(HWND, LPCWSTR, LPCWSTR, UINT), EventType::EVT_MESSAGEBOX, HWND, LPCWSTR, LPCWSTR, UINT>;
-
-	YYTKMessageBoxEvent Event = YYTKMessageBoxEvent(&Function, Hwnd, lpwText, lpwCaption, Type);
+	YYTKMessageBoxEvent Event = YYTKMessageBoxEvent(pfnOriginal, Hwnd, lpwText, lpwCaption, Type);
 	Plugins::RunCallback(&Event);
 
 	if (Event.CalledOriginal())
