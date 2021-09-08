@@ -6,6 +6,12 @@ namespace Hooks::WindowProc
 {
 	LRESULT __stdcall Function(HWND hwnd, unsigned int Msg, WPARAM w, LPARAM l)
 	{
+		YYTKWindowProcEvent Event = YYTKWindowProcEvent(pfnOriginal, hwnd, Msg, w, l);
+		Plugins::RunCallback(&Event);
+
+		if (Event.CalledOriginal())
+			return Event.GetReturn();
+
 		return CallWindowProc(pfnOriginal, hwnd, Msg, w, l);
 	}
 

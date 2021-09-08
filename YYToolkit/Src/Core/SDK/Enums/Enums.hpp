@@ -42,11 +42,11 @@ enum YYTKStatus : int
 
 enum EventType : int
 {
-	EVT_CODE_EXECUTE = 0,
-	EVT_DRAWING = 1,
-	EVT_ENDSCENE = 2,
-	EVT_MESSAGEBOX = 3,
-	EVT_PRESENT = 4,
-	EVT_RESIZEBUFFERS = 5,
-	EVT_WNDPROC = 6,
+	EVT_CODE_EXECUTE = 0,	// The event represents a Code_Execute() call.
+	EVT_ENDSCENE = 1,		// The event represents an LPDIRECT3DDEVICE9::EndScene() call.
+	EVT_MESSAGEBOX = 2,		// The event represents a MessageBoxW() call.
+	EVT_PRESENT = 3,		// The event represents an IDXGISwapChain::Present() call.
+	EVT_RESIZEBUFFERS = 4,	// The event represents an IDXGISwapChain::ResizeBuffers() call.
+	EVT_WNDPROC = 5,		// The event represents a window procedure call.
+	EVT_CUSTOM = 1337,		// The event represents a custom function call, raised by plugins.
 };
