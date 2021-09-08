@@ -74,3 +74,6 @@ using YYTKCodeEvent = YYTKEvent<bool, bool(__cdecl*)(CInstance*, CInstance*, CCo
 using YYTKEndSceneEvent = YYTKEvent<HRESULT, HRESULT(__stdcall*)(LPDIRECT3DDEVICE9), EventType::EVT_ENDSCENE, LPDIRECT3DDEVICE9>;
 using YYTKMessageBoxEvent = YYTKEvent<int, int(__stdcall*)(HWND, LPCWSTR, LPCWSTR, UINT), EventType::EVT_MESSAGEBOX, HWND, LPCWSTR, LPCWSTR, UINT>;
 using YYTKPresentEvent = YYTKEvent<HRESULT, HRESULT(__stdcall*)(IDXGISwapChain*, UINT, UINT), EventType::EVT_PRESENT, IDXGISwapChain*, UINT, UINT>;
+using YYTKWindowProcEvent = YYTKEvent<LRESULT, LRESULT(__stdcall*)(HWND, UINT, WPARAM, LPARAM), EventType::EVT_WNDPROC, HWND, UINT, WPARAM, LPARAM>;
+using YYTKResizeBuffersEvent = YYTKEvent<HRESULT, HRESULT(__stdcall*)(IDXGISwapChain*, UINT, UINT, UINT, DXGI_FORMAT, UINT), EventType::EVT_RESIZEBUFFERS, IDXGISwapChain*, UINT, UINT, UINT, DXGI_FORMAT, UINT>;
+	//HRESULT __stdcall Hooks::ResizeBuffers::Function(IDXGISwapChain* _this, UINT BufferCount, UINT Width, UINT Height, DXGI_FORMAT NewFormat, UINT SwapChainFlags)
