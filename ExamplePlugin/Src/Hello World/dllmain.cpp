@@ -35,8 +35,8 @@ DllExport YYTKStatus PluginEntry(YYTKPlugin* pPlugin)
     // This is not required if you don't need to modify code entries / draw with D3D / anything else that requires precise timing.
     pPlugin->PluginHandler = PluginEventHandler;
 
-    // Create a message box
-    MessageBoxA(0, "Hello, nice world!", "An example plugin", MB_OK); 
+
+    printf("[From plugin] Hello, world!\n");
 
     // Tell the core everything went fine.
     return YYTK_OK;
