@@ -69,16 +69,18 @@ namespace API
 		freopen_s(&fDummy, "CONOUT$", "w", stdout);
 
 		SetConsoleTitleA("YYToolkit Log");
-		printf("YYToolkit version %s - Hello from API::Initialize()!\n", YYSDK_VERSION);
+		printf("YYToolkit version %s - Error Flag: %i\n", YYSDK_VERSION, static_cast<int>(ErrorOccured));
 
 		// Run autoexec
 		namespace fs = std::filesystem;
 
 		std::wstring Path = fs::current_path().wstring().append(L"\\autoexec");
 
+		printf("Running from %s\n", fs::current_path().string().c_str());
+
 		if (fs::is_directory(Path))
 		{
-			printf("Found autoexec folder - will try to start plugins!\n");
+			printf("'autoexec' folder exists, starting plugins...\n");
 			for (auto& entry : fs::directory_iterator(Path))
 			{
 				if (entry.path().extension().string().find(".dll") != std::string::npos)
@@ -107,6 +109,12 @@ namespace API
 		ShowWindow(GetConsoleWindow(), SW_HIDE);
 		FreeConsole();
 
+		return YYTK_OK;
+	}
+
+	DllExport YYTKStatus GetAPIVersion(char* outBuffer)
+	{
+		strncpy(outBuffer, YYSDK_VERSION, strlen(YYSDK_VERSION));
 		return YYTK_OK;
 	}
 

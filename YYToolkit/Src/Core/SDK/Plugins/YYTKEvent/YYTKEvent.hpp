@@ -16,12 +16,14 @@ class YYTKEventBase
 {
 public:
 	virtual EventType GetEventType() const = 0;
+	virtual const std::string& GetInternalName() const = 0;
 };
 
 template <typename _ReturnValue, typename _Function, EventType _Event, typename... _FunctionArgs>
 class YYTKEvent : public YYTKEventBase
 {
 protected:
+	std::string strInternalName;
 	std::tuple<_FunctionArgs...> s_tArguments;
 	_ReturnValue s_tReturnValue;
 	_Function s_tOriginal;
@@ -67,8 +69,22 @@ public:
 		return _Event;
 	}
 
+	virtual const std::string& GetInternalName() const override
+	{
+		return strInternalName;
+	}
+
 	YYTKEvent(_Function Original, _FunctionArgs... Args)
 	{
+		this->s_CalledOriginal = false;
+		this->s_tReturnValue = 0; // Might be UB, who knows
+		this->s_tArguments = std::make_tuple(Args...);
+		this->s_tOriginal = Original;
+	}
+
+	YYTKEvent(const std::string& InternalName, _Function Original, _FunctionArgs... Args)
+	{
+		this->strInternalname = InternalName;
 		this->s_CalledOriginal = false;
 		this->s_tReturnValue = 0; // Might be UB, who knows
 		this->s_tArguments = std::make_tuple(Args...);
@@ -109,6 +125,11 @@ public:
 	virtual EventType GetEventType() const override
 	{
 		return _Event;
+	}
+
+	virtual const std::string& GetInternalName() const override
+	{
+		return "";
 	}
 
 	YYTKEvent(_Function Original, _FunctionArgs... Args)

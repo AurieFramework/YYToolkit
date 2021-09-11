@@ -21,13 +21,12 @@ namespace API
 
 	YYTKStatus Uninitialize();
 
-	// Create a VM code object which can be passed to Code_Execute.
+	DllExport YYTKStatus GetAPIVersion(char* outBuffer);
+
 	DllExport YYTKStatus CreateCodeObject(CCode& out, char* pBytecode, size_t BytecodeSize, unsigned int Locals, const char* pName);
 
-	// Create a YYC code object, runs C++ code instead of VM bytecode.
 	DllExport YYTKStatus CreateYYCCodeObject(CCode& out, PFUNC_YYGML Routine, const char* pName);
 
-	// Always call this on a code object you generated.
 	DllExport YYTKStatus FreeCodeObject(CCode& out);
 
 	DllExport YYTKStatus GetFunctionByIndex(int index, FunctionInfo_t& outInfo);
