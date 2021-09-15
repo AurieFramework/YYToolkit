@@ -16,6 +16,8 @@ inline APIVars_t gAPIVars;
 /* The actual API functions */
 namespace API
 {
+	ModuleInfo_t GetModuleInfo();
+
 	// This function gets called once at the start of YYToolkit, so no need to export it.
 	YYTKStatus Initialize(void* pModule);
 

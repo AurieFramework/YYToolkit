@@ -9,7 +9,7 @@ struct CStream
 	void* internal_buffer;
 };
 
-struct alignedTo(8) CScript
+struct CScript
 {
 	int (**_vptr$CScript)(void);
 	CStream* s_text;

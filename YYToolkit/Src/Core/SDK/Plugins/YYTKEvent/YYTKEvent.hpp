@@ -97,9 +97,11 @@ template <typename _Function, EventType _Event, typename... _FunctionArgs>
 class YYTKEvent<void, _Function, _Event, _FunctionArgs...> : public YYTKEventBase // Specialization for void return type
 {
 protected:
+	std::string strInternalName;
 	std::tuple<_FunctionArgs...> s_tArguments;
 	_Function s_tOriginal;
 	bool s_CalledOriginal;
+
 public:
 	void Call(_FunctionArgs... Args)
 	{
@@ -130,11 +132,12 @@ public:
 
 	virtual const std::string& GetInternalName() const override
 	{
-		return "";
+		return strInternalName;
 	}
 
 	YYTKEvent(_Function Original, _FunctionArgs... Args)
 	{
+		this->strInternalName = "";
 		this->s_CalledOriginal = false;
 		this->s_tArguments = std::make_tuple(Args...);
 		this->s_tOriginal = Original;

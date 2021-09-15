@@ -7,23 +7,24 @@
 #include <filesystem>
 #include "../../Utils/Error.hpp"
 
-static ModuleInfo_t GetModuleInfo()
-{
-	using Fn = int(__stdcall*)(HANDLE, HMODULE, ModuleInfo_t*, DWORD);
-
-	static HMODULE Module = GetModuleHandleA("kernel32.dll");
-	static Fn K32GetModuleInformation = (Fn)GetProcAddress(Module, "K32GetModuleInformation");
-
-	ModuleInfo_t modinfo = { 0 };
-	HMODULE hModule = GetModuleHandleA(NULL);
-	if (hModule == 0)
-		return modinfo;
-	K32GetModuleInformation(GetCurrentProcess(), hModule, &modinfo, sizeof(ModuleInfo_t));
-	return modinfo;
-}
-
 namespace API
 {
+	ModuleInfo_t GetModuleInfo()
+	{
+		using Fn = int(__stdcall*)(HANDLE, HMODULE, ModuleInfo_t*, DWORD);
+
+		static HMODULE Module = GetModuleHandleA("kernel32.dll");
+		static Fn K32GetModuleInformation = (Fn)GetProcAddress(Module, "K32GetModuleInformation");
+
+		ModuleInfo_t modinfo = { 0 };
+		HMODULE hModule = GetModuleHandleA(NULL);
+		if (hModule == 0)
+			return modinfo;
+		K32GetModuleInformation(GetCurrentProcess(), hModule, &modinfo, sizeof(ModuleInfo_t));
+		return modinfo;
+	}
+
+
 	YYTKStatus Initialize(void* pModule)
 	{
 		bool ErrorOccured = false;
