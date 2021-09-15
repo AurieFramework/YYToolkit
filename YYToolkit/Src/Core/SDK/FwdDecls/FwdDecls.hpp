@@ -51,6 +51,10 @@ struct YYObjectBase;
 struct CInstance;
 struct CWeakRef;
 
+// CScript.hpp
+struct CScript;
+struct CStream;
+
 // VMExec.hpp
 struct VMExec;
 
@@ -67,3 +71,14 @@ typedef bool (*FNCodeExecute)(YYObjectBase* Self, YYObjectBase* Other, CCode* co
 #define WIN32_LEAN_AND_MEAN 1
 #define YYSDK_VERSION "0.0.4" // YYToolkit version - don't change this!
 #define YYTK_MAGIC 'TFSI'
+
+// Macros, but complicated
+#ifdef _MSC_VER
+#pragma warning(disable : 26812)
+#define _CRT_SECURE_NO_WARNINGS 1
+#define alignedTo(x) __declspec(align(x))
+#else //!MSC_VER
+#define alignedTo(x) __attribute__((aligned (x)))
+//#define strcpy_s(x,y,z) strncpy(x,z,y)
+#include <inttypes.h>
+#endif //MSC_VER

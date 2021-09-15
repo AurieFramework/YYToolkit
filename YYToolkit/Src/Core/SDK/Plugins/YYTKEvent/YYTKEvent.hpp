@@ -76,6 +76,7 @@ public:
 
 	YYTKEvent(_Function Original, _FunctionArgs... Args)
 	{
+		this->strInternalName = "";
 		this->s_CalledOriginal = false;
 		this->s_tReturnValue = 0; // Might be UB, who knows
 		this->s_tArguments = std::make_tuple(Args...);
@@ -147,3 +148,4 @@ using YYTKPresentEvent = YYTKEvent<HRESULT, HRESULT(__stdcall*)(IDXGISwapChain*,
 using YYTKWindowProcEvent = YYTKEvent<LRESULT, LRESULT(__stdcall*)(HWND, UINT, WPARAM, LPARAM), EventType::EVT_WNDPROC, HWND, UINT, WPARAM, LPARAM>;
 using YYTKResizeBuffersEvent = YYTKEvent<HRESULT, HRESULT(__stdcall*)(IDXGISwapChain*, UINT, UINT, UINT, DXGI_FORMAT, UINT), EventType::EVT_RESIZEBUFFERS, IDXGISwapChain*, UINT, UINT, UINT, DXGI_FORMAT, UINT>;
 using YYTKErrorEvent = YYTKEvent<void, void(__cdecl*)(const char*, ...), EventType::EVT_YYERROR, const char*>; // template specializations ftw
+using YYTKScriptEvent = YYTKEvent<char*, char* (__cdecl*)(CScript*, int, char*, VMExec*, YYObjectBase*, YYObjectBase*), EventType::EVT_DOCALLSCRIPT, CScript*, int, char*, VMExec*, YYObjectBase*, YYObjectBase*>;

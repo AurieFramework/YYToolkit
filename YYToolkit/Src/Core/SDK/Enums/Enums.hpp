@@ -49,5 +49,6 @@ enum EventType : int
 	EVT_PRESENT = 4,		// The event represents an IDXGISwapChain::Present() call.
 	EVT_RESIZEBUFFERS = 5,	// The event represents an IDXGISwapChain::ResizeBuffers() call.
 	EVT_WNDPROC = 6,		// The event represents a window procedure call.
+	EVT_DOCALLSCRIPT = 7,	// The event represents a DoCallScript() call.
 	EVT_CUSTOM = 1337,		// The event represents a custom function call, raised by plugins.
 };
