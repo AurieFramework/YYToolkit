@@ -35,7 +35,7 @@ namespace API
 
 	DllExport YYTKStatus GetFunctionByName(const char* Name, FunctionInfo_t& outInfo);
 
-	DllExport YYTKStatus GetAPIVars(APIVars_t* outVars);
+	DllExport YYTKStatus GetAPIVars(APIVars_t** ppoutVars);
 
 	DllExport YYTKStatus GetCodeExecuteAddr(FNCodeExecute& outAddress);
 

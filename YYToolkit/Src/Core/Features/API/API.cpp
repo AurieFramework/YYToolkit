@@ -221,9 +221,12 @@ namespace API
 		return YYTK_NOT_FOUND;
 	}
 
-	DllExport YYTKStatus GetAPIVars(APIVars_t* outVars)
+	DllExport YYTKStatus GetAPIVars(APIVars_t** ppoutVars)
 	{
-		*outVars = gAPIVars;
+		if (!ppoutVars)
+			return YYTK_INVALID;
+
+		*ppoutVars = &gAPIVars;
 		return YYTK_OK;
 	}
 
