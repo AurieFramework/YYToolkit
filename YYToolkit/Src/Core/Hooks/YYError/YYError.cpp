@@ -7,15 +7,31 @@ namespace Hooks::YYError
 	void Function(const char* pFormat, ...)
 	{
 		// Code has executed unsuccessfully!
-		va_list vaArgs;
-		va_start(vaArgs, pFormat);
 
-		char Message[2048] = { 0 };
-		strncpy(Message, pFormat, 2048);
+		// Call events scope
+		{
+			YYTKErrorEvent Event = YYTKErrorEvent(pfnOriginal, pFormat);
+			Plugins::RunCallback(&Event);
 
-		vsprintf(Message, pFormat, vaArgs);
+			if (Event.CalledOriginal())
+				return;
+		}
 
-		MessageBoxA(0, Message, "Code Error!", MB_OK | MB_ICONERROR | MB_TOPMOST);
+		// Override scope
+		{
+			
+			va_list vaArgs;
+			va_start(vaArgs, pFormat);
+
+			char Message[2048] = { 0 };
+			strncpy(Message, pFormat, 2048);
+
+			vsprintf(Message, pFormat, vaArgs);
+
+			va_end(vaArgs);
+
+			MessageBoxA(0, Message, "Code Error!", MB_OK | MB_ICONERROR | MB_TOPMOST);
+		}
 	}
 
 	void* GetTargetAddress()

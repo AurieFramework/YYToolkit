@@ -23,27 +23,40 @@ static void SetupDescriptor(DXGI_SWAP_CHAIN_DESC* pDesc)
 
 HRESULT __stdcall Hooks::ResizeBuffers::Function(IDXGISwapChain* _this, UINT BufferCount, UINT Width, UINT Height, DXGI_FORMAT NewFormat, UINT SwapChainFlags)
 {
-	using namespace Hooks::Present;
-
-	if (gAPIVars.RenderView)
-		reinterpret_cast<ID3D11RenderTargetView*>(gAPIVars.RenderView)->Release();
-
-	HRESULT _Result = pfnOriginal(_this, BufferCount, Width, Height, NewFormat, SwapChainFlags);
-
+	// Call events scope
 	{
-		ID3D11Texture2D* pBackBuffer;
+		YYTKResizeBuffersEvent Event = YYTKResizeBuffersEvent(pfnOriginal, _this, BufferCount, Width, Height, NewFormat, SwapChainFlags);
+		Plugins::RunCallback(&Event);
 
-		HRESULT ret = _this->GetBuffer(0, IID_PPV_ARGS(&pBackBuffer));
+		if (Event.CalledOriginal())
+			return Event.GetReturn();
+	}
 
-		if (FAILED(ret))
-			Utils::Error::Error(1, "Getting the back buffer failed.");
+	// Refresh gAPIVars.RenderView scope
+	HRESULT _Result = S_OK;
+	{
+		using namespace Hooks::Present;
 
-		ret = static_cast<ID3D11Device*>(gAPIVars.Window_Device)->CreateRenderTargetView(pBackBuffer, NULL, reinterpret_cast<ID3D11RenderTargetView**>(&gAPIVars.RenderView));
+		if (gAPIVars.RenderView)
+			reinterpret_cast<ID3D11RenderTargetView*>(gAPIVars.RenderView)->Release();
 
-		if (FAILED(ret))
-			Utils::Error::Error(1, "Creating the target view failed.");
+		_Result = pfnOriginal(_this, BufferCount, Width, Height, NewFormat, SwapChainFlags);
 
-		pBackBuffer->Release();
+		{
+			ID3D11Texture2D* pBackBuffer;
+
+			HRESULT ret = _this->GetBuffer(0, IID_PPV_ARGS(&pBackBuffer));
+
+			if (FAILED(ret))
+				Utils::Error::Error(1, "Getting the back buffer failed.");
+
+			ret = static_cast<ID3D11Device*>(gAPIVars.Window_Device)->CreateRenderTargetView(pBackBuffer, NULL, reinterpret_cast<ID3D11RenderTargetView**>(&gAPIVars.RenderView));
+
+			if (FAILED(ret))
+				Utils::Error::Error(1, "Creating the target view failed.");
+
+			pBackBuffer->Release();
+		}
 	}
 
 	return _Result;

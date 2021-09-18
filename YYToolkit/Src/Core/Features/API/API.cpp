@@ -7,23 +7,24 @@
 #include <filesystem>
 #include "../../Utils/Error.hpp"
 
-static ModuleInfo_t GetModuleInfo()
-{
-	using Fn = int(__stdcall*)(HANDLE, HMODULE, ModuleInfo_t*, DWORD);
-
-	static HMODULE Module = GetModuleHandleA("kernel32.dll");
-	static Fn K32GetModuleInformation = (Fn)GetProcAddress(Module, "K32GetModuleInformation");
-
-	ModuleInfo_t modinfo = { 0 };
-	HMODULE hModule = GetModuleHandleA(NULL);
-	if (hModule == 0)
-		return modinfo;
-	K32GetModuleInformation(GetCurrentProcess(), hModule, &modinfo, sizeof(ModuleInfo_t));
-	return modinfo;
-}
-
 namespace API
 {
+	ModuleInfo_t GetModuleInfo()
+	{
+		using Fn = int(__stdcall*)(HANDLE, HMODULE, ModuleInfo_t*, DWORD);
+
+		static HMODULE Module = GetModuleHandleA("kernel32.dll");
+		static Fn K32GetModuleInformation = (Fn)GetProcAddress(Module, "K32GetModuleInformation");
+
+		ModuleInfo_t modinfo = { 0 };
+		HMODULE hModule = GetModuleHandleA(NULL);
+		if (hModule == 0)
+			return modinfo;
+		K32GetModuleInformation(GetCurrentProcess(), hModule, &modinfo, sizeof(ModuleInfo_t));
+		return modinfo;
+	}
+
+
 	YYTKStatus Initialize(void* pModule)
 	{
 		bool ErrorOccured = false;
@@ -69,16 +70,18 @@ namespace API
 		freopen_s(&fDummy, "CONOUT$", "w", stdout);
 
 		SetConsoleTitleA("YYToolkit Log");
-		printf("YYToolkit version %s - Hello from API::Initialize()!\n", YYSDK_VERSION);
+		printf("YYToolkit version %s - Error Flag: %i (%s)\n", YYSDK_VERSION, static_cast<int>(ErrorOccured), IsYYC() ? "YYC" : "VM");
 
 		// Run autoexec
 		namespace fs = std::filesystem;
 
 		std::wstring Path = fs::current_path().wstring().append(L"\\autoexec");
 
+		printf("Running from %s\n", fs::current_path().string().c_str());
+
 		if (fs::is_directory(Path))
 		{
-			printf("Found autoexec folder - will try to start plugins!\n");
+			printf("'autoexec' folder exists, starting plugins...\n");
 			for (auto& entry : fs::directory_iterator(Path))
 			{
 				if (entry.path().extension().string().find(".dll") != std::string::npos)
@@ -107,6 +110,12 @@ namespace API
 		ShowWindow(GetConsoleWindow(), SW_HIDE);
 		FreeConsole();
 
+		return YYTK_OK;
+	}
+
+	DllExport YYTKStatus GetAPIVersion(char* outBuffer)
+	{
+		strncpy(outBuffer, YYSDK_VERSION, strlen(YYSDK_VERSION));
 		return YYTK_OK;
 	}
 
@@ -212,9 +221,12 @@ namespace API
 		return YYTK_NOT_FOUND;
 	}
 
-	DllExport YYTKStatus GetAPIVars(APIVars_t* outVars)
+	DllExport YYTKStatus GetAPIVars(APIVars_t** ppoutVars)
 	{
-		*outVars = gAPIVars;
+		if (!ppoutVars)
+			return YYTK_INVALID;
+
+		*ppoutVars = &gAPIVars;
 		return YYTK_OK;
 	}
 
@@ -306,6 +318,14 @@ namespace API
 			return Info.Function;
 		}
 		return nullptr;
+	}
+
+	DllExport bool IsYYC()
+	{
+		YYRValue Result;
+		API::CallBuiltinFunction(nullptr, nullptr, Result, 0, "code_is_compiled", &Result);
+
+		return Result;
 	}
 
 	DllExport RValue* YYGML_CallLegacyFunction(CInstance* _pSelf, CInstance* _pOther, RValue& _result, int _argc, int _id, RValue** _args)

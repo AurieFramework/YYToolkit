@@ -16,25 +16,26 @@ inline APIVars_t gAPIVars;
 /* The actual API functions */
 namespace API
 {
+	ModuleInfo_t GetModuleInfo();
+
 	// This function gets called once at the start of YYToolkit, so no need to export it.
 	YYTKStatus Initialize(void* pModule);
 
 	YYTKStatus Uninitialize();
 
-	// Create a VM code object which can be passed to Code_Execute.
+	DllExport YYTKStatus GetAPIVersion(char* outBuffer);
+
 	DllExport YYTKStatus CreateCodeObject(CCode& out, char* pBytecode, size_t BytecodeSize, unsigned int Locals, const char* pName);
 
-	// Create a YYC code object, runs C++ code instead of VM bytecode.
 	DllExport YYTKStatus CreateYYCCodeObject(CCode& out, PFUNC_YYGML Routine, const char* pName);
 
-	// Always call this on a code object you generated.
 	DllExport YYTKStatus FreeCodeObject(CCode& out);
 
 	DllExport YYTKStatus GetFunctionByIndex(int index, FunctionInfo_t& outInfo);
 
 	DllExport YYTKStatus GetFunctionByName(const char* Name, FunctionInfo_t& outInfo);
 
-	DllExport YYTKStatus GetAPIVars(APIVars_t* outVars);
+	DllExport YYTKStatus GetAPIVars(APIVars_t** ppoutVars);
 
 	DllExport YYTKStatus GetCodeExecuteAddr(FNCodeExecute& outAddress);
 
@@ -47,6 +48,8 @@ namespace API
 	DllExport YYTKStatus CallBuiltinFunction(CInstance* _pSelf, CInstance* _pOther, YYRValue& _result, int _argc, const char* Name, YYRValue* Args);
 
 	DllExport TRoutine GetBuiltin(const char* Name);
+
+	DllExport bool IsYYC();
 
 	/* Reconstructed YYGML Functions */
 	// Note to self: YYRValue** are actually **, not references, they're passing arrays of pointers...

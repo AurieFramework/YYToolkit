@@ -25,6 +25,8 @@
 
 // Undocumented - these may not work on all GMS versions (aka. may require plugin-specific additions / removals)
 
+#include "Structures/Undocumented/CScript/CScript.hpp"
+#include "Structures/Undocumented/VMExec/VMExec.hpp"
 #include "Structures/Undocumented/YYGMLFuncs/YYGMLFuncs.hpp"
 #include "Structures/Undocumented/YYObjectBase/YYObjectBase.hpp"
 #include "Structures/Undocumented/YYVAR/YYVAR.hpp"

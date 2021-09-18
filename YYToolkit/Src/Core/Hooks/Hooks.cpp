@@ -1,8 +1,8 @@
 #include "../Utils/Error.hpp"
 #include "../Utils/MH/MinHook.h"
 #include "Code_Execute/Code_Execute.hpp"
+#include "DoCallScript/DoCallScript.hpp"
 #include "EndScene/EndScene.hpp"
-#include "Hooks.hpp"
 #include "MessageBoxW/MessageBoxW.hpp"
 #include "Present/Present.hpp"
 #include "ResizeBuffers/ResizeBuffers.hpp"
@@ -13,6 +13,7 @@
 #include "Drawing/GR_Draw_Text_Transformed/GR_Draw_Text_Transformed.hpp"
 #include "Drawing/GR_Draw_Text_TC/GR_Draw_Text_TC_header.hpp"
 #include "../Features/API/API.hpp"
+#include "Hooks.hpp"
 #include <chrono>
 #include <array>
 
@@ -46,6 +47,14 @@ namespace Hooks
 				ReCa<void*>(&Hooks::Code_Execute::GetTargetAddress), 
 				ReCa<void**>(&Hooks::Code_Execute::pfnOriginal),
 				"Code_Execute"
+			);
+
+			Hook
+			(
+				ReCa<void*>(&Hooks::DoCallScript::Function),
+				ReCa<void*>(&Hooks::DoCallScript::GetTargetAddress),
+				ReCa<void**>(&Hooks::DoCallScript::pfnOriginal),
+				"DoCallScript"
 			);
 
 			Hook
