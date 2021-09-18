@@ -49,6 +49,8 @@ namespace API
 
 	DllExport TRoutine GetBuiltin(const char* Name);
 
+	DllExport bool IsYYC();
+
 	/* Reconstructed YYGML Functions */
 	// Note to self: YYRValue** are actually **, not references, they're passing arrays of pointers...
 	DllExport RValue* YYGML_CallLegacyFunction(CInstance* _pSelf, CInstance* _pOther, RValue& _result, int _argc, int _id, RValue** _args);

@@ -16,12 +16,14 @@ class YYTKEventBase
 {
 public:
 	virtual EventType GetEventType() const = 0;
+	virtual const std::string& GetInternalName() const = 0;
 };
 
 template <typename _ReturnValue, typename _Function, EventType _Event, typename... _FunctionArgs>
 class YYTKEvent : public YYTKEventBase
 {
 protected:
+	std::string strInternalName;
 	std::tuple<_FunctionArgs...> s_tArguments;
 	_ReturnValue s_tReturnValue;
 	_Function s_tOriginal;
@@ -56,13 +58,34 @@ public:
 		return s_tReturnValue;
 	}
 
+	void Cancel(const _ReturnValue& newReturn)
+	{
+		this->CalledOriginal() = true;
+		this->GetReturn() = newReturn;
+	}
+
 	virtual EventType GetEventType() const override
 	{
 		return _Event;
 	}
 
+	virtual const std::string& GetInternalName() const override
+	{
+		return strInternalName;
+	}
+
 	YYTKEvent(_Function Original, _FunctionArgs... Args)
 	{
+		this->strInternalName = "";
+		this->s_CalledOriginal = false;
+		this->s_tReturnValue = 0; // Might be UB, who knows
+		this->s_tArguments = std::make_tuple(Args...);
+		this->s_tOriginal = Original;
+	}
+
+	YYTKEvent(const std::string& InternalName, _Function Original, _FunctionArgs... Args)
+	{
+		this->strInternalname = InternalName;
 		this->s_CalledOriginal = false;
 		this->s_tReturnValue = 0; // Might be UB, who knows
 		this->s_tArguments = std::make_tuple(Args...);
@@ -74,9 +97,11 @@ template <typename _Function, EventType _Event, typename... _FunctionArgs>
 class YYTKEvent<void, _Function, _Event, _FunctionArgs...> : public YYTKEventBase // Specialization for void return type
 {
 protected:
+	std::string strInternalName;
 	std::tuple<_FunctionArgs...> s_tArguments;
 	_Function s_tOriginal;
 	bool s_CalledOriginal;
+
 public:
 	void Call(_FunctionArgs... Args)
 	{
@@ -105,8 +130,14 @@ public:
 		return _Event;
 	}
 
+	virtual const std::string& GetInternalName() const override
+	{
+		return strInternalName;
+	}
+
 	YYTKEvent(_Function Original, _FunctionArgs... Args)
 	{
+		this->strInternalName = "";
 		this->s_CalledOriginal = false;
 		this->s_tArguments = std::make_tuple(Args...);
 		this->s_tOriginal = Original;
@@ -119,4 +150,5 @@ using YYTKMessageBoxEvent = YYTKEvent<int, int(__stdcall*)(HWND, LPCWSTR, LPCWST
 using YYTKPresentEvent = YYTKEvent<HRESULT, HRESULT(__stdcall*)(IDXGISwapChain*, UINT, UINT), EventType::EVT_PRESENT, IDXGISwapChain*, UINT, UINT>;
 using YYTKWindowProcEvent = YYTKEvent<LRESULT, LRESULT(__stdcall*)(HWND, UINT, WPARAM, LPARAM), EventType::EVT_WNDPROC, HWND, UINT, WPARAM, LPARAM>;
 using YYTKResizeBuffersEvent = YYTKEvent<HRESULT, HRESULT(__stdcall*)(IDXGISwapChain*, UINT, UINT, UINT, DXGI_FORMAT, UINT), EventType::EVT_RESIZEBUFFERS, IDXGISwapChain*, UINT, UINT, UINT, DXGI_FORMAT, UINT>;
-using YYTKErrorEvent = YYTKEvent<void, void(__cdecl*)(const char*, ...), EventType::EVT_YYERROR, const char*>;
+using YYTKErrorEvent = YYTKEvent<void, void(__cdecl*)(const char*, ...), EventType::EVT_YYERROR, const char*>; // template specializations ftw
+using YYTKScriptEvent = YYTKEvent<char*, char* (__cdecl*)(CScript*, int, char*, VMExec*, YYObjectBase*, YYObjectBase*), EventType::EVT_DOCALLSCRIPT, CScript*, int, char*, VMExec*, YYObjectBase*, YYObjectBase*>;

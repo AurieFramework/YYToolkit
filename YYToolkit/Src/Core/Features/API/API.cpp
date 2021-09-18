@@ -70,7 +70,7 @@ namespace API
 		freopen_s(&fDummy, "CONOUT$", "w", stdout);
 
 		SetConsoleTitleA("YYToolkit Log");
-		printf("YYToolkit version %s - Error Flag: %i\n", YYSDK_VERSION, static_cast<int>(ErrorOccured));
+		printf("YYToolkit version %s - Error Flag: %i (%s)\n", YYSDK_VERSION, static_cast<int>(ErrorOccured), IsYYC() ? "YYC" : "VM");
 
 		// Run autoexec
 		namespace fs = std::filesystem;
@@ -318,6 +318,14 @@ namespace API
 			return Info.Function;
 		}
 		return nullptr;
+	}
+
+	DllExport bool IsYYC()
+	{
+		YYRValue Result;
+		API::CallBuiltinFunction(nullptr, nullptr, Result, 0, "code_is_compiled", &Result);
+
+		return Result;
 	}
 
 	DllExport RValue* YYGML_CallLegacyFunction(CInstance* _pSelf, CInstance* _pOther, RValue& _result, int _argc, int _id, RValue** _args)
