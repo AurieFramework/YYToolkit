@@ -30,3 +30,12 @@ jobs:
       # Add additional options to the MSBuild command line here (like platform or verbosity level).
       # See https://docs.microsoft.com/visualstudio/msbuild/msbuild-command-line-reference
       run: msbuild .\YYToolkit\YYToolkit.vcxproj
+    
+    - name: Publish Release
+      uses: actions/checkout@master
+    - name: Create a Release
+      uses: elgohr/Github-Release-Action@master
+      env:
+        GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+      with:
+        args: This is an automated release of YYToolkit.
