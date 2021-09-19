@@ -19,6 +19,12 @@ static std::string ParseVA(const char* fmt, va_list Args)
 
 namespace Utils::Error
 {
+	void SetPrintColor(Color color)
+	{
+		static HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+		SetConsoleTextAttribute(hConsole, static_cast<WORD>(color));
+	}
+
 	void Error(bool critical, const char* fmt, ...)
 	{
 		va_list vaArgs;
@@ -33,18 +39,22 @@ namespace Utils::Error
 		}
 		else
 		{
-			printf("[ERROR] %s\n", String.c_str());
+			SetPrintColor(CLR_RED);
+			printf("[Error] %s\n", String.c_str());
+			SetPrintColor(CLR_DEFAULT);
 		}
 	}
 
-	void Message(const char* fmt, ...)
+	void Message(Color C, const char* fmt, ...)
 	{
 		va_list vaArgs;
 		va_start(vaArgs, fmt);
 		auto String = ParseVA(fmt, vaArgs);
 		va_end(vaArgs);
 
-		printf("[INFO] %s\n", String.c_str());
+		SetPrintColor(C);
+		printf("%s\n", String.c_str());
+		SetPrintColor(CLR_DEFAULT);
 	}
 
 	const char* YYTKStatus_ToString(YYTKStatus Status)
