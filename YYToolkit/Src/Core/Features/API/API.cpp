@@ -27,6 +27,14 @@ namespace API
 
 	YYTKStatus Initialize(void* pModule)
 	{
+		AllocConsole();
+		FILE* fDummy;
+		freopen_s(&fDummy, "CONIN$", "r", stdin);
+		freopen_s(&fDummy, "CONOUT$", "w", stderr);
+		freopen_s(&fDummy, "CONOUT$", "w", stdout);
+
+		SetConsoleTitleA("YYToolkit Log");
+
 		bool ErrorOccured = false;
 		if (!gAPIVars.Code_Execute)
 		{
@@ -63,34 +71,27 @@ namespace API
 
 		gAPIVars.MainModule = pModule;
 
-		AllocConsole();
-		FILE* fDummy;
-		freopen_s(&fDummy, "CONIN$", "r", stdin);
-		freopen_s(&fDummy, "CONOUT$", "w", stderr);
-		freopen_s(&fDummy, "CONOUT$", "w", stdout);
+		Utils::Error::Message(CLR_LIGHTBLUE, "YYToolkit %s by Archie", YYSDK_VERSION);
 
-		SetConsoleTitleA("YYToolkit Log");
-		printf("YYToolkit version %s - Error Flag: %i (%s)\n", YYSDK_VERSION, static_cast<int>(ErrorOccured), IsYYC() ? "YYC" : "VM");
+		Utils::Error::Message(CLR_DEFAULT, "- Encountered error: %s", ErrorOccured ? "Yes" : "No");
+		Utils::Error::Message(CLR_DEFAULT, "- Game Type: %s\n", IsYYC() ? "YYC" : "VM"); // Has one more newline, for spacing.
 
-		// Run autoexec
 		namespace fs = std::filesystem;
-
 		std::wstring Path = fs::current_path().wstring().append(L"\\autoexec");
-
-		printf("Running from %s\n", fs::current_path().string().c_str());
-
+		
 		if (fs::is_directory(Path))
 		{
-			printf("'autoexec' folder exists, starting plugins...\n");
+			Utils::Error::Message(CLR_LIGHTBLUE, "'autoexec' directory exists - loading plugins!");
+
 			for (auto& entry : fs::directory_iterator(Path))
 			{
 				if (entry.path().extension().string().find(".dll") != std::string::npos)
 				{
 					// We have a DLL, try loading it
 					if (!Plugins::LoadPlugin(entry.path().string().c_str()))
-						Utils::Error::Message("Plugin %s failed to load!", entry.path().filename().string().c_str());
+						Utils::Error::Message(CLR_RED, "[-] Failed to load '%s'", entry.path().filename().string().c_str());
 					else
-						Utils::Error::Message("Plugin %s loaded!", entry.path().filename().string().c_str());
+						Utils::Error::Message(CLR_GREEN, "[+] Loaded '%s'", entry.path().filename().string().c_str());
 				}
 			}
 		}
@@ -385,7 +386,7 @@ namespace Plugins
 
 		if (!lpPluginEntry)
 		{
-			FreeLibraryAndExitThread(PluginModule, 1);
+			FreeLibrary(PluginModule); // this crashes with an access violation, what is going on?
 			return nullptr;
 		}
 

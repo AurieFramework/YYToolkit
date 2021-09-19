@@ -25,6 +25,8 @@ namespace Hooks
 	{
 		MH_Initialize();
 		{
+			Utils::Error::Message(CLR_LIGHTBLUE, "\nStarting hooks...");
+
 			auto Hook = [](void* NewFunc, void* GetTargetFunc, void** pfnOriginal, const char* Name)
 			{
 				if (void* lpFunc = reinterpret_cast<void*(*)()>(GetTargetFunc)()) // "C isn't that hard" moment
@@ -35,7 +37,7 @@ namespace Hooks
 					else
 						MH_EnableHook(lpFunc);
 
-					Utils::Error::Message("&%s = %p", Name, lpFunc);
+					Utils::Error::Message(CLR_GRAY, "- &%s = 0x%p", Name, lpFunc);
 				}
 			};
 
@@ -138,7 +140,7 @@ namespace Hooks
 			WindowProc::_SetWindowsHook();
 
 			auto TimeEnd = std::chrono::high_resolution_clock::now();
-			Utils::Error::Message("All hooks enabled - took %.2f seconds!", static_cast<float>(std::chrono::duration_cast<std::chrono::milliseconds>(TimeEnd - TimeStart).count()) / 1000.0f);
+			Utils::Error::Message(CLR_LIGHTBLUE, "All hooks enabled - took %.3f seconds!", static_cast<float>(std::chrono::duration_cast<std::chrono::milliseconds>(TimeEnd - TimeStart).count()) / 1000.0f);
 		}
 	}
 
