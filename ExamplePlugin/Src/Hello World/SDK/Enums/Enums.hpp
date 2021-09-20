@@ -52,3 +52,19 @@ enum EventType : int
 	EVT_DOCALLSCRIPT = 7,	// The event represents a DoCallScript() call.
 	EVT_CUSTOM = 1337,		// The event represents a custom function call, raised by plugins.
 };
+
+enum Color : int
+{
+	CLR_BLACK = 0,
+	CLR_DARKBLUE = 1,
+	CLR_RED = 4,
+	CLR_PURPLE = 5,
+	CLR_DEFAULT = 7,
+	CLR_GRAY = 8,
+	CLR_BLUE = 9,
+	CLR_GREEN = 10,
+	CLR_LIGHTBLUE = 11,
+	CLR_PINK = 13,
+	CLR_YELLOW = 14,
+	CLR_WHITE = 15
+};

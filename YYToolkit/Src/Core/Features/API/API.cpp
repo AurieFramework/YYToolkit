@@ -35,6 +35,8 @@ namespace API
 
 		SetConsoleTitleA("YYToolkit Log");
 
+		Utils::Error::Message(CLR_LIGHTBLUE, "YYToolkit %s by Archie", YYSDK_VERSION);
+
 		bool ErrorOccured = false;
 		if (!gAPIVars.Code_Execute)
 		{
@@ -71,17 +73,17 @@ namespace API
 
 		gAPIVars.MainModule = pModule;
 
-		Utils::Error::Message(CLR_LIGHTBLUE, "YYToolkit %s by Archie", YYSDK_VERSION);
-
+		
+		Utils::Error::Message(CLR_DEFAULT, "- Core plugin mapped to: 0x%p", gAPIVars.MainModule);
 		Utils::Error::Message(CLR_DEFAULT, "- Encountered error: %s", ErrorOccured ? "Yes" : "No");
 		Utils::Error::Message(CLR_DEFAULT, "- Game Type: %s\n", IsYYC() ? "YYC" : "VM"); // Has one more newline, for spacing.
 
 		namespace fs = std::filesystem;
 		std::wstring Path = fs::current_path().wstring().append(L"\\autoexec");
 		
-		if (fs::is_directory(Path))
+		if (fs::is_directory(Path) && !fs::is_empty(Path))
 		{
-			Utils::Error::Message(CLR_LIGHTBLUE, "'autoexec' directory exists - loading plugins!");
+			Utils::Error::Message(CLR_LIGHTBLUE, "'autoexec' directory exists and isn't empty - loading plugins!");
 
 			for (auto& entry : fs::directory_iterator(Path))
 			{
@@ -386,7 +388,7 @@ namespace Plugins
 
 		if (!lpPluginEntry)
 		{
-			FreeLibrary(PluginModule); // this crashes with an access violation, what is going on?
+			Utils::Error::Message(CLR_RED, "[-] WARNING: '%s' doesn't export PluginEntry()!", Path);
 			return nullptr;
 		}
 
