@@ -29,16 +29,34 @@ jobs:
       working-directory: ${{env.GITHUB_WORKSPACE}}
       # Add additional options to the MSBuild command line here (like platform or verbosity level).
       # See https://docs.microsoft.com/visualstudio/msbuild/msbuild-command-line-reference
-      run: msbuild .\YYToolkit\YYToolkit.vcxproj
+      run: msbuild .\YYToolkit\YYToolkit.vcxproj /property:Configuration=Release /property:PlatformTarget=x86
       
     - name: Build YYTK ExamplePlugin
       working-directory: ${{env.GITHUB_WORKSPACE}}
       # Add additional options to the MSBuild command line here (like platform or verbosity level).
       # See https://docs.microsoft.com/visualstudio/msbuild/msbuild-command-line-reference
-      run: msbuild .\ExamplePlugin\ExamplePlugin.vcxproj
+      run: msbuild .\ExamplePlugin\ExamplePlugin.vcxproj /property:Configuration=Release /property:PlatformTarget=x86
       
     - name: Build YYLauncher
       working-directory: ${{env.GITHUB_WORKSPACE}}
       # Add additional options to the MSBuild command line here (like platform or verbosity level).
       # See https://docs.microsoft.com/visualstudio/msbuild/msbuild-command-line-reference
-      run: msbuild .\Launcher\Launcher.csproj
+      run: msbuild .\Launcher\Launcher.csproj /property:Configuration=Release /property:PlatformTarget=x86
+      
+    - name: Upload YYTK Core as artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: YYTK-Core
+        path: .\YYToolkit\Build\Core\Release\YYToolkit.dll
+      
+    - name: Upload ExamplePlugin as artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: ExamplePlugin
+        path: .\ExamplePlugin\Build\Plugin\Release\ExamplePlugin.dll
+        
+    - name: Upload YYLauncher as artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: YYLauncher
+        path: .\Launcher\bin\Release\Launcher.exe
