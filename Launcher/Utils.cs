@@ -35,12 +35,60 @@ namespace Launcher
 
         public static string[] GetPluginsFromGameDirectory(string GameDirPath)
         {
-            string[] Plugins = { };
-
             if (!Directory.Exists(GameDirPath) || !Directory.Exists(GameDirPath + "\\autoexec"))
-                return Plugins;
+                return new string[0];
 
-            return Directory.GetFiles(GameDirPath + "\\autoexec", "*.dll");
+            var EnabledEntries = Directory.GetFiles(GameDirPath + "\\autoexec", "*.dll");
+            var DisabledEntries = Directory.GetFiles(GameDirPath + "\\autoexec", "*.dll.disabled");
+
+            string[] Plugins = new string[EnabledEntries.Length + DisabledEntries.Length];
+
+            int n = 0;
+            foreach (var file in EnabledEntries)
+            {
+                Plugins[n] = Path.GetFileName(file);
+                n++;
+            }
+
+            foreach (var file in DisabledEntries)
+            {
+                Plugins[n] = Path.GetFileName(file);
+                n++;
+            }
+
+            return Plugins;
+        }
+    }
+
+    public partial class MainWindow : Form
+    {
+        public static bool IsReadyToManagePlugins(string sRunnerFilename, ListBox listPlugins)
+        {
+            if (string.IsNullOrEmpty(sRunnerFilename))
+            {
+                MessageBox.Show("Please select the game executable first!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return false;
+            }
+
+            if (!Directory.Exists("autoexec"))
+            {
+                MessageBox.Show("You can't uninstall something when there's nothing!", "What are you doing LOL", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return false;
+            }
+
+            if (Utils.GetPluginsFromGameDirectory(Directory.GetCurrentDirectory()).Length == 0)
+            {
+                MessageBox.Show("No plugins were found in the 'autoexec' directory.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return false;
+            }
+
+            if (listPlugins.SelectedItem == null)
+            {
+                MessageBox.Show("Please select a plugin first.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return false;
+            }
+
+            return true;
         }
     }
 }

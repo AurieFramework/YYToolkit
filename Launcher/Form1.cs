@@ -18,6 +18,15 @@ namespace Launcher
         public MainWindow()
         {
             InitializeComponent();
+
+            ContextMenu PluginManagerContextMenu = new ContextMenu();
+            PluginManagerContextMenu.MenuItems.Add("Install plugin", new EventHandler(PluginContextMenu_InstallPlugin));
+            PluginManagerContextMenu.MenuItems.Add("Uninstall plugin", new EventHandler(PluginContextMenu_UninstallPlugin));
+            PluginManagerContextMenu.MenuItems.Add("Enable plugin", new EventHandler(PluginContextMenu_EnablePlugin));
+            PluginManagerContextMenu.MenuItems.Add("Disable plugin", new EventHandler(PluginContextMenu_DisablePlugin));
+            PluginManagerContextMenu.MenuItems.Add("Refresh list", new EventHandler(PluginContextMenu_Refresh));
+
+            listPlugins.ContextMenu = PluginManagerContextMenu;
         }
 
         private void btRunnerPick_Click(object sender, EventArgs e)
@@ -33,6 +42,9 @@ namespace Launcher
 
                     txtRunner.ResetText();
                     txtRunner.AppendText(sRunnerFilePath);
+
+                    listPlugins.Items.Clear();
+                    listPlugins.Items.AddRange(Utils.GetPluginsFromGameDirectory(Directory.GetCurrentDirectory()));
                 }
             }
         }
@@ -171,6 +183,140 @@ namespace Launcher
                     MessageBox.Show("Download complete.", "Source code download", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
             }
+        }
+
+        private void PluginContextMenu_InstallPlugin(object sender, EventArgs e)
+        {
+            if (string.IsNullOrEmpty(sRunnerFileName))
+            {
+                MessageBox.Show("Please select the game executable first!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            using (OpenFileDialog fileDialog = Utils.CreateFileDialog("%systemdrive%", "Find the plugin file", "YYToolkit plugins|*.dll", 1))
+            {
+                if (fileDialog.ShowDialog() == DialogResult.OK)
+                {
+                    if (fileDialog.SafeFileName.ToLower() == "yytoolkit.dll")
+                    {
+                        if (MessageBox.Show("YYToolkit.dll might be the core module, and not a plugin. Add it anyway?", "Warning", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.No)
+                            return;
+                    }
+
+                    try
+                    {
+                        if (!Directory.Exists("autoexec"))
+                            Directory.CreateDirectory("autoexec");
+
+                        File.Copy(fileDialog.FileName, Directory.GetCurrentDirectory() + "\\autoexec\\" + fileDialog.SafeFileName);
+                    }
+                    catch (System.Exception Exception)
+                    {
+                        MessageBox.Show(Exception.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+
+                    // Refresh plugins
+                    listPlugins.Items.Clear();
+                    listPlugins.Items.AddRange(Utils.GetPluginsFromGameDirectory(Directory.GetCurrentDirectory()));
+                }
+            }
+        }
+
+        private void PluginContextMenu_UninstallPlugin(object sender, EventArgs e)
+        {
+            if (!IsReadyToManagePlugins(sRunnerFileName, listPlugins))
+                return;
+
+            try
+            {
+                File.Delete(Directory.GetCurrentDirectory() + "\\autoexec\\" + listPlugins.SelectedItem.ToString());
+            }
+            catch (System.Exception Exception)
+            {
+                MessageBox.Show(Exception.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+
+            // Refresh plugins
+            listPlugins.Items.Clear();
+            listPlugins.Items.AddRange(Utils.GetPluginsFromGameDirectory(Directory.GetCurrentDirectory()));
+        }
+
+        private void PluginContextMenu_EnablePlugin(object sender, EventArgs e)
+        {
+            if (!IsReadyToManagePlugins(sRunnerFileName, listPlugins))
+                return;
+
+            var PluginName = listPlugins.SelectedItem.ToString();
+
+            if (!PluginName.EndsWith(".dll.disabled"))
+            {
+                MessageBox.Show("Please pick a disabled plugin.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            var PluginPath = Directory.GetCurrentDirectory() + "\\autoexec\\" + PluginName;
+
+            try
+            {
+                File.Move(PluginPath, PluginPath.Substring(0, PluginPath.LastIndexOf(".disabled")));
+            }
+            catch (System.Exception Exception)
+            {
+                MessageBox.Show(Exception.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+
+            // Refresh plugins
+            listPlugins.Items.Clear();
+            listPlugins.Items.AddRange(Utils.GetPluginsFromGameDirectory(Directory.GetCurrentDirectory()));
+        }
+
+        private void PluginContextMenu_DisablePlugin(object sender, EventArgs e)
+        {
+            if (!IsReadyToManagePlugins(sRunnerFileName, listPlugins))
+                return;
+
+            var PluginName = listPlugins.SelectedItem.ToString();
+
+            if (PluginName.EndsWith(".dll.disabled"))
+            {
+                MessageBox.Show("Please pick an enabled plugin.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            var PluginPath = Directory.GetCurrentDirectory() + "\\autoexec\\" + PluginName;
+
+            try
+            {
+                File.Move(PluginPath, PluginPath + ".disabled");
+            }
+            catch (System.Exception Exception)
+            {
+                MessageBox.Show(Exception.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+
+            // Refresh plugins
+            listPlugins.Items.Clear();
+            listPlugins.Items.AddRange(Utils.GetPluginsFromGameDirectory(Directory.GetCurrentDirectory()));
+        }
+
+        private void PluginContextMenu_Refresh(object sender, EventArgs e)
+        {
+            listPlugins.Items.Clear();
+            listPlugins.Items.AddRange(Utils.GetPluginsFromGameDirectory(Directory.GetCurrentDirectory()));
+        }
+
+        private void btOpenData_Click(object sender, EventArgs e)
+        {
+            if (string.IsNullOrEmpty(sRunnerFileName))
+            {
+                MessageBox.Show("Please select the game executable first!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            if (string.IsNullOrEmpty(sDataFilePath))
+                Process.Start("explorer.exe", $"\"{Directory.GetCurrentDirectory() + "\\data.win"}\"");
+            else
+                Process.Start("explorer.exe", $"\"{sDataFilePath}\"");
         }
     }
 }

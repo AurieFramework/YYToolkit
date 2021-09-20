@@ -40,20 +40,23 @@ namespace Launcher
             this.lbRunner = new System.Windows.Forms.Label();
             this.txtRunner = new System.Windows.Forms.TextBox();
             this.gbMisc = new System.Windows.Forms.GroupBox();
+            this.btOpenGitHub = new System.Windows.Forms.Button();
+            this.btOpenPluginFolder = new System.Windows.Forms.Button();
             this.btYYTKLaunch = new System.Windows.Forms.Button();
             this.gbInject = new System.Windows.Forms.GroupBox();
             this.btNoModLaunch = new System.Windows.Forms.Button();
-            this.pageSetupDialog1 = new System.Windows.Forms.PageSetupDialog();
-            this.btOpenPluginFolder = new System.Windows.Forms.Button();
-            this.btOpenGitHub = new System.Windows.Forms.Button();
             this.rbStable = new System.Windows.Forms.RadioButton();
             this.rbBeta = new System.Windows.Forms.RadioButton();
             this.gbSourceCode = new System.Windows.Forms.GroupBox();
             this.btDownloadSrc = new System.Windows.Forms.Button();
+            this.gbPlugins = new System.Windows.Forms.GroupBox();
+            this.listPlugins = new System.Windows.Forms.ListBox();
+            this.btOpenData = new System.Windows.Forms.Button();
             this.gbSelectFiles.SuspendLayout();
             this.gbMisc.SuspendLayout();
             this.gbInject.SuspendLayout();
             this.gbSourceCode.SuspendLayout();
+            this.gbPlugins.SuspendLayout();
             this.SuspendLayout();
             // 
             // btRunnerPick
@@ -170,12 +173,34 @@ namespace Launcher
             this.gbMisc.Controls.Add(this.btOpenPluginFolder);
             this.gbMisc.Font = new System.Drawing.Font("Segoe UI", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.gbMisc.ForeColor = System.Drawing.Color.White;
-            this.gbMisc.Location = new System.Drawing.Point(12, 109);
+            this.gbMisc.Location = new System.Drawing.Point(12, 290);
             this.gbMisc.Name = "gbMisc";
-            this.gbMisc.Size = new System.Drawing.Size(366, 206);
+            this.gbMisc.Size = new System.Drawing.Size(366, 69);
             this.gbMisc.TabIndex = 2;
             this.gbMisc.TabStop = false;
-            this.gbMisc.Text = "2 - Miscellaneous";
+            this.gbMisc.Text = "4 - Miscellaneous";
+            // 
+            // btOpenGitHub
+            // 
+            this.btOpenGitHub.ForeColor = System.Drawing.Color.Black;
+            this.btOpenGitHub.Location = new System.Drawing.Point(186, 26);
+            this.btOpenGitHub.Name = "btOpenGitHub";
+            this.btOpenGitHub.Size = new System.Drawing.Size(170, 28);
+            this.btOpenGitHub.TabIndex = 1;
+            this.btOpenGitHub.Text = "Open YYTK GitHub";
+            this.btOpenGitHub.UseVisualStyleBackColor = true;
+            this.btOpenGitHub.Click += new System.EventHandler(this.btOpenGitHub_Click);
+            // 
+            // btOpenPluginFolder
+            // 
+            this.btOpenPluginFolder.ForeColor = System.Drawing.Color.Black;
+            this.btOpenPluginFolder.Location = new System.Drawing.Point(10, 26);
+            this.btOpenPluginFolder.Name = "btOpenPluginFolder";
+            this.btOpenPluginFolder.Size = new System.Drawing.Size(170, 28);
+            this.btOpenPluginFolder.TabIndex = 0;
+            this.btOpenPluginFolder.Text = "Open \'autoexec\' folder";
+            this.btOpenPluginFolder.UseVisualStyleBackColor = true;
+            this.btOpenPluginFolder.Click += new System.EventHandler(this.btOpenPluginFolder_Click);
             // 
             // btYYTKLaunch
             // 
@@ -191,16 +216,17 @@ namespace Launcher
             // 
             // gbInject
             // 
+            this.gbInject.Controls.Add(this.btOpenData);
             this.gbInject.Controls.Add(this.btNoModLaunch);
             this.gbInject.Controls.Add(this.btYYTKLaunch);
             this.gbInject.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.gbInject.ForeColor = System.Drawing.Color.White;
             this.gbInject.Location = new System.Drawing.Point(384, 109);
             this.gbInject.Name = "gbInject";
-            this.gbInject.Size = new System.Drawing.Size(268, 102);
+            this.gbInject.Size = new System.Drawing.Size(268, 147);
             this.gbInject.TabIndex = 4;
             this.gbInject.TabStop = false;
-            this.gbInject.Text = "3 - Injection";
+            this.gbInject.Text = "3 - Launcher";
             // 
             // btNoModLaunch
             // 
@@ -213,28 +239,6 @@ namespace Launcher
             this.btNoModLaunch.Text = "Launch game without mods";
             this.btNoModLaunch.UseVisualStyleBackColor = true;
             this.btNoModLaunch.Click += new System.EventHandler(this.btNoModLaunch_Click);
-            // 
-            // btOpenPluginFolder
-            // 
-            this.btOpenPluginFolder.ForeColor = System.Drawing.Color.Black;
-            this.btOpenPluginFolder.Location = new System.Drawing.Point(10, 26);
-            this.btOpenPluginFolder.Name = "btOpenPluginFolder";
-            this.btOpenPluginFolder.Size = new System.Drawing.Size(170, 28);
-            this.btOpenPluginFolder.TabIndex = 0;
-            this.btOpenPluginFolder.Text = "Open \'autoexec\' folder";
-            this.btOpenPluginFolder.UseVisualStyleBackColor = true;
-            this.btOpenPluginFolder.Click += new System.EventHandler(this.btOpenPluginFolder_Click);
-            // 
-            // btOpenGitHub
-            // 
-            this.btOpenGitHub.ForeColor = System.Drawing.Color.Black;
-            this.btOpenGitHub.Location = new System.Drawing.Point(186, 26);
-            this.btOpenGitHub.Name = "btOpenGitHub";
-            this.btOpenGitHub.Size = new System.Drawing.Size(170, 28);
-            this.btOpenGitHub.TabIndex = 1;
-            this.btOpenGitHub.Text = "Open YYTK GitHub";
-            this.btOpenGitHub.UseVisualStyleBackColor = true;
-            this.btOpenGitHub.Click += new System.EventHandler(this.btOpenGitHub_Click);
             // 
             // rbStable
             // 
@@ -265,47 +269,84 @@ namespace Launcher
             this.gbSourceCode.Controls.Add(this.rbBeta);
             this.gbSourceCode.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.gbSourceCode.ForeColor = System.Drawing.Color.White;
-            this.gbSourceCode.Location = new System.Drawing.Point(384, 217);
+            this.gbSourceCode.Location = new System.Drawing.Point(384, 262);
             this.gbSourceCode.Name = "gbSourceCode";
-            this.gbSourceCode.Size = new System.Drawing.Size(268, 98);
+            this.gbSourceCode.Size = new System.Drawing.Size(268, 97);
             this.gbSourceCode.TabIndex = 4;
             this.gbSourceCode.TabStop = false;
-            this.gbSourceCode.Text = "4 - Source Code";
+            this.gbSourceCode.Text = "5 - Source Code";
             // 
             // btDownloadSrc
             // 
-            this.btDownloadSrc.Font = new System.Drawing.Font("Segoe UI", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btDownloadSrc.Font = new System.Drawing.Font("Segoe UI", 15.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.btDownloadSrc.ForeColor = System.Drawing.Color.Black;
-            this.btDownloadSrc.Location = new System.Drawing.Point(136, 58);
+            this.btDownloadSrc.Location = new System.Drawing.Point(136, 28);
             this.btDownloadSrc.Name = "btDownloadSrc";
-            this.btDownloadSrc.Size = new System.Drawing.Size(126, 28);
+            this.btDownloadSrc.Size = new System.Drawing.Size(126, 56);
             this.btDownloadSrc.TabIndex = 4;
             this.btDownloadSrc.Text = "Download";
             this.btDownloadSrc.UseVisualStyleBackColor = true;
             this.btDownloadSrc.Click += new System.EventHandler(this.btDownloadSrc_Click);
+            // 
+            // gbPlugins
+            // 
+            this.gbPlugins.Controls.Add(this.listPlugins);
+            this.gbPlugins.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.gbPlugins.ForeColor = System.Drawing.Color.White;
+            this.gbPlugins.Location = new System.Drawing.Point(12, 109);
+            this.gbPlugins.Name = "gbPlugins";
+            this.gbPlugins.Size = new System.Drawing.Size(366, 175);
+            this.gbPlugins.TabIndex = 5;
+            this.gbPlugins.TabStop = false;
+            this.gbPlugins.Text = "2 - Plugin Manager";
+            // 
+            // listPlugins
+            // 
+            this.listPlugins.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(32)))), ((int)(((byte)(32)))), ((int)(((byte)(32)))));
+            this.listPlugins.ForeColor = System.Drawing.Color.White;
+            this.listPlugins.FormattingEnabled = true;
+            this.listPlugins.ItemHeight = 21;
+            this.listPlugins.Location = new System.Drawing.Point(10, 31);
+            this.listPlugins.Name = "listPlugins";
+            this.listPlugins.Size = new System.Drawing.Size(346, 130);
+            this.listPlugins.TabIndex = 0;
+            // 
+            // btOpenData
+            // 
+            this.btOpenData.Font = new System.Drawing.Font("Segoe UI", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btOpenData.ForeColor = System.Drawing.Color.Black;
+            this.btOpenData.Location = new System.Drawing.Point(8, 96);
+            this.btOpenData.Name = "btOpenData";
+            this.btOpenData.Size = new System.Drawing.Size(254, 28);
+            this.btOpenData.TabIndex = 6;
+            this.btOpenData.Text = "Open data.win in UTModTool";
+            this.btOpenData.UseVisualStyleBackColor = true;
+            this.btOpenData.Click += new System.EventHandler(this.btOpenData_Click);
             // 
             // MainWindow
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(50)))), ((int)(((byte)(50)))), ((int)(((byte)(70)))));
-            this.ClientSize = new System.Drawing.Size(664, 325);
+            this.ClientSize = new System.Drawing.Size(664, 371);
+            this.Controls.Add(this.gbMisc);
+            this.Controls.Add(this.gbPlugins);
             this.Controls.Add(this.gbSourceCode);
             this.Controls.Add(this.gbInject);
-            this.Controls.Add(this.gbMisc);
             this.Controls.Add(this.gbSelectFiles);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.Name = "MainWindow";
-            this.Text = "YYLauncher";
+            this.Text = "YYLauncher 0.2";
             this.gbSelectFiles.ResumeLayout(false);
             this.gbSelectFiles.PerformLayout();
             this.gbMisc.ResumeLayout(false);
             this.gbInject.ResumeLayout(false);
             this.gbSourceCode.ResumeLayout(false);
             this.gbSourceCode.PerformLayout();
+            this.gbPlugins.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }
@@ -325,12 +366,14 @@ namespace Launcher
         private System.Windows.Forms.Button btResetData;
         private System.Windows.Forms.Button btDataPick;
         private System.Windows.Forms.Button btOpenPluginFolder;
-        private System.Windows.Forms.PageSetupDialog pageSetupDialog1;
         private System.Windows.Forms.Button btOpenGitHub;
         private System.Windows.Forms.RadioButton rbStable;
         private System.Windows.Forms.RadioButton rbBeta;
         private System.Windows.Forms.GroupBox gbSourceCode;
         private System.Windows.Forms.Button btDownloadSrc;
+        private System.Windows.Forms.GroupBox gbPlugins;
+        private System.Windows.Forms.ListBox listPlugins;
+        private System.Windows.Forms.Button btOpenData;
     }
 }
 
