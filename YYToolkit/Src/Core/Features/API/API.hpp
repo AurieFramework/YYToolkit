@@ -37,6 +37,12 @@ namespace API
 
 	DllExport YYTKStatus GetAPIVars(APIVars_t** ppoutVars);
 
+	DllExport YYTKStatus GetScriptArray(CDynamicArray<CScript*>*& pOutArray);
+
+	// DllExport YYTKStatus GetScriptByID(int id, CScript*& outScript);
+
+	// DllExport YYTKStatus GetScriptByName(const char* Name, CScript*& outScript);
+
 	DllExport YYTKStatus GetCodeExecuteAddr(FNCodeExecute& outAddress);
 
 	DllExport YYTKStatus GetCodeFunctionAddr(FNCodeFunctionGetTheFunction& outAddress);

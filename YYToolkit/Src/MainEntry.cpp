@@ -13,7 +13,12 @@ void __stdcall Main()
 	API::Initialize(g_hDLL);
 	Hooks::Initialize();
 
-	while (!GetAsyncKeyState(VK_END)) { Sleep(5); }
+	while (!GetAsyncKeyState(VK_END)) 
+	{
+		// Run console
+
+		Sleep(5); 
+	}
 
 	Hooks::Uninitialize();
 	API::Uninitialize();

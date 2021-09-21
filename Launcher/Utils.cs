@@ -22,13 +22,14 @@ namespace Launcher
 
         public static OpenFileDialog CreateFileDialog(string StartPath, string Title, string Filter, int FilterIndex)
         {
-            OpenFileDialog dialog = new OpenFileDialog();
-
-            dialog.InitialDirectory = Environment.ExpandEnvironmentVariables(StartPath);
-            dialog.Title = Title;
-            dialog.Filter = Filter;
-            dialog.FilterIndex = FilterIndex;
-            dialog.RestoreDirectory = true;
+            OpenFileDialog dialog = new OpenFileDialog
+            {
+                InitialDirectory = Environment.ExpandEnvironmentVariables(StartPath),
+                Title = Title,
+                Filter = Filter,
+                FilterIndex = FilterIndex,
+                RestoreDirectory = true
+            };
 
             return dialog;
         }

@@ -66,7 +66,13 @@ DllExport YYTKStatus PluginEntry(YYTKPlugin* pPlugin)
     // This is not required if you don't need to modify code entries / draw with D3D / anything else that requires precise timing.
     pPlugin->PluginHandler = PluginEventHandler;
 
-    printf("[DR Chapter 2 Debug Enabler] I'm about to do what's called a pro-gamer move.\n");
+    auto CBF = pPlugin->GetCoreExport<YYTKStatus(*)(CInstance*, CInstance*, YYRValue&, int, const char*, YYRValue*)>("CallBuiltinFunction");
+
+    YYRValue Result = 0.0; YYRValue Args[2] = { "debug", 1.0 };
+
+    CBF(0, 0, Result, 1, "variable_global_set", Args);
+
+    printf("[DR Chapter 2 Debug Enabler] Patched scr_debug and enabled global.debug!\n");
 
     // Tell the core everything went fine.
     return YYTK_OK;
