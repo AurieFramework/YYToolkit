@@ -296,6 +296,44 @@ namespace API
 		return YYTK_FAIL;
 	}
 
+	DllExport YYTKStatus GetScriptByName(const char* Name, CScript*& outScript)
+	{
+		std::string sName(Name);
+
+		// If the script name doesn't start with gml_Script, we have to add it before the search.
+		if (!sName._Starts_with("gml_Script_"))
+		{
+			sName = "gml_Script_" + sName;
+		}
+
+		if (!gAPIVars.ppScripts)
+		{
+			if (YYTKStatus Result = GetScriptArray(gAPIVars.ppScripts))
+				return Result; // Only true if the status isn't YYTK_OK
+		}
+			
+
+		for (int n = 1; n < gAPIVars.ppScripts->m_arrayLength; n++)
+		{
+			if (!gAPIVars.ppScripts->Elements[n])
+				continue;
+
+			if (!gAPIVars.ppScripts->Elements[n]->s_code)
+				continue;
+
+			if (!gAPIVars.ppScripts->Elements[n]->s_code->i_pName)
+				continue;
+
+			if (!strcmp(gAPIVars.ppScripts->Elements[n]->s_code->i_pName, sName.c_str()))
+			{
+				outScript = gAPIVars.ppScripts->Elements[n];
+				return YYTK_OK;
+			}
+		}
+
+		return YYTK_NOT_FOUND;
+	}
+
 	DllExport YYTKStatus GetCodeExecuteAddr(FNCodeExecute& outAddress)
 	{
 		ModuleInfo_t CurInfo = GetModuleInfo();
