@@ -58,7 +58,8 @@ namespace Launcher
                 MessageBox.Show("Please select the game executable first!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
-            
+
+            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
             using (var Browser = new WebClient())
             {
                 if (File.Exists(TempPath))
@@ -66,7 +67,7 @@ namespace Launcher
 
                 Browser.DownloadFile("https://github.com/Archie-osu/YYToolkit/releases/latest/download/YYToolkit.dll", TempPath);
             }
-
+            
             Process p;
 
             if (!string.IsNullOrEmpty(sDataFilePath))
