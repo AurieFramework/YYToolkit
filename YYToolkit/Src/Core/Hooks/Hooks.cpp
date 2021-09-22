@@ -140,6 +140,9 @@ namespace Hooks
 			WindowProc::_SetWindowsHook();
 
 			auto TimeEnd = std::chrono::high_resolution_clock::now();
+
+			ShowWindow(reinterpret_cast<HWND>(gAPIVars.Window_Device), SW_SHOW);
+			SetForegroundWindow(reinterpret_cast<HWND>(gAPIVars.Window_Device));
 			Utils::Error::Message(CLR_LIGHTBLUE, "All hooks enabled - took %.3f seconds!", static_cast<float>(std::chrono::duration_cast<std::chrono::milliseconds>(TimeEnd - TimeStart).count()) / 1000.0f);
 		}
 	}

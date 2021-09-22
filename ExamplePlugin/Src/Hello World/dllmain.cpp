@@ -2,57 +2,28 @@
 #include "SDK/SDK.hpp"  // Include the SDK.
 #include <Windows.h>    // Include Windows's mess.
 
-static constexpr unsigned char g_PatchBytes[]
-{ 
-    0x04, 0x00, 0x00, 0xB6, 
-    0x01, 0x00, 0x0F, 0x84, 
-    0x00, 0x00, 0x52, 0x07, 
-    0x00, 0x00, 0x05, 0x9C, 
-    0x00, 0x00, 0x02, 0xC0, 
-    0xB7, 0x8A, 0x01, 0x00, 
-    0x00, 0x00, 0x52, 0x07, 
-    0xFF, 0xFF, 0x0F, 0x84, 
-    0x00, 0x00, 0x52, 0x07, 
-    0x02, 0x00, 0x02, 0xD9, 
-    0xA0, 0x00, 0x00, 0x00, 
-    0x00, 0x00, 0x05, 0x86, 
-    0xFF, 0xFF, 0x0F, 0x84, 
-    0x00, 0x00, 0x55, 0x45, 
-    0xFE, 0xB0, 0x01, 0x80, 
-    0x00, 0x00, 0x05, 0x9E 
-};
+bool bDebug = true;
 
 // Handles all events that happen inside the game.
 // Previously, callbacks served this purpose, however in 0.0.3, an object-oriented design was implemented.
 // If you want to modify a code entry, you're gonna need this function.
 YYTKStatus PluginEventHandler(YYTKPlugin* pPlugin, YYTKEventBase* pEvent)
 {
-    // Check if the event currently raised is a code event
-    if (pEvent->GetEventType() == EventType::EVT_DOCALLSCRIPT)
+    // Check if the event currently raised is a rendering event (EndScene for DX9, Present for DX11)
+    if (pEvent->GetEventType() == EventType::EVT_ENDSCENE || pEvent->GetEventType() == EventType::EVT_PRESENT)
     {
-        // Convert the base event to the actual event object based on it's type.
-        // Tip: Use dynamic_cast to catch issues with exceptions!
-        YYTKScriptEvent* pCodeEvent = dynamic_cast<YYTKScriptEvent*>(pEvent);
-
-        // Prepare variables with which the function was called.
-        CScript* pScript; int argc; char* pStackPointer; VMExec* pVM; YYObjectBase* pLocals; YYObjectBase* pArguments;
-
-        // Extract arguments from the tuple into individual objects. C++ rules apply.
-        std::tie(pScript, argc, pStackPointer, pVM, pLocals, pArguments) = pCodeEvent->Arguments();
-
-        // Check if values are valid
-        if (pScript)
+        // If F3 was pressed
+        if (GetAsyncKeyState(VK_F3) & 1)
         {
-            if (pScript->s_code)
-            {
-                // Check if the code entry name is called scr_debug
-                if (strcmp(pScript->s_code->i_pName, "gml_Script_scr_debug") == 0)
-                {
-                    // Modify the buffer
-                    pScript->s_code->i_pVM->m_pBuffer = (char*)(g_PatchBytes);
-                    pScript->s_code->i_pVM->m_size = 64;
-                }
-            }
+            auto CBF = pPlugin->GetCoreExport<YYTKStatus(*)(CInstance*, CInstance*, YYRValue&, int, const char*, YYRValue*)>("CallBuiltinFunction");
+
+            YYRValue Result = 0.0; YYRValue Args[2] = { "debug", bDebug };
+
+            CBF(0, 0, Result, 1, "variable_global_set", Args);
+
+            printf("[DR Chapter 2 ToggleDebug] Debug mode %s!\n", bDebug ? "Enabled" : "Disabled");
+
+            bDebug = !bDebug;
         }
     }
     return YYTK_OK;
@@ -68,11 +39,11 @@ DllExport YYTKStatus PluginEntry(YYTKPlugin* pPlugin)
 
     auto CBF = pPlugin->GetCoreExport<YYTKStatus(*)(CInstance*, CInstance*, YYRValue&, int, const char*, YYRValue*)>("CallBuiltinFunction");
 
-    YYRValue Result = 0.0; YYRValue Args[2] = { "debug", 1.0 };
+    YYRValue Result = 0.0; YYRValue Args[2] = { "debug", true };
 
     CBF(0, 0, Result, 1, "variable_global_set", Args);
 
-    printf("[DR Chapter 2 Debug Enabler] Patched scr_debug and enabled global.debug!\n");
+    printf("[DR Chapter 2 ToggleDebug] Let there be debug!\n");
 
     // Tell the core everything went fine.
     return YYTK_OK;

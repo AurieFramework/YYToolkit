@@ -44,6 +44,7 @@ namespace Launcher
             this.btOpenPluginFolder = new System.Windows.Forms.Button();
             this.btYYTKLaunch = new System.Windows.Forms.Button();
             this.gbInject = new System.Windows.Forms.GroupBox();
+            this.btOpenData = new System.Windows.Forms.Button();
             this.btNoModLaunch = new System.Windows.Forms.Button();
             this.rbStable = new System.Windows.Forms.RadioButton();
             this.rbBeta = new System.Windows.Forms.RadioButton();
@@ -51,7 +52,6 @@ namespace Launcher
             this.btDownloadSrc = new System.Windows.Forms.Button();
             this.gbPlugins = new System.Windows.Forms.GroupBox();
             this.listPlugins = new System.Windows.Forms.ListBox();
-            this.btOpenData = new System.Windows.Forms.Button();
             this.gbSelectFiles.SuspendLayout();
             this.gbMisc.SuspendLayout();
             this.gbInject.SuspendLayout();
@@ -173,7 +173,7 @@ namespace Launcher
             this.gbMisc.Controls.Add(this.btOpenPluginFolder);
             this.gbMisc.Font = new System.Drawing.Font("Segoe UI", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.gbMisc.ForeColor = System.Drawing.Color.White;
-            this.gbMisc.Location = new System.Drawing.Point(12, 290);
+            this.gbMisc.Location = new System.Drawing.Point(12, 292);
             this.gbMisc.Name = "gbMisc";
             this.gbMisc.Size = new System.Drawing.Size(366, 69);
             this.gbMisc.TabIndex = 2;
@@ -223,10 +223,22 @@ namespace Launcher
             this.gbInject.ForeColor = System.Drawing.Color.White;
             this.gbInject.Location = new System.Drawing.Point(384, 109);
             this.gbInject.Name = "gbInject";
-            this.gbInject.Size = new System.Drawing.Size(268, 147);
+            this.gbInject.Size = new System.Drawing.Size(268, 144);
             this.gbInject.TabIndex = 4;
             this.gbInject.TabStop = false;
             this.gbInject.Text = "3 - Launcher";
+            // 
+            // btOpenData
+            // 
+            this.btOpenData.Font = new System.Drawing.Font("Segoe UI", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btOpenData.ForeColor = System.Drawing.Color.Black;
+            this.btOpenData.Location = new System.Drawing.Point(8, 96);
+            this.btOpenData.Name = "btOpenData";
+            this.btOpenData.Size = new System.Drawing.Size(254, 28);
+            this.btOpenData.TabIndex = 6;
+            this.btOpenData.Text = "Open data.win in UTModTool";
+            this.btOpenData.UseVisualStyleBackColor = true;
+            this.btOpenData.Click += new System.EventHandler(this.btOpenData_Click);
             // 
             // btNoModLaunch
             // 
@@ -244,7 +256,7 @@ namespace Launcher
             // 
             this.rbStable.AutoSize = true;
             this.rbStable.Checked = true;
-            this.rbStable.Location = new System.Drawing.Point(8, 28);
+            this.rbStable.Location = new System.Drawing.Point(8, 33);
             this.rbStable.Name = "rbStable";
             this.rbStable.Size = new System.Drawing.Size(122, 25);
             this.rbStable.TabIndex = 2;
@@ -255,7 +267,7 @@ namespace Launcher
             // rbBeta
             // 
             this.rbBeta.AutoSize = true;
-            this.rbBeta.Location = new System.Drawing.Point(8, 59);
+            this.rbBeta.Location = new System.Drawing.Point(8, 64);
             this.rbBeta.Name = "rbBeta";
             this.rbBeta.Size = new System.Drawing.Size(110, 25);
             this.rbBeta.TabIndex = 3;
@@ -269,9 +281,9 @@ namespace Launcher
             this.gbSourceCode.Controls.Add(this.rbBeta);
             this.gbSourceCode.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.gbSourceCode.ForeColor = System.Drawing.Color.White;
-            this.gbSourceCode.Location = new System.Drawing.Point(384, 262);
+            this.gbSourceCode.Location = new System.Drawing.Point(384, 259);
             this.gbSourceCode.Name = "gbSourceCode";
-            this.gbSourceCode.Size = new System.Drawing.Size(268, 97);
+            this.gbSourceCode.Size = new System.Drawing.Size(268, 102);
             this.gbSourceCode.TabIndex = 4;
             this.gbSourceCode.TabStop = false;
             this.gbSourceCode.Text = "5 - Source Code";
@@ -280,7 +292,7 @@ namespace Launcher
             // 
             this.btDownloadSrc.Font = new System.Drawing.Font("Segoe UI", 15.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.btDownloadSrc.ForeColor = System.Drawing.Color.Black;
-            this.btDownloadSrc.Location = new System.Drawing.Point(136, 28);
+            this.btDownloadSrc.Location = new System.Drawing.Point(136, 33);
             this.btDownloadSrc.Name = "btDownloadSrc";
             this.btDownloadSrc.Size = new System.Drawing.Size(126, 56);
             this.btDownloadSrc.TabIndex = 4;
@@ -295,7 +307,7 @@ namespace Launcher
             this.gbPlugins.ForeColor = System.Drawing.Color.White;
             this.gbPlugins.Location = new System.Drawing.Point(12, 109);
             this.gbPlugins.Name = "gbPlugins";
-            this.gbPlugins.Size = new System.Drawing.Size(366, 175);
+            this.gbPlugins.Size = new System.Drawing.Size(366, 177);
             this.gbPlugins.TabIndex = 5;
             this.gbPlugins.TabStop = false;
             this.gbPlugins.Text = "2 - Plugin Manager";
@@ -311,24 +323,12 @@ namespace Launcher
             this.listPlugins.Size = new System.Drawing.Size(346, 130);
             this.listPlugins.TabIndex = 0;
             // 
-            // btOpenData
-            // 
-            this.btOpenData.Font = new System.Drawing.Font("Segoe UI", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btOpenData.ForeColor = System.Drawing.Color.Black;
-            this.btOpenData.Location = new System.Drawing.Point(8, 96);
-            this.btOpenData.Name = "btOpenData";
-            this.btOpenData.Size = new System.Drawing.Size(254, 28);
-            this.btOpenData.TabIndex = 6;
-            this.btOpenData.Text = "Open data.win in UTModTool";
-            this.btOpenData.UseVisualStyleBackColor = true;
-            this.btOpenData.Click += new System.EventHandler(this.btOpenData_Click);
-            // 
             // MainWindow
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(50)))), ((int)(((byte)(50)))), ((int)(((byte)(70)))));
-            this.ClientSize = new System.Drawing.Size(664, 371);
+            this.ClientSize = new System.Drawing.Size(664, 370);
             this.Controls.Add(this.gbMisc);
             this.Controls.Add(this.gbPlugins);
             this.Controls.Add(this.gbSourceCode);

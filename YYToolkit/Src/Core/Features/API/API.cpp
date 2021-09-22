@@ -93,7 +93,7 @@ namespace API
 			ErrorOccured |= (Status = GetScriptArray(gAPIVars.ppScripts));
 
 			if (Status != YYTK_OK)
-				Utils::Error::Error(false, "GetScriptArray returned %s", Utils::Error::YYTKStatus_ToString(Status));
+				Utils::Error::Error(false, "GetScriptArray() returned %s", Utils::Error::YYTKStatus_ToString(Status));
 		}
 
 		gAPIVars.MainModule = pModule;
@@ -315,23 +315,31 @@ namespace API
 
 		for (int n = 1; n < gAPIVars.ppScripts->m_arrayLength; n++)
 		{
-			if (!gAPIVars.ppScripts->Elements[n])
+			CScript* pScript = gAPIVars.ppScripts->Elements[n];
+
+			if (!pScript)
 				continue;
 
-			if (!gAPIVars.ppScripts->Elements[n]->s_code)
+			if (!pScript->s_code)
 				continue;
 
-			if (!gAPIVars.ppScripts->Elements[n]->s_code->i_pName)
+			if (!pScript->s_code->i_pName)
 				continue;
 
-			if (!strcmp(gAPIVars.ppScripts->Elements[n]->s_code->i_pName, sName.c_str()))
+			if (!strcmp(pScript->s_code->i_pName, sName.c_str()))
 			{
-				outScript = gAPIVars.ppScripts->Elements[n];
+				outScript = pScript;
 				return YYTK_OK;
 			}
 		}
 
 		return YYTK_NOT_FOUND;
+	}
+
+	DllExport YYTKStatus ScriptExists(const char* Name)
+	{
+		CScript* pScript;
+		return GetScriptByName(Name, pScript);
 	}
 
 	DllExport YYTKStatus GetCodeExecuteAddr(FNCodeExecute& outAddress)
