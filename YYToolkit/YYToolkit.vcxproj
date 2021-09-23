@@ -203,6 +203,7 @@
     <ClInclude Include="Src\Core\Utils\MH\MinHook.h" />
     <ClInclude Include="Src\Core\Utils\MH\trampoline.h" />
     <ClInclude Include="Src\Core\Utils\MurMurHash.hpp" />
+    <ClInclude Include="Src\Core\Utils\PEParser.hpp" />
     <ClInclude Include="Src\Toolkit\Utils\StackTrace.hpp" />
   </ItemGroup>
   <ItemGroup>
@@ -231,6 +232,7 @@
     <ClCompile Include="Src\Core\Utils\MH\hook.c" />
     <ClCompile Include="Src\Core\Utils\MH\trampoline.c" />
     <ClCompile Include="Src\Core\Utils\MurMurHash.cpp" />
+    <ClCompile Include="Src\Core\Utils\PEParser.cpp" />
     <ClCompile Include="Src\MainEntry.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

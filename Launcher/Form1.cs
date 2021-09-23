@@ -19,6 +19,8 @@ namespace Launcher
         {
             InitializeComponent();
 
+            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12; // Fix for Windows 7 downloads
+
             ContextMenu PluginManagerContextMenu = new ContextMenu();
             PluginManagerContextMenu.MenuItems.Add("Install plugin", new EventHandler(PluginContextMenu_InstallPlugin));
             PluginManagerContextMenu.MenuItems.Add("Uninstall plugin", new EventHandler(PluginContextMenu_UninstallPlugin));
@@ -27,6 +29,11 @@ namespace Launcher
             PluginManagerContextMenu.MenuItems.Add("Refresh list", new EventHandler(PluginContextMenu_Refresh));
 
             listPlugins.ContextMenu = PluginManagerContextMenu;
+
+            ContextMenu btYYTKLaunchContextMenu = new ContextMenu();
+            btYYTKLaunchContextMenu.MenuItems.Add("Launch with custom DLL", new EventHandler(btYYTKLaunchContextMenu_LaunchCustom));
+
+            btYYTKLaunch.ContextMenu = btYYTKLaunchContextMenu;
         }
 
         private void btRunnerPick_Click(object sender, EventArgs e)
@@ -58,15 +65,22 @@ namespace Launcher
                 MessageBox.Show("Please select the game executable first!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
-            
+
             using (var Browser = new WebClient())
             {
                 if (File.Exists(TempPath))
                     File.Delete(TempPath);
 
-                Browser.DownloadFile("https://github.com/Archie-osu/YYToolkit/releases/latest/download/YYToolkit.dll", TempPath);
+                try
+                {
+                    Browser.DownloadFile("https://github.com/Archie-osu/YYToolkit/releases/latest/download/YYToolkit.dll", TempPath);
+                }
+                catch (System.Exception exception)
+                {
+                    MessageBox.Show("Couldn't auto-update!\n" + exception.Message, "Error", MessageBoxButtons.OKCancel, MessageBoxIcon.Error);
+                }
             }
-
+            
             Process p;
 
             if (!string.IsNullOrEmpty(sDataFilePath))
@@ -317,6 +331,39 @@ namespace Launcher
                 Process.Start("explorer.exe", $"\"{Directory.GetCurrentDirectory() + "\\data.win"}\"");
             else
                 Process.Start("explorer.exe", $"\"{sDataFilePath}\"");
+        }
+
+        private void btYYTKLaunchContextMenu_LaunchCustom(object sender, EventArgs e)
+        {
+            if (string.IsNullOrEmpty(sRunnerFileName))
+            {
+                MessageBox.Show("Please select the game executable first!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            if (MessageBox.Show("Please note this feature is designed for development purposes.\nTo launch with YYToolkit, use the other button.\nProceed anyway?", "Warning", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.No)
+                return;
+
+            using (OpenFileDialog fileDialog = Utils.CreateFileDialog("%systemdrive%", "Find the custom DLL", "DLL files|*.dll", 1))
+            {
+                if (fileDialog.ShowDialog() == DialogResult.OK)
+                {
+                    Process p;
+
+                    if (!string.IsNullOrEmpty(sDataFilePath))
+                        p = Process.Start(sRunnerFilePath, "-game \"" + sDataFilePath + "\"");
+                    else
+                        p = Process.Start(sRunnerFilePath);
+
+                    while (string.IsNullOrEmpty(p.MainWindowTitle))
+                    {
+                        Thread.Sleep(500);
+                        p.Refresh();
+                    }
+
+                    Utils.Inject(p, fileDialog.FileName);
+                }
+            }
         }
     }
 }

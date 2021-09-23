@@ -6,6 +6,8 @@
 #include <utility>
 #include <filesystem>
 #include "../../Utils/Error.hpp"
+#include "../../Utils/PEParser.hpp"
+#include "../../Utils/MH/hde/hde32.h"
 
 namespace API
 {
@@ -45,35 +47,57 @@ namespace API
 
 		if (!gAPIVars.Code_Function_GET_the_function)
 		{
-			ErrorOccured |= (GetCodeFunctionAddr(gAPIVars.Code_Function_GET_the_function) != YYTK_OK);
+			YYTKStatus Status;
+			ErrorOccured |= (Status = GetCodeFunctionAddr(gAPIVars.Code_Function_GET_the_function));
+			
+			if (Status != YYTK_OK)
+				Utils::Error::Error(false, "GetCodeFunctionAddr() returned %s", Utils::Error::YYTKStatus_ToString(Status));
 		}
 
 		if (!gAPIVars.g_pGlobal)
 		{
-			ErrorOccured |= (GetGlobalInstance(&gAPIVars.g_pGlobal) != YYTK_OK);
+			YYTKStatus Status;
+			ErrorOccured |= (Status = GetGlobalInstance(&gAPIVars.g_pGlobal));
+
+			if (Status != YYTK_OK)
+				Utils::Error::Error(false, "GetGlobalInstance() returned %s", Utils::Error::YYTKStatus_ToString(Status));
 		}
 
 		if (!gAPIVars.Window_Handle)
 		{
-			FunctionInfo_t Info; RValue Result;
-			ErrorOccured |= (GetFunctionByName("window_handle", Info) != YYTK_OK);
+			FunctionInfo_t Info; RValue Result; YYTKStatus Status;
+			ErrorOccured |= (Status = GetFunctionByName("window_handle", Info));
 
 			Info.Function(&Result, 0, 0, 0, 0);
 			gAPIVars.Window_Handle = Result.Pointer;
+
+			if (Status != YYTK_OK)
+				Utils::Error::Error(false, "GetFunctionByName(\"window_handle\") returned %s", Utils::Error::YYTKStatus_ToString(Status));
 		}
 
 		if (!gAPIVars.Window_Device)
 		{
-			FunctionInfo_t Info; RValue Result;
-			ErrorOccured |= (GetFunctionByName("window_device", Info) != YYTK_OK);
+			FunctionInfo_t Info; RValue Result; YYTKStatus Status;
+			ErrorOccured |= (Status = GetFunctionByName("window_device", Info));
 
 			Info.Function(&Result, 0, 0, 0, 0);
 			gAPIVars.Window_Device = Result.Pointer;
+
+			if (Status != YYTK_OK)
+				Utils::Error::Error(false, "GetFunctionByName(\"window_device\") returned %s", Utils::Error::YYTKStatus_ToString(Status));
+		}
+
+		if (!gAPIVars.ppScripts)
+		{
+			YYTKStatus Status;
+			ErrorOccured |= (Status = GetScriptArray(gAPIVars.ppScripts));
+
+			if (Status != YYTK_OK)
+				Utils::Error::Error(false, "GetScriptArray() returned %s", Utils::Error::YYTKStatus_ToString(Status));
 		}
 
 		gAPIVars.MainModule = pModule;
 
-		
 		Utils::Error::Message(CLR_DEFAULT, "- Core plugin mapped to: 0x%p", gAPIVars.MainModule);
 		Utils::Error::Message(CLR_DEFAULT, "- Encountered error: %s", ErrorOccured ? "Yes" : "No");
 		Utils::Error::Message(CLR_DEFAULT, "- Game Type: %s\n", IsYYC() ? "YYC" : "VM"); // Has one more newline, for spacing.
@@ -90,10 +114,10 @@ namespace API
 				if (entry.path().extension().string().find(".dll") != std::string::npos)
 				{
 					// We have a DLL, try loading it
-					if (!Plugins::LoadPlugin(entry.path().string().c_str()))
-						Utils::Error::Message(CLR_RED, "[-] Failed to load '%s'", entry.path().filename().string().c_str());
+					if (YYTKPlugin* p = Plugins::LoadPlugin(entry.path().string().c_str()))
+						Utils::Error::Message(CLR_GREEN, "[+] Loaded '%s' - mapped to 0x%p.", entry.path().filename().string().c_str(), p->PluginStart);
 					else
-						Utils::Error::Message(CLR_GREEN, "[+] Loaded '%s'", entry.path().filename().string().c_str());
+						Utils::Error::Message(CLR_RED, "[-] Failed to load '%s' - the file may not be a plugin.", entry.path().filename().string().c_str());
 				}
 			}
 		}
@@ -233,6 +257,91 @@ namespace API
 		return YYTK_OK;
 	}
 
+	DllExport YYTKStatus GetScriptArray(CDynamicArray<CScript*>*& pOutArray)
+	{
+		TRoutine script_exists = GetBuiltin("script_exists");
+
+		if (!script_exists)
+			return YYTK_FAIL;
+
+		// call Script_exists
+		// xor ecx, ecx
+		// add esp, 0Ch
+		unsigned long FuncCallPattern = FindPattern("\xE8\x00\x00\x00\x00\x00\xC9\x83\xC4\x0C", "x?????xxxx", reinterpret_cast<long>(script_exists), 0xFF);
+
+		unsigned long Relative = *reinterpret_cast<unsigned long*>(FuncCallPattern + 1);
+		Relative = (FuncCallPattern + 5) + Relative; // eip = instruction base + 5 + relative offset
+
+		// Find pattern with HDE
+		{
+			hde32s Instruction;
+
+			for (int n = 0; n < 32; n++) // Try 32 instructions
+			{
+				hde32_disasm(reinterpret_cast<const void*>(Relative), &Instruction);
+
+				if ((Instruction.opcode == 0xA1 || (Instruction.opcode == 0x8B && Instruction.modrm)) && Instruction.len > 4)
+				{
+					if (Instruction.imm.imm32)
+						pOutArray = reinterpret_cast<CDynamicArray<CScript*>*>(Instruction.imm.imm32 - sizeof(long*));
+					else
+						pOutArray = reinterpret_cast<CDynamicArray<CScript*>*>(Instruction.disp.disp32 - sizeof(long*));
+					return YYTK_OK;
+				}
+
+				Relative += Instruction.len;
+			}
+		}
+
+		return YYTK_FAIL;
+	}
+
+	DllExport YYTKStatus GetScriptByName(const char* Name, CScript*& outScript)
+	{
+		std::string sName(Name);
+
+		// If the script name doesn't start with gml_Script, we have to add it before the search.
+		if (!sName._Starts_with("gml_Script_"))
+		{
+			sName = "gml_Script_" + sName;
+		}
+
+		if (!gAPIVars.ppScripts)
+		{
+			if (YYTKStatus Result = GetScriptArray(gAPIVars.ppScripts))
+				return Result; // Only true if the status isn't YYTK_OK
+		}
+			
+
+		for (int n = 1; n < gAPIVars.ppScripts->m_arrayLength; n++)
+		{
+			CScript* pScript = gAPIVars.ppScripts->Elements[n];
+
+			if (!pScript)
+				continue;
+
+			if (!pScript->s_code)
+				continue;
+
+			if (!pScript->s_code->i_pName)
+				continue;
+
+			if (!strcmp(pScript->s_code->i_pName, sName.c_str()))
+			{
+				outScript = pScript;
+				return YYTK_OK;
+			}
+		}
+
+		return YYTK_NOT_FOUND;
+	}
+
+	DllExport YYTKStatus ScriptExists(const char* Name)
+	{
+		CScript* pScript;
+		return GetScriptByName(Name, pScript);
+	}
+
 	DllExport YYTKStatus GetCodeExecuteAddr(FNCodeExecute& outAddress)
 	{
 		ModuleInfo_t CurInfo = GetModuleInfo();
@@ -323,6 +432,13 @@ namespace API
 		return nullptr;
 	}
 
+	DllExport YYTKStatus Global_CallBuiltin(const char* Name, int argc, YYRValue& _result, YYRValue* Args)
+	{
+		CInstance* g_pGlobal = reinterpret_cast<CInstance*>(gAPIVars.g_pGlobal);
+
+		return CallBuiltinFunction(g_pGlobal, g_pGlobal, _result, argc, Name, Args);
+	}
+
 	DllExport bool IsYYC()
 	{
 		YYRValue Result;
@@ -379,18 +495,16 @@ namespace Plugins
 		FNPluginEntry lpPluginEntry = nullptr;
 
 		GetFullPathNameA(Path, MAX_PATH, Buffer, 0);
+
+		if (!Utils::DoesPEExportRoutine(Buffer, "PluginEntry"))
+			return nullptr;
+
 		HMODULE PluginModule = LoadLibraryA(Buffer);
 
 		if (!PluginModule)
 			return nullptr;
 
 		lpPluginEntry = (FNPluginEntry)GetProcAddress(PluginModule, "PluginEntry");
-
-		if (!lpPluginEntry)
-		{
-			Utils::Error::Message(CLR_RED, "[-] WARNING: '%s' doesn't export PluginEntry()!", Path);
-			return nullptr;
-		}
 
 		// Emplace in map scope
 		{
