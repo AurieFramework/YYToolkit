@@ -432,6 +432,13 @@ namespace API
 		return nullptr;
 	}
 
+	DllExport YYTKStatus Global_CallBuiltin(const char* Name, int argc, YYRValue& _result, YYRValue* Args)
+	{
+		CInstance* g_pGlobal = reinterpret_cast<CInstance*>(gAPIVars.g_pGlobal);
+
+		return CallBuiltinFunction(g_pGlobal, g_pGlobal, _result, argc, Name, Args);
+	}
+
 	DllExport bool IsYYC()
 	{
 		YYRValue Result;

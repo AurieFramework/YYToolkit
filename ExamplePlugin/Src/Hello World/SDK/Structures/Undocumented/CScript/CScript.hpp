@@ -14,7 +14,7 @@ struct CScript
 	int (**_vptr$CScript)(void);
 	CStream* s_text;
 	CCode* s_code;
-	void* s_pFunc;
+	YYGMLFuncs* s_pFunc;
 	CInstance* s_pStaticObject;
 
 	union
@@ -25,4 +25,6 @@ struct CScript
 
 	const char* s_name;
 	int s_offset;
+
+	// const char* GetScriptName();
 };

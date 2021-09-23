@@ -54,6 +54,8 @@ namespace API
 	DllExport YYTKStatus CallBuiltinFunction(CInstance* _pSelf, CInstance* _pOther, YYRValue& _result, int _argc, const char* Name, YYRValue* Args);
 
 	DllExport TRoutine GetBuiltin(const char* Name);
+	
+	DllExport YYTKStatus Global_CallBuiltin(const char* Name, int argc, YYRValue& _result, YYRValue* Args);
 
 	DllExport bool IsYYC();
 
