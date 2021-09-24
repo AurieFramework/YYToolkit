@@ -18,3 +18,8 @@ Currently, only Windows is supported.
 - Full compatibility with existing tools like UndertaleModTool or Dogscepter.
 
 **Note:** GML Compilation is only supported if UndertaleModTool v0.4.0-pre2 or newer is running.
+
+## Plugin Repository
+Plugins have moved to [a separate repository](https://github.com/Archie-osu/awesome-yytk).
+
+The ExamplePlugin will remain in this repository, however.
