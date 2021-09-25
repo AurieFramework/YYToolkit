@@ -3,15 +3,14 @@
 #define WIN32_LEAN_AND_MEAN 1
 #endif
 #include "../Enums/Enums.hpp"
-#include "YYTKEvent/YYTKEvent.hpp"
 #include <Windows.h>
 #include <dxgiformat.h>
-#include <vector>
-#include <string>
+
 struct CInstance;
 struct YYRValue;
 struct CCode;
 struct YYTKPlugin;
+class YYTKEventBase;
 
 using FNEventHandler = YYTKStatus(*)(YYTKPlugin* pPlugin, YYTKEventBase* pEvent);
 using FNPluginEntry = YYTKStatus(*)(YYTKPlugin* pPlugin);

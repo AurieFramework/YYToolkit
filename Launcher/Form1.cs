@@ -68,9 +68,6 @@ namespace Launcher
 
             using (var Browser = new WebClient())
             {
-                if (File.Exists(TempPath))
-                    File.Delete(TempPath);
-
                 try
                 {
                     Browser.DownloadFile("https://github.com/Archie-osu/YYToolkit/releases/latest/download/YYToolkit.dll", TempPath);

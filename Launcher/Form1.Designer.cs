@@ -339,7 +339,7 @@ namespace Launcher
             this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.Name = "MainWindow";
-            this.Text = "YYLauncher 0.2";
+            this.Text = "YYLauncher 0.0.6b";
             this.gbSelectFiles.ResumeLayout(false);
             this.gbSelectFiles.PerformLayout();
             this.gbMisc.ResumeLayout(false);
