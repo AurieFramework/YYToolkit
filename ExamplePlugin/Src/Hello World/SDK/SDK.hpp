@@ -33,3 +33,4 @@
 
 // Plugins.. duh
 #include "Plugins/Plugins.hpp"
+#include "Plugins/YYTKEvent/YYTKEvent.hpp"

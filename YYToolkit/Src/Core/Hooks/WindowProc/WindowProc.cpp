@@ -6,6 +6,9 @@ namespace Hooks::WindowProc
 {
 	LRESULT __stdcall Function(HWND hwnd, unsigned int Msg, WPARAM w, LPARAM l)
 	{
+		if (Msg == WM_CLOSE)
+			exit(0);
+
 		YYTKWindowProcEvent Event = YYTKWindowProcEvent(pfnOriginal, hwnd, Msg, w, l);
 		Plugins::RunCallback(&Event);
 

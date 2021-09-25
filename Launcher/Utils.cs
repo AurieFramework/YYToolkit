@@ -24,7 +24,7 @@ namespace Launcher
         {
             OpenFileDialog dialog = new OpenFileDialog
             {
-                InitialDirectory = Environment.ExpandEnvironmentVariables(StartPath),
+                //InitialDirectory = Environment.ExpandEnvironmentVariables(StartPath),
                 Title = Title,
                 Filter = Filter,
                 FilterIndex = FilterIndex,
