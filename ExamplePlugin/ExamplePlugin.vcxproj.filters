@@ -86,5 +86,8 @@
     <ClInclude Include="Src\Hello World\SDK\SDK.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Src\Hello World\Bytecode.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

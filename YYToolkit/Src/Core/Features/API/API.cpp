@@ -311,8 +311,7 @@ namespace API
 			if (YYTKStatus Result = GetScriptArray(gAPIVars.ppScripts))
 				return Result; // Only true if the status isn't YYTK_OK
 		}
-			
-
+		
 		for (int n = 1; n < gAPIVars.ppScripts->m_arrayLength; n++)
 		{
 			CScript* pScript = gAPIVars.ppScripts->Elements[n];
@@ -334,6 +333,24 @@ namespace API
 		}
 
 		return YYTK_NOT_FOUND;
+	}
+
+	DllExport YYTKStatus GetScriptByID(int id, CScript*& outScript)
+	{
+		// Replicating game functions ftw
+		if (id > 100000)
+			id -= 100000;
+
+		CDynamicArray<CScript*>* pScriptsArray;
+
+		if (auto Result = GetScriptArray(pScriptsArray))
+			return Result;
+
+		if (id >= pScriptsArray->m_arrayLength || id <= 0)
+			return YYTK_INVALID;
+
+		outScript = pScriptsArray->Elements[id];
+		return YYTK_OK;
 	}
 
 	DllExport YYTKStatus ScriptExists(const char* Name)
