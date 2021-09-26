@@ -41,6 +41,8 @@ namespace API
 
 	DllExport YYTKStatus GetScriptByName(const char* Name, CScript*& outScript);
 
+	DllExport YYTKStatus GetScriptByID(int id, CScript*& outScript);
+
 	DllExport YYTKStatus ScriptExists(const char* Name);
 
 	DllExport YYTKStatus GetCodeExecuteAddr(FNCodeExecute& outAddress);

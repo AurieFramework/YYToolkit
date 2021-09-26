@@ -163,6 +163,7 @@
     <ClCompile Include="Src\Hello World\SDK\Structures\Documented\YYRValue\YYRValue.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Src\Hello World\Bytecode.hpp" />
     <ClInclude Include="Src\Hello World\SDK\Enums\Enums.hpp" />
     <ClInclude Include="Src\Hello World\SDK\FwdDecls\FwdDecls.hpp" />
     <ClInclude Include="Src\Hello World\SDK\Plugins\Plugins.hpp" />
