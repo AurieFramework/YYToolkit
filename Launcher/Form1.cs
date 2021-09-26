@@ -58,7 +58,7 @@ namespace Launcher
 
         private void btYYTKLaunch_Click(object sender, EventArgs e)
         {
-            string TempPath = Environment.ExpandEnvironmentVariables("%temp%\\YYToolkit.dll");
+            string TempPath = Path.GetTempPath() + "YYToolkit.dll";
 
             if (string.IsNullOrEmpty(sRunnerFileName))
             {
@@ -74,7 +74,30 @@ namespace Launcher
                 }
                 catch (System.Exception exception)
                 {
-                    MessageBox.Show("Couldn't auto-update!\n" + exception.Message, "Error", MessageBoxButtons.OKCancel, MessageBoxIcon.Error);
+                    TempPath = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + "\\YYToolkit.dll";
+                    try
+                    {
+                        Browser.DownloadFile("https://github.com/Archie-osu/YYToolkit/releases/latest/download/YYToolkit.dll", TempPath);
+                    }
+                    catch (System.Exception exception2)
+                    {
+                        string Exception1Message = "";
+                        string Exception2Message = "";
+
+                        while (exception != null)
+                        {
+                            Exception1Message += exception.Message + "\n";
+                            exception = exception.InnerException;
+                        }
+
+                        while (exception2 != null)
+                        {
+                            Exception2Message += exception2.Message + "\n";
+                            exception2 = exception2.InnerException;
+                        }
+
+                        MessageBox.Show("Couldn't inject YYToolkit.\nPress OK to launch the game without mods.\n\nFirst method: " + Exception1Message + "\nSecond method: " + Exception2Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
                 }
             }
             
