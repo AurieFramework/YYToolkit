@@ -111,6 +111,13 @@ namespace Hooks::Present
 		//Throw these away, they're useless now.
 		pSwapChain->Release();
 
+		// Setup gAPIVars members
+
+		ID3D11Device* pDevice = static_cast<ID3D11Device*>(gAPIVars.Window_Device);
+		
+		if (pDevice)
+			pDevice->GetImmediateContext(reinterpret_cast<ID3D11DeviceContext**>(&gAPIVars.DeviceContext));
+
 		return pPresent;
 	}
 }
