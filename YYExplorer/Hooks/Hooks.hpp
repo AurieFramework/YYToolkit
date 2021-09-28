@@ -6,6 +6,8 @@
 #include <d3d11.h>
 #include <d3d9.h>
 
+inline YYTKPlugin* g_pCurrentPlugin = nullptr;
+
 namespace Hooks
 {
 	void Code_Execute(YYTKCodeEvent* _evt, CInstance* _pSelf, CInstance* _pOther, CCode* _pCode, RValue* _Args);

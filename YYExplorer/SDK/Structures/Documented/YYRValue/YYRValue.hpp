@@ -7,6 +7,7 @@ struct RefString;
 
 template <typename T>
 struct CDynamicArrayRef;
+struct RefDynamicArrayOfRValue;
 #pragma pack(push, 4)
 // Base class with no overloading, just a pure RValue.
 struct RValue
@@ -22,7 +23,8 @@ struct RValue
 		{
 			YYObjectBase* Object;
 			RefString* String;
-			CDynamicArrayRef<RValue>* Array;
+			CDynamicArrayRef<RValue>* EmbeddedArray;
+			RefDynamicArrayOfRValue* RefArray;
 			void* Pointer;
 		};
 	};
