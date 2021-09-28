@@ -19,7 +19,8 @@ Currently, only Windows is supported.
 
 **Note:** GML Compilation is only supported if UndertaleModTool v0.4.0-pre2 or newer is running.
 
-## Plugin Repository
-Plugins have moved to [a separate repository](https://github.com/Archie-osu/awesome-yytk).
-
-The ExamplePlugin will remain in this repository, however.
+## Directory Structure
+- ExamplePlugin - contains source code for the example plugin DLL
+- Launcher - contains source code for the launcher (YYLauncher, the EXE you run)
+- YYExplorer - contains source code for an explorer plugin, which can change most aspects of a running game through a GUI.
+- YYToolkit - contains source code for the core module - used when you select ``Launch with YYToolkit`` in the Launcher.
