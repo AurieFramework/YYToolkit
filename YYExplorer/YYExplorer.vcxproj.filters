@@ -170,7 +170,10 @@
     <ClCompile Include="Menu\Menu.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Menu\Framework\Framework.cpp">
+    <ClCompile Include="Menu\Framework\FrameworkWrappers.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Menu\Framework\FrameworkUI.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

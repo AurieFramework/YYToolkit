@@ -9,12 +9,13 @@ namespace Framework
 	{
 		std::string RValueKind_ToString(const YYRValue& _Value);
 		YYRValue GetGlobal(const char* _Name);
+		void SetGlobal(const char* Name, const YYRValue& ref);
 		std::vector<std::string> GetVariableNames(long InstanceID);
 	}
 
 	namespace GUI
 	{
-		constexpr auto WF_Basic = ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoCollapse;
+		constexpr auto WF_Basic = ImGuiWindowFlags_NoSavedSettings;
 		void ApplyStylingDark();
 		void StyleFonts(ImGuiIO& refIO);
 	}

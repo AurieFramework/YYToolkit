@@ -1,44 +1,31 @@
 #include "Menu.hpp"
 #include "Framework/Framework.hpp"
-
-void Menu::ShowObjectTree()
-{
-	// Get all globals
-	auto vGlobalObjects = Framework::Wrappers::GetVariableNames(-5);
-
-    if (ImGui::TreeNode("Global Scope"))
-    {
-
-		for (auto& Name : vGlobalObjects)
-		{
-            if (ImGui::TreeNode(Name.c_str()))
-            {
-                ImGui::Text("Name: %s", Name.c_str());
-				
-				ImGui::TreePop();
-            }
-		}
-        ImGui::TreePop();
-    }
-
-	ImGui::ShowDemoWindow();
-}
+#include <functional>
+#include <iostream>
 
 void Menu::Draw()
 {
-	static bool bShowObjectTree = false;
+	static bool bShowConsole = false;
 
 	if (ImGui::BeginMainMenuBar())
 	{
-		if (ImGui::BeginMenu("View"))
+		if (ImGui::BeginMenu("Windows"))
 		{
-			ImGui::MenuItem("Object Tree", nullptr, &bShowObjectTree);
+			ImGui::MenuItem("Console", nullptr, &bShowConsole);
 
 			ImGui::EndMenu();
 		}
+
+		if (ImGui::BeginMenu("Game modifications"))
+		{
+			ImGui::MenuItem("DEFAULT STRING");
+
+			ImGui::EndMenu();
+		}
+		
 		ImGui::EndMainMenuBar();
 	}
 
-	if (bShowObjectTree)
-		ShowObjectTree();
+	if (bShowConsole)
+		;
 }

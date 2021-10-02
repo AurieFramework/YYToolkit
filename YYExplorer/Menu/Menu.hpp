@@ -2,7 +2,5 @@
 
 namespace Menu
 {
-	void ShowObjectTree();
-
 	void Draw();
 }

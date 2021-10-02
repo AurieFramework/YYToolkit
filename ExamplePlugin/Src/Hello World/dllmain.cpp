@@ -61,11 +61,12 @@ YYTKStatus PluginEventHandler(YYTKPlugin* pPlugin, YYTKEventBase* pEvent)
                     ReplaceWhileRunning(oscr_Debug, (char*)(g_scrDebugPatch), 72, pCodeEvent);
                 }
 
+                
                 else if (strcmp(pScript->s_code->i_pName, "gml_Script_scr_dogcheck") == 0)
                 {
                     ReplaceWhileRunning(oscr_Dogcheck, (char*)(g_scrDogcheckPatch), 164, pCodeEvent);
                 }
-
+                
                 else if (strcmp(pScript->s_code->i_pName, "gml_Script_scr_debug_ch1") == 0)
                 {
                     ReplaceWhileRunning(oscr_DebugCh1, (char*)(g_scrDebugChapter1Patch), 100, pCodeEvent);
@@ -99,7 +100,7 @@ DllExport YYTKStatus PluginEntry(YYTKPlugin* pPlugin)
 
     printf("[Chapter2++] Loaded!\n");
     printf("[Chapter2++] - Press F3 to teleport to rooms (UndertaleModTool GoToRoom.csx script)\n");
-    printf("[Chapter2++] - Dogcheck disabled, debug mode enabled for both chapters.\n");
+    printf("[Chapter2++] - Dogcheck is still enabled, use F3 instead of save file editing!\n");
 
     // Tell the core everything went fine.
     return YYTK_OK;
