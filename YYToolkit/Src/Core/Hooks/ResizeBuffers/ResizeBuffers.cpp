@@ -26,7 +26,7 @@ HRESULT __stdcall Hooks::ResizeBuffers::Function(IDXGISwapChain* _this, UINT Buf
 	// Call events scope
 	{
 		YYTKResizeBuffersEvent Event = YYTKResizeBuffersEvent(pfnOriginal, _this, BufferCount, Width, Height, NewFormat, SwapChainFlags);
-		Plugins::RunCallback(&Event);
+		Plugins::RunHooks(&Event);
 
 		if (Event.CalledOriginal())
 			return Event.GetReturn();

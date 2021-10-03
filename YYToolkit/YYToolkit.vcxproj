@@ -161,6 +161,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Src\Core\Features\API\API.hpp" />
+    <ClInclude Include="Src\Core\Features\Console\Console.hpp" />
     <ClInclude Include="Src\Core\Hooks\Code_Execute\Code_Execute.hpp" />
     <ClInclude Include="Src\Core\Hooks\DoCallScript\DoCallScript.hpp" />
     <ClInclude Include="Src\Core\Hooks\Drawing\GR_Draw_Text_Color\GR_Draw_Text_Color.hpp" />
@@ -208,6 +209,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Src\Core\Features\API\API.cpp" />
+    <ClCompile Include="Src\Core\Features\Console\Console.cpp" />
     <ClCompile Include="Src\Core\Hooks\Code_Execute\Code_Execute.cpp" />
     <ClCompile Include="Src\Core\Hooks\DoCallScript\DoCallScript.cpp" />
     <ClCompile Include="Src\Core\Hooks\Drawing\GR_Draw_Text_Color\GR_Draw_Text_Color.cpp" />

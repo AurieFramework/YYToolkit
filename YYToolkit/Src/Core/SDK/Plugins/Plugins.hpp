@@ -15,15 +15,17 @@ class YYTKEventBase;
 using FNEventHandler = YYTKStatus(*)(YYTKPlugin* pPlugin, YYTKEventBase* pEvent);
 using FNPluginEntry = YYTKStatus(*)(YYTKPlugin* pPlugin);
 using FNPluginUnload = YYTKStatus(*)(YYTKPlugin* pPlugin);
+using FNTextRenderCallback = void(*)(float& x, float& y, const char*& str, int& linesep, int& linewidth);
 
 struct YYTKPlugin
 {
-	FNPluginEntry PluginEntry;		// Pointer to the entry function - set by the core.
-	FNPluginUnload PluginUnload;	// Pointer to the unload function - optional, set by the plugin.
-	FNEventHandler PluginHandler;	// Pointer to an event handler function - optional, set by the plugin.
+	FNPluginEntry PluginEntry;			// Pointer to the entry function - set by the core.
+	FNPluginUnload PluginUnload;		// Pointer to the unload function - optional, set by the plugin.
+	FNEventHandler PluginHandler;		// Pointer to an event handler function - optional, set by the plugin.
+	FNTextRenderCallback OnTextRender;	// Pointer to a text render callback - optional, set by the plugin.
 
-	void* PluginStart;				// The base address of the plugin (can be casted to a HMODULE).
-	void* CoreStart;				// The base address of the core (can be casted to a HMODULE).
+	void* PluginStart;					// The base address of the plugin (can be casted to a HMODULE).
+	void* CoreStart;					// The base address of the core (can be casted to a HMODULE).
 
 	template <typename T>
 	T GetCoreExport(const char* Name)

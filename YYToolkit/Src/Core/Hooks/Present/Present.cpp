@@ -1,6 +1,8 @@
 #include "Present.hpp"
 #include "../../Features/API/API.hpp"
 #include "../../Utils/Error.hpp"
+#include <mutex> // std::call_once
+static std::once_flag g_CreatedRenderView;
 
 static void SetupDescriptor(DXGI_SWAP_CHAIN_DESC* pDesc)
 {
@@ -54,8 +56,24 @@ namespace Hooks::Present
 {
 	HRESULT __stdcall Function(IDXGISwapChain* _this, unsigned int Sync, unsigned int Flags)
 	{
+		// Create renderview
+		std::call_once(g_CreatedRenderView, [&]() 
+			{
+				ID3D11Texture2D* pBackBuffer = nullptr;
+				ID3D11Device* pDevice = reinterpret_cast<ID3D11Device*>(gAPIVars.Window_Device);
+
+				HRESULT Result = _this->GetBuffer(0, IID_PPV_ARGS(&pBackBuffer));
+
+				if (FAILED(Result))
+					Utils::Error::Error(false, "Getting the back buffer failed.");
+
+				pDevice->CreateRenderTargetView(pBackBuffer, NULL, reinterpret_cast<ID3D11RenderTargetView**>(&gAPIVars.RenderView));
+			}
+		);
+
 		YYTKPresentEvent Event = YYTKPresentEvent(pfnOriginal, _this, Sync, Flags);
-		Plugins::RunCallback(&Event);
+
+		Plugins::RunHooks(&Event);
 
 		if (Event.CalledOriginal())
 			return Event.GetReturn();
@@ -110,6 +128,13 @@ namespace Hooks::Present
 
 		//Throw these away, they're useless now.
 		pSwapChain->Release();
+
+		// Setup gAPIVars members
+
+		ID3D11Device* pDevice = static_cast<ID3D11Device*>(gAPIVars.Window_Device);
+		
+		if (pDevice)
+			pDevice->GetImmediateContext(reinterpret_cast<ID3D11DeviceContext**>(&gAPIVars.DeviceContext));
 
 		return pPresent;
 	}

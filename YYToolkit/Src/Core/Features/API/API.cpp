@@ -59,8 +59,9 @@ namespace API
 			YYTKStatus Status;
 			ErrorOccured |= (Status = GetGlobalInstance(&gAPIVars.g_pGlobal));
 
+			// This is crucial to the API workings, we have to crash the game if this is not found.
 			if (Status != YYTK_OK)
-				Utils::Error::Error(false, "GetGlobalInstance() returned %s", Utils::Error::YYTKStatus_ToString(Status));
+				Utils::Error::Error(true, "GetGlobalInstance() returned %s", Utils::Error::YYTKStatus_ToString(Status));
 		}
 
 		if (!gAPIVars.Window_Handle)
@@ -227,6 +228,9 @@ namespace API
 		if (!outInfo.Name)
 			return YYTK_NOT_FOUND;
 
+		if (!*outInfo.Name)
+			return YYTK_NOT_FOUND;
+
 		outInfo.Index = index;
 
 		return YYTK_OK;
@@ -237,7 +241,7 @@ namespace API
 		int Index = 0;
 		while (GetFunctionByIndex(Index, outInfo) == YYTK_OK)
 		{
-			if (strncmp(Name, outInfo.Name, 64) == 0)
+			if (_strnicmp(Name, outInfo.Name, 64) == 0)
 			{
 				return YYTK_OK;
 			}
@@ -555,12 +559,21 @@ namespace Plugins
 		return true;
 	}
 
-	DllExport void RunCallback(YYTKEventBase* pEvent)
+	DllExport void RunHooks(YYTKEventBase* pEvent)
 	{
 		for (auto& Pair : gAPIVars.Plugins)
 		{
 			if (Pair.second.PluginHandler)
 				Pair.second.PluginHandler(&Pair.second, pEvent);
+		}
+	}
+
+	DllExport void CallTextCallbacks(float& x, float& y, const char*& str, int& linesep, int& linewidth)
+	{
+		for (auto& Pair : gAPIVars.Plugins)
+		{
+			if (Pair.second.OnTextRender)
+				Pair.second.OnTextRender(x, y, str, linesep, linewidth);
 		}
 	}
 }
