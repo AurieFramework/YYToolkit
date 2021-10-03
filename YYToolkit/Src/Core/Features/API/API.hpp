@@ -80,6 +80,9 @@ namespace Plugins
 
 	DllExport bool UnloadPlugin(YYTKPlugin* pPlugin, bool Notify);
 
-	DllExport void RunCallback(YYTKEventBase* pEvent);
+	DllExport void RunHooks(YYTKEventBase* pEvent);
+
+	// This doesn't run hooks, this actually runs a callback
+	DllExport void CallTextCallbacks(float& x, float& y, const char* &str, int& linesep, int& linewidth);
 }
 

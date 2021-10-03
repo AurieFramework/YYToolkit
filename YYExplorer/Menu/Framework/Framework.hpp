@@ -10,7 +10,6 @@ namespace Framework
 		std::string RValueKind_ToString(const YYRValue& _Value);
 		YYRValue GetGlobal(const char* _Name);
 		void SetGlobal(const char* Name, const YYRValue& ref);
-		std::vector<std::string> GetVariableNames(long InstanceID);
 	}
 
 	namespace GUI

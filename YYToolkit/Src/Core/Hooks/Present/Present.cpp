@@ -73,7 +73,7 @@ namespace Hooks::Present
 
 		YYTKPresentEvent Event = YYTKPresentEvent(pfnOriginal, _this, Sync, Flags);
 
-		Plugins::RunCallback(&Event);
+		Plugins::RunHooks(&Event);
 
 		if (Event.CalledOriginal())
 			return Event.GetReturn();

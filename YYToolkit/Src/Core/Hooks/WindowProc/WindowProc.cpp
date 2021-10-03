@@ -10,7 +10,7 @@ namespace Hooks::WindowProc
 			exit(0);
 
 		YYTKWindowProcEvent Event = YYTKWindowProcEvent(pfnOriginal, hwnd, Msg, w, l);
-		Plugins::RunCallback(&Event);
+		Plugins::RunHooks(&Event);
 
 		if (Event.CalledOriginal())
 			return Event.GetReturn();

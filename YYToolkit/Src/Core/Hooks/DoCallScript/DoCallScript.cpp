@@ -4,7 +4,7 @@
 char* Hooks::DoCallScript::Function(CScript* pScript, int argc, char* pStackPointer, VMExec* pVM, YYObjectBase* pLocals, YYObjectBase* pArguments)
 {
 	YYTKScriptEvent Event = YYTKScriptEvent(pfnOriginal, pScript, argc, pStackPointer, pVM, pLocals, pArguments);
-	Plugins::RunCallback(&Event);
+	Plugins::RunHooks(&Event);
 
 	if (Event.CalledOriginal())
 		return Event.GetReturn();

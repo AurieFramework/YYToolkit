@@ -1,5 +1,6 @@
 #include <Windows.h>
 #include "Core/Features/API/API.hpp"
+#include "Core/Features/Console/Console.hpp"
 #include "Core/Hooks/Hooks.hpp"
 
 #if _WIN64
@@ -16,6 +17,9 @@ void __stdcall Main()
 	while (!GetAsyncKeyState(VK_END)) 
 	{
 		// Run console
+
+		if (GetAsyncKeyState(VK_F10) & 1)
+			Console::DoCommand();
 
 		Sleep(5); 
 	}

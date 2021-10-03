@@ -195,8 +195,7 @@
     <ClCompile Include="ImGui\imgui_impl_win32.cpp" />
     <ClCompile Include="ImGui\imgui_tables.cpp" />
     <ClCompile Include="ImGui\imgui_widgets.cpp" />
-    <ClCompile Include="Menu\Framework\FrameworkWrappers.cpp" />
-    <ClCompile Include="Menu\Framework\FrameworkUI.cpp" />
+    <ClCompile Include="Menu\Framework\Framework.cpp" />
     <ClCompile Include="Menu\Menu.cpp" />
     <ClCompile Include="SDK\Structures\Documented\CDynamicArray\CDynamicArray.cpp" />
     <ClCompile Include="SDK\Structures\Documented\RefThing\RefThing.cpp" />

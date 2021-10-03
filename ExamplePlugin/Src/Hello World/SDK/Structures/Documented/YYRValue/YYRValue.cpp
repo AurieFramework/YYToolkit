@@ -73,7 +73,7 @@ YYRValue::YYRValue(const YYRValue& Value) noexcept(true)
 		this->I64 = Value.I64;
 		break;
 	case VALUE_ARRAY:
-		this->Array = CDynamicArrayRef<RValue>::Assign(Value.Array);
+		this->EmbeddedArray = CDynamicArrayRef<RValue>::Assign(Value.EmbeddedArray);
 		break;
 	case VALUE_STRING:
 		this->String = RefString::Assign(Value.String);

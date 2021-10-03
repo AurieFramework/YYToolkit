@@ -8,7 +8,7 @@ namespace Hooks::Code_Execute
 	bool Function(CInstance* pSelf, CInstance* pOther, CCode* Code, RValue* Res, int Flags)
 	{
 		YYTKCodeEvent Event = YYTKCodeEvent(pfnOriginal, pSelf, pOther, Code, Res, Flags);
-		Plugins::RunCallback(&Event);
+		Plugins::RunHooks(&Event);
 
 		if (Event.CalledOriginal())
 			return Event.GetReturn();

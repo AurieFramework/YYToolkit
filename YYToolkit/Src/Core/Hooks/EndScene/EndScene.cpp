@@ -7,7 +7,7 @@ namespace Hooks::EndScene
 	HRESULT __stdcall Function(LPDIRECT3DDEVICE9 _this)
 	{
 		YYTKEndSceneEvent Event = YYTKEndSceneEvent(pfnOriginal, _this);
-		Plugins::RunCallback(&Event);
+		Plugins::RunHooks(&Event);
 
 		if (Event.CalledOriginal())
 			return Event.GetReturn();

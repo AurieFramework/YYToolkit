@@ -11,7 +11,7 @@ namespace Hooks::YYError
 		// Call events scope
 		{
 			YYTKErrorEvent Event = YYTKErrorEvent(pfnOriginal, pFormat);
-			Plugins::RunCallback(&Event);
+			Plugins::RunHooks(&Event);
 
 			if (Event.CalledOriginal())
 				return;

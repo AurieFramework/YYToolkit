@@ -1,4 +1,5 @@
 #pragma once
+#include "../../Undocumented/YYObjectBase/YYObjectBase.hpp"
 struct RValue;
 
 template <typename T>
@@ -34,4 +35,15 @@ struct CDynamicArrayRef
 
 		return nullptr;
 	}
+};
+
+struct RefDynamicArrayOfRValue
+{
+	YYObjectBase m_Object;
+	int m_refCount;
+	int m_flags;
+	RValue* m_Array;
+	signed long long m_Owner;
+	int visited;
+	int length;
 };

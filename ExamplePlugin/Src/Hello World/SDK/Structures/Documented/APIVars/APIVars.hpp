@@ -13,5 +13,6 @@ struct APIVars_t
 	void* Window_Device											= nullptr;		// A pointer to either a D3D11Device*, or an DIRECT3DDEVICE9
 	std::map<unsigned long, YYTKPlugin> Plugins;								// A map of all plugins loaded (Key = Base address, Value = YYTKPlugin object)
 	void* MainModule											= nullptr;		// A pointer to the core module (can be casted to an HMODULE)
-	void* RenderView											= nullptr;		// A pointer to an ID3D11RenderTargetView. Is nullptr is DX9!
+	void* RenderView											= nullptr;		// A pointer to an ID3D11RenderTargetView. Is nullptr in DX9!
+	void* DeviceContext											= nullptr;		// A pointer to a D3D11DeviceContext object. Is nullptr in DX9!
 };

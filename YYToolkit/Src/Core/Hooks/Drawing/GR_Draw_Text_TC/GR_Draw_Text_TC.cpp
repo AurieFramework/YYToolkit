@@ -8,6 +8,8 @@ namespace Hooks
 	{
 		void Function(float x, float y, const char* str, int linesep, int linewidth, float xsc, float ysc, float angle, unsigned int c1, unsigned int c2, unsigned int c3, float alpha, unsigned int c4)
 		{
+			Plugins::CallTextCallbacks(x, y, str, linesep, linewidth);
+
 			return pfnOriginal(x, y, str, linesep, linewidth, xsc, ysc, angle, c1, c2, c3, alpha, c4);
 		}
 
