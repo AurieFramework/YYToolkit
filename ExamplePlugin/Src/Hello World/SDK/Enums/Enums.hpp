@@ -57,14 +57,23 @@ enum Color : int
 {
 	CLR_BLACK = 0,
 	CLR_DARKBLUE = 1,
+	CLR_MATRIXGREEN = 2,
+	CLR_AQUA = 3,
 	CLR_RED = 4,
 	CLR_PURPLE = 5,
+	CLR_GOLD = 6,
 	CLR_DEFAULT = 7,
 	CLR_GRAY = 8,
 	CLR_BLUE = 9,
 	CLR_GREEN = 10,
 	CLR_LIGHTBLUE = 11,
+	CLR_TANGERINE = 12,
 	CLR_PINK = 13,
 	CLR_YELLOW = 14,
 	CLR_WHITE = 15
+};
+
+enum EOpcode
+{
+	// todo
 };

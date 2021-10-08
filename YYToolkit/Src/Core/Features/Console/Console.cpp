@@ -11,6 +11,8 @@
 using std::vector;
 using std::string;
 
+static 
+
 static vector<string> StripOutArguments(const string& ref)
 {
 	vector<string> vResults;
@@ -82,7 +84,8 @@ void Console::DoCommand()
 
 	if (TRoutine Routine = API::GetBuiltin(vecTokens[0].c_str()))
 	{
-		RValue Result;
+		RValue Result; Result.Kind = VALUE_UNSET; Result.I64 = 0;
+
 		YYRValue* pArgs = new YYRValue[vecTokens.size()];
 
 		// REGEX MESS START
@@ -117,6 +120,21 @@ void Console::DoCommand()
 		// REGEX MESS END
 
 		Routine(&Result, pInstance, pInstance, vecTokens.size() - 1, reinterpret_cast<RValue*>(pArgs));
+
+		Utils::Error::NoNewlineMessage(CLR_GOLD, "%s", Command.c_str());
+		Utils::Error::NoNewlineMessage(CLR_DEFAULT, " -> ");
+
+		if (Result.Kind == VALUE_REAL)
+			Utils::Error::Message(CLR_BLUE, "%.2f", Result.Real);
+
+		else if (Result.Kind == VALUE_BOOL)
+			Utils::Error::Message(CLR_TANGERINE, "%s", (Result.Real > 0.5) ? "true" : "false");
+			
+		else if (Result.Kind == VALUE_STRING)
+			Utils::Error::Message(CLR_YELLOW, "\"%s\"", Result.String->Get());
+
+		else
+			Utils::Error::Message(CLR_GRAY, "undefined");
 
 		delete[] pArgs;
 		return;

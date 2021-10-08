@@ -29,7 +29,7 @@ YYRValue::YYRValue(const bool& Value) noexcept(true)
 {
 	this->Kind = VALUE_BOOL;
 	this->Flags = 0;
-	this->I32 = Value; // A bool is really just a 0 or a 1, so I can freely cast it to an integer.
+	this->Real = static_cast<double>(Value); // A bool is really just a 0 or a 1, so I can freely cast it to an integer.
 }
 
 YYRValue::YYRValue(const long long& Value) noexcept(true)
