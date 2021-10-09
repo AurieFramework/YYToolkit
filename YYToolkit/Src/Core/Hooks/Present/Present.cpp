@@ -56,24 +56,21 @@ namespace Hooks::Present
 {
 	HRESULT __stdcall Function(IDXGISwapChain* _this, unsigned int Sync, unsigned int Flags)
 	{
-		// Create renderview
-		std::call_once(g_CreatedRenderView, [&]() 
-			{
-				ID3D11Texture2D* pBackBuffer = nullptr;
-				ID3D11Device* pDevice = reinterpret_cast<ID3D11Device*>(gAPIVars.Window_Device);
-
-				HRESULT Result = _this->GetBuffer(0, IID_PPV_ARGS(&pBackBuffer));
-
-				if (FAILED(Result))
-					Utils::Error::Error(false, "Getting the back buffer failed.");
-
-				pDevice->CreateRenderTargetView(pBackBuffer, NULL, reinterpret_cast<ID3D11RenderTargetView**>(&gAPIVars.RenderView));
-			}
-		);
-
 		YYTKPresentEvent Event = YYTKPresentEvent(pfnOriginal, _this, Sync, Flags);
 
 		Plugins::RunHooks(&Event);
+
+		std::call_once(g_CreatedRenderView, [&]()
+			{
+				ID3D11Device* pDevice = static_cast<decltype(pDevice)>(gAPIVars.Window_Device);
+				ID3D11RenderTargetView** ppRenderView = reinterpret_cast<decltype(ppRenderView)>(&gAPIVars.RenderView);
+
+				ID3D11Texture2D* pBackBuffer;
+				_this->GetBuffer(0, IID_PPV_ARGS(&pBackBuffer));
+				pDevice->CreateRenderTargetView(pBackBuffer, NULL, ppRenderView);
+				pBackBuffer->Release();
+			}
+		);
 
 		if (Event.CalledOriginal())
 			return Event.GetReturn();
@@ -128,8 +125,6 @@ namespace Hooks::Present
 
 		//Throw these away, they're useless now.
 		pSwapChain->Release();
-
-		// Setup gAPIVars members
 
 		ID3D11Device* pDevice = static_cast<ID3D11Device*>(gAPIVars.Window_Device);
 		

@@ -37,7 +37,11 @@ namespace API
 
 		SetConsoleTitleA("YYToolkit Log");
 
+#if _DEBUG
+		Utils::Error::Message(CLR_GREEN, "YYToolkit %s by Archie", YYSDK_VERSION);
+#else
 		Utils::Error::Message(CLR_LIGHTBLUE, "YYToolkit %s by Archie", YYSDK_VERSION);
+#endif
 
 		bool ErrorOccured = false;
 		if (!gAPIVars.Code_Execute)
