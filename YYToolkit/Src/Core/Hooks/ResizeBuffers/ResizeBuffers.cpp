@@ -32,34 +32,40 @@ HRESULT __stdcall Hooks::ResizeBuffers::Function(IDXGISwapChain* _this, UINT Buf
 			return Event.GetReturn();
 	}
 
-	// Refresh gAPIVars.RenderView scope
-	HRESULT _Result = S_OK;
+	// Release all needed resources
+	if (gAPIVars.RenderView) 
 	{
-		using namespace Hooks::Present;
+		ID3D11RenderTargetView* pRenderTarget = static_cast<decltype(pRenderTarget)>(gAPIVars.RenderView);
+		ID3D11DeviceContext* pContext = static_cast<decltype(pContext)>(gAPIVars.DeviceContext);
 
-		if (gAPIVars.RenderView)
-			reinterpret_cast<ID3D11RenderTargetView*>(gAPIVars.RenderView)->Release();
+		pContext->OMSetRenderTargets(0, 0, 0);
+		pRenderTarget->Release();
 
-		_Result = pfnOriginal(_this, BufferCount, Width, Height, NewFormat, SwapChainFlags);
-
-		{
-			ID3D11Texture2D* pBackBuffer;
-
-			HRESULT ret = _this->GetBuffer(0, IID_PPV_ARGS(&pBackBuffer));
-
-			if (FAILED(ret))
-				Utils::Error::Error(1, "Getting the back buffer failed.");
-
-			ret = static_cast<ID3D11Device*>(gAPIVars.Window_Device)->CreateRenderTargetView(pBackBuffer, NULL, reinterpret_cast<ID3D11RenderTargetView**>(&gAPIVars.RenderView));
-
-			if (FAILED(ret))
-				Utils::Error::Error(1, "Creating the target view failed.");
-
-			pBackBuffer->Release();
-		}
+		gAPIVars.RenderView = nullptr;
 	}
 
-	return _Result;
+
+	// Resize the game buffer
+	HRESULT hr = pfnOriginal(_this, BufferCount, Width, Height, NewFormat, SwapChainFlags);
+
+	// Recreate the buffer
+	{
+		ID3D11Device* pDevice = static_cast<decltype(pDevice)>(gAPIVars.Window_Device);
+		ID3D11RenderTargetView** ppRenderTarget = reinterpret_cast<decltype(ppRenderTarget)>(&gAPIVars.RenderView);
+		ID3D11DeviceContext* pContext = static_cast<decltype(pContext)>(gAPIVars.DeviceContext);
+
+		ID3D11Texture2D* pBuffer;
+		_this->GetBuffer(0, IID_PPV_ARGS(&pBuffer));
+		// TODO: Perform error handling here!
+
+		pDevice->CreateRenderTargetView(pBuffer, NULL, ppRenderTarget);
+		// TODO: Perform error handling here!
+		pBuffer->Release();
+
+		pContext->OMSetRenderTargets(1, ppRenderTarget, NULL);
+	}
+
+	return hr;
 }
 
 void* Hooks::ResizeBuffers::GetTargetAddress()

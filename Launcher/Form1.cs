@@ -152,6 +152,9 @@ namespace Launcher
                 return;
             }
 
+            if (MessageBox.Show("Please note this feature is designed for development purposes.\nProceed anyway?", "Warning", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.No)
+                return;
+
             using (OpenFileDialog fileDialog = Utils.CreateFileDialog("%systemdrive%", "Find the data.win file", "GameMaker Data Files|*.win", 1))
             {
                 if (fileDialog.ShowDialog() == DialogResult.OK)
@@ -172,51 +175,12 @@ namespace Launcher
                 return;
             }
 
-            try
-            {
-                if (!Directory.Exists("autoexec"))
-                    Directory.CreateDirectory("autoexec");
-            }
-            catch (System.UnauthorizedAccessException Exception)
-            {
-                MessageBox.Show(Exception.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-
-
-            Process.Start("explorer", "\"" + Directory.GetCurrentDirectory() + "\\autoexec\"");
+            Process.Start("explorer", "\"" + Directory.GetCurrentDirectory());
         }
 
         private void btOpenGitHub_Click(object sender, EventArgs e)
         {
-            Process.Start("explorer.exe", $"\"https://github.com/Archie-osu/YYToolkit\"");
-        }
-
-        private void btDownloadSrc_Click(object sender, EventArgs e)
-        {
-            using (var FolderBrowser = new FolderBrowserDialog())
-            {
-                FolderBrowser.Description = "Where do you want to save the source tree?";
-
-                if (FolderBrowser.ShowDialog() == DialogResult.OK)
-                {
-                    using (var Browser = new WebClient())
-                    {
-                        try
-                        {
-                            if (rbStable.Checked)
-                                Browser.DownloadFile("https://github.com/Archie-osu/YYToolkit/archive/refs/heads/stable.zip", FolderBrowser.SelectedPath + "\\YYToolkit-stable.zip");
-                            else
-                                Browser.DownloadFile("https://github.com/Archie-osu/YYToolkit/archive/refs/heads/beta.zip", FolderBrowser.SelectedPath + "\\YYToolkit-beta.zip");
-                        }
-                        catch (System.Exception Exception)
-                        {
-                            MessageBox.Show(Exception.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                            return;
-                        }
-                    }
-                    MessageBox.Show("Download complete.", "Source code download", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                }
-            }
+            Process.Start("explorer.exe", $"\"https://github.com/Archie-osu/YYToolkit/releases\"");
         }
 
         private void PluginContextMenu_InstallPlugin(object sender, EventArgs e)
@@ -231,12 +195,6 @@ namespace Launcher
             {
                 if (fileDialog.ShowDialog() == DialogResult.OK)
                 {
-                    if (fileDialog.SafeFileName.ToLower() == "yytoolkit.dll")
-                    {
-                        if (MessageBox.Show("YYToolkit.dll might be the core module, and not a plugin. Add it anyway?", "Warning", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.No)
-                            return;
-                    }
-
                     try
                     {
                         if (!Directory.Exists("autoexec"))
@@ -361,7 +319,7 @@ namespace Launcher
                 return;
             }
 
-            if (MessageBox.Show("Please note this feature is designed for development purposes.\nTo launch with YYToolkit, use the other button.\nProceed anyway?", "Warning", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.No)
+            if (MessageBox.Show("Please note this feature is designed for development purposes.\nProceed anyway?", "Warning", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.No)
                 return;
 
             using (OpenFileDialog fileDialog = Utils.CreateFileDialog("%systemdrive%", "Find the custom DLL", "DLL files|*.dll", 1))
@@ -384,6 +342,16 @@ namespace Launcher
                     Utils.Inject(p, fileDialog.FileName);
                 }
             }
+        }
+
+        private void btOpenUMTGitHub_Click(object sender, EventArgs e)
+        {
+            Process.Start("explorer.exe", $"\"https://github.com/krzys-h/UndertaleModTool/releases\"");
+        }
+
+        private void listPlugins_SelectedIndexChanged(object sender, EventArgs e)
+        {
+
         }
     }
 }

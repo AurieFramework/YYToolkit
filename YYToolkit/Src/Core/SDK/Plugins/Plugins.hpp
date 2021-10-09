@@ -17,6 +17,8 @@ using FNPluginEntry = YYTKStatus(*)(YYTKPlugin* pPlugin);
 using FNPluginUnload = YYTKStatus(*)(YYTKPlugin* pPlugin);
 using FNTextRenderCallback = void(*)(float& x, float& y, const char*& str, int& linesep, int& linewidth);
 
+#pragma pack(push, 1)
+
 struct YYTKPlugin
 {
 	FNPluginEntry PluginEntry;			// Pointer to the entry function - set by the core.
@@ -42,3 +44,5 @@ struct YYTKPlugin
 		return nullptr;
 	}
 };
+
+#pragma pack(pop)

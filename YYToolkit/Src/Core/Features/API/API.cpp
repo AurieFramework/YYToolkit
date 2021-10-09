@@ -37,12 +37,21 @@ namespace API
 
 		SetConsoleTitleA("YYToolkit Log");
 
+#if _DEBUG
+		Utils::Error::Message(CLR_GREEN, "YYToolkit %s by Archie", YYSDK_VERSION);
+#else
 		Utils::Error::Message(CLR_LIGHTBLUE, "YYToolkit %s by Archie", YYSDK_VERSION);
+#endif
 
 		bool ErrorOccured = false;
 		if (!gAPIVars.Code_Execute)
 		{
-			ErrorOccured |= (GetCodeExecuteAddr(gAPIVars.Code_Execute) != YYTK_OK);
+			YYTKStatus Status;
+			ErrorOccured |= (Status = GetCodeExecuteAddr(gAPIVars.Code_Execute));
+
+			// This is crucial to the API workings, we have to crash the game if this is not found.
+			if (Status != YYTK_OK)
+				Utils::Error::Error(true, "GetCodeExecuteAddr() returned %s", Utils::Error::YYTKStatus_ToString(Status));
 		}
 
 		if (!gAPIVars.Code_Function_GET_the_function)
@@ -50,8 +59,9 @@ namespace API
 			YYTKStatus Status;
 			ErrorOccured |= (Status = GetCodeFunctionAddr(gAPIVars.Code_Function_GET_the_function));
 			
+			// This is crucial to the API workings, we have to crash the game if this is not found.
 			if (Status != YYTK_OK)
-				Utils::Error::Error(false, "GetCodeFunctionAddr() returned %s", Utils::Error::YYTKStatus_ToString(Status));
+				Utils::Error::Error(true, "GetCodeFunctionAddr() returned %s", Utils::Error::YYTKStatus_ToString(Status));
 		}
 
 		if (!gAPIVars.g_pGlobal)

@@ -57,6 +57,18 @@ namespace Utils::Error
 		SetPrintColor(CLR_DEFAULT);
 	}
 
+	void NoNewlineMessage(Color C, const char* fmt, ...)
+	{
+		va_list vaArgs;
+		va_start(vaArgs, fmt);
+		auto String = ParseVA(fmt, vaArgs);
+		va_end(vaArgs);
+
+		SetPrintColor(C);
+		printf("%s", String.c_str());
+		SetPrintColor(CLR_DEFAULT);
+	}
+
 	const char* YYTKStatus_ToString(YYTKStatus Status)
 	{
 		switch (Status)

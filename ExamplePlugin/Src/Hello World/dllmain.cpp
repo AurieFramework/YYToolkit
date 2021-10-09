@@ -109,7 +109,7 @@ YYTKStatus PluginEventHandler(YYTKPlugin* pPlugin, YYTKEventBase* pEvent)
         // Go To Room port
         if (GetAsyncKeyState(VK_F3) & 1)
         {
-            YYRValue Result = EasyGMLCall(pPlugin, "get_integer", { "Go to room (ported by Archie from UMT to YYToolkit\nEnter the room ID you wish to teleport to.", 11.0 });
+            YYRValue Result = EasyGMLCall(pPlugin, "get_integer", { "Go to room (ported by Archie from UMT to YYToolkit).\nEnter the room ID you wish to teleport to.", 11.0 });
 
             EasyGMLCall(pPlugin, "room_goto", { Result });
         }
@@ -138,6 +138,8 @@ DllExport YYTKStatus PluginUnload(YYTKPlugin* pPlugin)
         // Patch the VM to the original
         Script->s_code->i_pVM = poscr_Dogcheck;
     }
+
+    EasyGMLCall(pPlugin, "variable_global_set", { "debug", 0.0 });
 
     return YYTK_OK;
 }

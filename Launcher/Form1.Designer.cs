@@ -40,22 +40,17 @@ namespace Launcher
             this.lbRunner = new System.Windows.Forms.Label();
             this.txtRunner = new System.Windows.Forms.TextBox();
             this.gbMisc = new System.Windows.Forms.GroupBox();
+            this.btOpenUMTGitHub = new System.Windows.Forms.Button();
             this.btOpenGitHub = new System.Windows.Forms.Button();
-            this.btOpenPluginFolder = new System.Windows.Forms.Button();
             this.btYYTKLaunch = new System.Windows.Forms.Button();
             this.gbInject = new System.Windows.Forms.GroupBox();
             this.btOpenData = new System.Windows.Forms.Button();
             this.btNoModLaunch = new System.Windows.Forms.Button();
-            this.rbStable = new System.Windows.Forms.RadioButton();
-            this.rbBeta = new System.Windows.Forms.RadioButton();
-            this.gbSourceCode = new System.Windows.Forms.GroupBox();
-            this.btDownloadSrc = new System.Windows.Forms.Button();
             this.gbPlugins = new System.Windows.Forms.GroupBox();
             this.listPlugins = new System.Windows.Forms.ListBox();
             this.gbSelectFiles.SuspendLayout();
             this.gbMisc.SuspendLayout();
             this.gbInject.SuspendLayout();
-            this.gbSourceCode.SuspendLayout();
             this.gbPlugins.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -169,38 +164,38 @@ namespace Launcher
             // 
             // gbMisc
             // 
+            this.gbMisc.Controls.Add(this.btOpenUMTGitHub);
             this.gbMisc.Controls.Add(this.btOpenGitHub);
-            this.gbMisc.Controls.Add(this.btOpenPluginFolder);
             this.gbMisc.Font = new System.Drawing.Font("Segoe UI", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.gbMisc.ForeColor = System.Drawing.Color.White;
-            this.gbMisc.Location = new System.Drawing.Point(12, 292);
+            this.gbMisc.Location = new System.Drawing.Point(384, 251);
             this.gbMisc.Name = "gbMisc";
-            this.gbMisc.Size = new System.Drawing.Size(366, 69);
+            this.gbMisc.Size = new System.Drawing.Size(268, 96);
             this.gbMisc.TabIndex = 2;
             this.gbMisc.TabStop = false;
-            this.gbMisc.Text = "4 - Miscellaneous";
+            this.gbMisc.Text = "4 - Quick Repo Access";
+            // 
+            // btOpenUMTGitHub
+            // 
+            this.btOpenUMTGitHub.ForeColor = System.Drawing.Color.Black;
+            this.btOpenUMTGitHub.Location = new System.Drawing.Point(8, 60);
+            this.btOpenUMTGitHub.Name = "btOpenUMTGitHub";
+            this.btOpenUMTGitHub.Size = new System.Drawing.Size(252, 28);
+            this.btOpenUMTGitHub.TabIndex = 2;
+            this.btOpenUMTGitHub.Text = "Open UndertaleModTool releases";
+            this.btOpenUMTGitHub.UseVisualStyleBackColor = true;
+            this.btOpenUMTGitHub.Click += new System.EventHandler(this.btOpenUMTGitHub_Click);
             // 
             // btOpenGitHub
             // 
             this.btOpenGitHub.ForeColor = System.Drawing.Color.Black;
-            this.btOpenGitHub.Location = new System.Drawing.Point(186, 26);
+            this.btOpenGitHub.Location = new System.Drawing.Point(8, 26);
             this.btOpenGitHub.Name = "btOpenGitHub";
-            this.btOpenGitHub.Size = new System.Drawing.Size(170, 28);
+            this.btOpenGitHub.Size = new System.Drawing.Size(252, 28);
             this.btOpenGitHub.TabIndex = 1;
-            this.btOpenGitHub.Text = "Open YYTK GitHub";
+            this.btOpenGitHub.Text = "Open YYToolkit releases";
             this.btOpenGitHub.UseVisualStyleBackColor = true;
             this.btOpenGitHub.Click += new System.EventHandler(this.btOpenGitHub_Click);
-            // 
-            // btOpenPluginFolder
-            // 
-            this.btOpenPluginFolder.ForeColor = System.Drawing.Color.Black;
-            this.btOpenPluginFolder.Location = new System.Drawing.Point(10, 26);
-            this.btOpenPluginFolder.Name = "btOpenPluginFolder";
-            this.btOpenPluginFolder.Size = new System.Drawing.Size(170, 28);
-            this.btOpenPluginFolder.TabIndex = 0;
-            this.btOpenPluginFolder.Text = "Open \'autoexec\' folder";
-            this.btOpenPluginFolder.UseVisualStyleBackColor = true;
-            this.btOpenPluginFolder.Click += new System.EventHandler(this.btOpenPluginFolder_Click);
             // 
             // btYYTKLaunch
             // 
@@ -223,7 +218,7 @@ namespace Launcher
             this.gbInject.ForeColor = System.Drawing.Color.White;
             this.gbInject.Location = new System.Drawing.Point(384, 109);
             this.gbInject.Name = "gbInject";
-            this.gbInject.Size = new System.Drawing.Size(268, 144);
+            this.gbInject.Size = new System.Drawing.Size(268, 136);
             this.gbInject.TabIndex = 4;
             this.gbInject.TabStop = false;
             this.gbInject.Text = "3 - Launcher";
@@ -236,7 +231,7 @@ namespace Launcher
             this.btOpenData.Name = "btOpenData";
             this.btOpenData.Size = new System.Drawing.Size(254, 28);
             this.btOpenData.TabIndex = 6;
-            this.btOpenData.Text = "Open data.win in UTModTool";
+            this.btOpenData.Text = "Open in UndertaleModTool";
             this.btOpenData.UseVisualStyleBackColor = true;
             this.btOpenData.Click += new System.EventHandler(this.btOpenData_Click);
             // 
@@ -252,54 +247,6 @@ namespace Launcher
             this.btNoModLaunch.UseVisualStyleBackColor = true;
             this.btNoModLaunch.Click += new System.EventHandler(this.btNoModLaunch_Click);
             // 
-            // rbStable
-            // 
-            this.rbStable.AutoSize = true;
-            this.rbStable.Checked = true;
-            this.rbStable.Location = new System.Drawing.Point(8, 33);
-            this.rbStable.Name = "rbStable";
-            this.rbStable.Size = new System.Drawing.Size(122, 25);
-            this.rbStable.TabIndex = 2;
-            this.rbStable.TabStop = true;
-            this.rbStable.Text = "Stable Branch";
-            this.rbStable.UseVisualStyleBackColor = true;
-            // 
-            // rbBeta
-            // 
-            this.rbBeta.AutoSize = true;
-            this.rbBeta.Location = new System.Drawing.Point(8, 64);
-            this.rbBeta.Name = "rbBeta";
-            this.rbBeta.Size = new System.Drawing.Size(110, 25);
-            this.rbBeta.TabIndex = 3;
-            this.rbBeta.Text = "Beta Branch";
-            this.rbBeta.UseVisualStyleBackColor = true;
-            // 
-            // gbSourceCode
-            // 
-            this.gbSourceCode.Controls.Add(this.btDownloadSrc);
-            this.gbSourceCode.Controls.Add(this.rbStable);
-            this.gbSourceCode.Controls.Add(this.rbBeta);
-            this.gbSourceCode.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.gbSourceCode.ForeColor = System.Drawing.Color.White;
-            this.gbSourceCode.Location = new System.Drawing.Point(384, 259);
-            this.gbSourceCode.Name = "gbSourceCode";
-            this.gbSourceCode.Size = new System.Drawing.Size(268, 102);
-            this.gbSourceCode.TabIndex = 4;
-            this.gbSourceCode.TabStop = false;
-            this.gbSourceCode.Text = "5 - Source Code";
-            // 
-            // btDownloadSrc
-            // 
-            this.btDownloadSrc.Font = new System.Drawing.Font("Segoe UI", 15.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btDownloadSrc.ForeColor = System.Drawing.Color.Black;
-            this.btDownloadSrc.Location = new System.Drawing.Point(136, 33);
-            this.btDownloadSrc.Name = "btDownloadSrc";
-            this.btDownloadSrc.Size = new System.Drawing.Size(126, 56);
-            this.btDownloadSrc.TabIndex = 4;
-            this.btDownloadSrc.Text = "Download";
-            this.btDownloadSrc.UseVisualStyleBackColor = true;
-            this.btDownloadSrc.Click += new System.EventHandler(this.btDownloadSrc_Click);
-            // 
             // gbPlugins
             // 
             this.gbPlugins.Controls.Add(this.listPlugins);
@@ -307,7 +254,7 @@ namespace Launcher
             this.gbPlugins.ForeColor = System.Drawing.Color.White;
             this.gbPlugins.Location = new System.Drawing.Point(12, 109);
             this.gbPlugins.Name = "gbPlugins";
-            this.gbPlugins.Size = new System.Drawing.Size(366, 177);
+            this.gbPlugins.Size = new System.Drawing.Size(366, 238);
             this.gbPlugins.TabIndex = 5;
             this.gbPlugins.TabStop = false;
             this.gbPlugins.Text = "2 - Plugin Manager";
@@ -320,18 +267,17 @@ namespace Launcher
             this.listPlugins.ItemHeight = 21;
             this.listPlugins.Location = new System.Drawing.Point(10, 31);
             this.listPlugins.Name = "listPlugins";
-            this.listPlugins.Size = new System.Drawing.Size(346, 130);
+            this.listPlugins.Size = new System.Drawing.Size(346, 193);
             this.listPlugins.TabIndex = 0;
             // 
             // MainWindow
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(50)))), ((int)(((byte)(50)))), ((int)(((byte)(70)))));
-            this.ClientSize = new System.Drawing.Size(664, 370);
+            this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(30)))), ((int)(((byte)(30)))), ((int)(((byte)(45)))));
+            this.ClientSize = new System.Drawing.Size(664, 360);
             this.Controls.Add(this.gbMisc);
             this.Controls.Add(this.gbPlugins);
-            this.Controls.Add(this.gbSourceCode);
             this.Controls.Add(this.gbInject);
             this.Controls.Add(this.gbSelectFiles);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
@@ -339,13 +285,12 @@ namespace Launcher
             this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.Name = "MainWindow";
-            this.Text = "YYLauncher 0.0.7-rc1";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
+            this.Text = "YYLauncher 0.0.7-rc2";
             this.gbSelectFiles.ResumeLayout(false);
             this.gbSelectFiles.PerformLayout();
             this.gbMisc.ResumeLayout(false);
             this.gbInject.ResumeLayout(false);
-            this.gbSourceCode.ResumeLayout(false);
-            this.gbSourceCode.PerformLayout();
             this.gbPlugins.ResumeLayout(false);
             this.ResumeLayout(false);
 
@@ -365,15 +310,11 @@ namespace Launcher
         private System.Windows.Forms.Label lbDataFile;
         private System.Windows.Forms.Button btResetData;
         private System.Windows.Forms.Button btDataPick;
-        private System.Windows.Forms.Button btOpenPluginFolder;
         private System.Windows.Forms.Button btOpenGitHub;
-        private System.Windows.Forms.RadioButton rbStable;
-        private System.Windows.Forms.RadioButton rbBeta;
-        private System.Windows.Forms.GroupBox gbSourceCode;
-        private System.Windows.Forms.Button btDownloadSrc;
         private System.Windows.Forms.GroupBox gbPlugins;
         private System.Windows.Forms.ListBox listPlugins;
         private System.Windows.Forms.Button btOpenData;
+        private System.Windows.Forms.Button btOpenUMTGitHub;
     }
 }
 
