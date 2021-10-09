@@ -11,8 +11,6 @@
 using std::vector;
 using std::string;
 
-static 
-
 static vector<string> StripOutArguments(const string& ref)
 {
 	vector<string> vResults;

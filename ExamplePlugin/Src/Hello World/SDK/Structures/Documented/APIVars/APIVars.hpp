@@ -15,4 +15,5 @@ struct APIVars_t
 	void* MainModule											= nullptr;		// A pointer to the core module (can be casted to an HMODULE)
 	void* RenderView											= nullptr;		// A pointer to an ID3D11RenderTargetView. Is nullptr in DX9!
 	void* DeviceContext											= nullptr;		// A pointer to a D3D11DeviceContext object. Is nullptr in DX9!
+	void* pSwapChain											= nullptr;		// A pointer to a swapchain object - is nullptr in DX9!
 };
