@@ -151,6 +151,7 @@ DllExport YYTKStatus PluginEntry(YYTKPlugin* pPlugin)
     // Set 'PluginEventHandler' as the function to call when we a game event happens.
     // This is not required if you don't need to modify code entries / draw with D3D / anything else that requires precise timing.
     pPlugin->PluginHandler = PluginEventHandler;
+    pPlugin->PluginUnload = PluginUnload;
     
     printf("[Chapter2++] - Press F3 to teleport to rooms (UndertaleModTool GoToRoom.csx script)\n");
     printf("[Chapter2++] - Dogcheck disabled using Direct VM hook method!\n");

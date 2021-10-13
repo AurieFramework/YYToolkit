@@ -2,13 +2,13 @@
 
 RefString::RefString(const char* _Thing, int _Size, bool _NoAutoFree)
 {
-	m_Thing = new char[_Size];
+	m_Thing = new char[_Size + 1];
 	m_Size = _Size;
 	m_refCount = _NoAutoFree ? 0xDEAD : 0;
 
 	if (_Thing && m_Thing)
 	{
-		strncpy(m_Thing, _Thing, _Size);
+		strncpy_s(m_Thing, _Size + 1, _Thing, _Size);
 	}
 
 	this->Inc();
@@ -33,7 +33,9 @@ void RefString::Dec()
 
 	if (m_refCount == 0 || m_refCount == 0xDEAD)
 	{
-		delete[] m_Thing;
+		if (m_Thing)
+			delete[] m_Thing;
+
 		m_Thing = nullptr;
 	}
 }

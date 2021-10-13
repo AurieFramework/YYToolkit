@@ -11,6 +11,8 @@
 #include <string>
 #include <tuple>
 
+#pragma pack(push, 1)
+
 // can we escape this template hell
 class YYTKEventBase
 {
@@ -152,3 +154,5 @@ using YYTKWindowProcEvent = YYTKEvent<LRESULT, LRESULT(__stdcall*)(HWND, UINT, W
 using YYTKResizeBuffersEvent = YYTKEvent<HRESULT, HRESULT(__stdcall*)(IDXGISwapChain*, UINT, UINT, UINT, DXGI_FORMAT, UINT), EventType::EVT_RESIZEBUFFERS, IDXGISwapChain*, UINT, UINT, UINT, DXGI_FORMAT, UINT>;
 using YYTKErrorEvent = YYTKEvent<void, void(__cdecl*)(const char*, ...), EventType::EVT_YYERROR, const char*>; // template specializations ftw
 using YYTKScriptEvent = YYTKEvent<char*, char* (__cdecl*)(CScript*, int, char*, VMExec*, YYObjectBase*, YYObjectBase*), EventType::EVT_DOCALLSCRIPT, CScript*, int, char*, VMExec*, YYObjectBase*, YYObjectBase*>;
+
+#pragma pack(pop)
