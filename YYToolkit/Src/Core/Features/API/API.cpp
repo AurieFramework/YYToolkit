@@ -5,8 +5,8 @@
 #undef max
 #include <utility>
 #include <filesystem>
-#include "../../Utils/Error.hpp"
-#include "../../Utils/PEParser.hpp"
+#include "../../Utils/Error/Error.hpp"
+#include "../../Utils/PE Parser/PEParser.hpp"
 #include "../../Utils/MH/hde/hde32.h"
 
 namespace API

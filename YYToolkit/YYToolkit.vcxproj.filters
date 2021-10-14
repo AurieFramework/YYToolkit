@@ -66,7 +66,7 @@
     <ClInclude Include="Src\Core\Utils\MH\trampoline.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Src\Core\Utils\Error.hpp">
+    <ClInclude Include="Src\Core\Utils\Error\Error.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Src\Core\Hooks\MessageBoxW\MessageBoxW.hpp">
@@ -81,7 +81,7 @@
     <ClInclude Include="Src\Core\Hooks\Drawing\GR_Draw_Text_Transformed\GR_Draw_Text_Transformed.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Src\Core\Utils\MurMurHash.hpp">
+    <ClInclude Include="Src\Core\Utils\Hashing\MurMurHash.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Src\Core\SDK\Enums\Enums.hpp">
@@ -147,10 +147,13 @@
     <ClInclude Include="Src\Core\Hooks\DoCallScript\DoCallScript.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Src\Core\Utils\PEParser.hpp">
+    <ClInclude Include="Src\Core\Utils\PE Parser\PEParser.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Src\Core\Features\Console\Console.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Core\Utils\D3D11 Hooker\D3D11Hooker.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -200,7 +203,7 @@
     <ClCompile Include="Src\Core\Utils\MH\trampoline.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Src\Core\Utils\Error.cpp">
+    <ClCompile Include="Src\Core\Utils\Error\Error.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Src\Core\Hooks\Drawing\GR_Draw_Text\GR_Draw_Text.cpp">
@@ -215,7 +218,7 @@
     <ClCompile Include="Src\Core\Hooks\Drawing\GR_Draw_Text_TC\GR_Draw_Text_TC_header.hpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Src\Core\Utils\MurMurHash.cpp">
+    <ClCompile Include="Src\Core\Utils\Hashing\MurMurHash.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Src\Core\Hooks\Drawing\GR_Draw_Text_TC\GR_Draw_Text_TC.cpp">
@@ -233,10 +236,13 @@
     <ClCompile Include="Src\Core\Hooks\DoCallScript\DoCallScript.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Src\Core\Utils\PEParser.cpp">
+    <ClCompile Include="Src\Core\Utils\PE Parser\PEParser.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Src\Core\Features\Console\Console.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Core\Utils\D3D11 Hooker\D3D11Hooker.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

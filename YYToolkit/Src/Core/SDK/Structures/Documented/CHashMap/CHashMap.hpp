@@ -1,6 +1,6 @@
 #pragma once
 #ifndef YYSDK_PLUGIN
-#include "../../../../Utils/MurMurHash.hpp"
+#include "../../../../Utils/Hashing/MurMurHash.hpp"
 #endif
 struct YYObjectBase;
 
@@ -26,7 +26,7 @@ struct CHashMap
 #ifndef YYSDK_PLUGIN
 	static unsigned int CalculateHash(const char* val, size_t Len)
 	{
-		return Utils::MurMurHash(val, Len, 0);
+		return Utils::Hash::MurMurHash(val, Len, 0);
 	}
 #endif
 };

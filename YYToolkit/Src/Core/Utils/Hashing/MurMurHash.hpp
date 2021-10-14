@@ -37,7 +37,10 @@ inline uint64_t rotl64(uint64_t x, int8_t r)
 
 namespace Utils
 {
-	FORCE_INLINE uint32_t fmix32(uint32_t h);
+	namespace Hash
+	{
+		FORCE_INLINE uint32_t fmix32(uint32_t h);
 
-	uint32_t MurMurHash(const void* key, int len, uint32_t seed);
+		uint32_t MurMurHash(const void* key, int len, uint32_t seed);
+	}
 }

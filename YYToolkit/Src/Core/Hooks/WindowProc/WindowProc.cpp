@@ -1,5 +1,5 @@
 #include "WindowProc.hpp"
-#include "../../Utils/Error.hpp"
+#include "../../Utils/Error/Error.hpp"
 #include "../../Features/API/API.hpp"
 
 namespace Hooks::WindowProc

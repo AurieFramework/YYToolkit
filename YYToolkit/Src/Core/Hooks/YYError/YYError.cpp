@@ -1,6 +1,6 @@
 #include "YYError.hpp"
 #include "../../Features/API/API.hpp"
-#include "../../Utils/Error.hpp"
+#include "../../Utils/Error/Error.hpp"
 
 namespace Hooks::YYError
 {

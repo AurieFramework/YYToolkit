@@ -1,6 +1,6 @@
 #include "MurMurHash.hpp"
 
-FORCE_INLINE uint32_t Utils::fmix32(uint32_t h)
+FORCE_INLINE uint32_t Utils::Hash::fmix32(uint32_t h)
 {
 	h ^= h >> 16;
 	h *= 0x85ebca6b;
@@ -11,7 +11,7 @@ FORCE_INLINE uint32_t Utils::fmix32(uint32_t h)
 	return h;
 }
 
-uint32_t Utils::MurMurHash(const void* key, int len, uint32_t seed)
+uint32_t Utils::Hash::MurMurHash(const void* key, int len, uint32_t seed)
 {
 	const uint8_t* data = (const uint8_t*)key;
 	const int nblocks = len / 4;
