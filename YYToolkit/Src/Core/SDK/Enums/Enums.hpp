@@ -84,5 +84,4 @@ enum EVariableType : int
 	VAR_LOCAL = -7,
 	VAR_STACKTOP = -9,
 	VAR_ARGUMENT = -15,
-	VAR_STATIC = -16
 };

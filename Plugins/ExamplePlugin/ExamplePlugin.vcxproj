@@ -73,13 +73,13 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IntDir>$(SolutionDir)Build\Plugin\$(Configuration)\</IntDir>
-    <OutDir>$(SolutionDir)Build\Plugin\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)Build\Plugins\Example\$(Configuration)\</IntDir>
+    <OutDir>$(SolutionDir)Build\Plugins\Example\$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IntDir>$(SolutionDir)Build\Plugin\$(Configuration)\</IntDir>
-    <OutDir>$(SolutionDir)Build\Plugin\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)Build\Plugins\Example\$(Configuration)\</IntDir>
+    <OutDir>$(SolutionDir)Build\Plugins\Example\$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>

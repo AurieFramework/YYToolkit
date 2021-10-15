@@ -75,6 +75,25 @@ void Console::DoCommand()
 	if (Command.empty())
 		return;
 
+	// Regex preprocessing
+
+	// Syntax: global.whatever = value
+	// Processed: variable_global_set("whatever", value)
+	std::regex regexAssignment("global\\.([a-zA-Z_]+) = (.*)");
+	std::regex regexPeek("global\\.([a-zA-Z_]+)");
+
+	if (std::regex_match(Command, regexAssignment))
+	{
+		Command = std::regex_replace(Command, regexAssignment, "variable_global_set(\"$1\", $2)");
+	}
+
+	// Syntax: global.whatever
+	// Processed: variable_global_get("whatever")
+	else if (std::regex_match(Command, regexPeek))
+	{
+		Command = std::regex_replace(Command, regexPeek, "variable_global_get(\"$1\")");
+	}
+
 	vector<string> vecTokens = StripOutArguments(Command);
 	
 	if (vecTokens.empty())

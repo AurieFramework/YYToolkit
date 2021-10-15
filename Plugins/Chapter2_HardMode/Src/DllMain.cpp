@@ -13,11 +13,13 @@ YYTKStatus PluginEventHandler(YYTKPlugin* pPlugin, YYTKEventBase* pEvent)
         if (!Code->i_pName)
             return YYTK_INVALID;
 
+        // Remove Save points
         if (_stricmp(Code->i_pName, "gml_Object_obj_savepoint_Create_0") == 0)
         {
             Features::RemoveSavePoints(pPlugin, Self);
         }
 
+        // Remove healing from Save points
         else if (_stricmp(Code->i_pName, "gml_Object_obj_savepoint_Other_10") == 0)
         {
             // Backup the HP
@@ -27,29 +29,18 @@ YYTKStatus PluginEventHandler(YYTKPlugin* pPlugin, YYTKEventBase* pEvent)
             pCodeEvent->Call(Self, Other, Code, Res, Flags);
 
             // Restore the HP
-            Features::CallBuiltinWrapper(pPlugin, Self, "variable_global_set", { "hp", BeforeSaveHP });
+            Features::CallBuiltinWrapper(pPlugin, nullptr, "variable_global_set", { "hp", BeforeSaveHP });
         }
-        // TODO: When Spamton NEO gets angry af, you gotta no-hit or PERISH.
-    }
 
-    else if (pEvent->GetEventType() == EVT_DOCALLSCRIPT)
-    {
-        YYTKScriptEvent* pScriptEvent = dynamic_cast<decltype(pScriptEvent)>(pEvent);
-        // CScript* pScript, int argc, char* pStackPointer, VMExec* pVM, YYObjectBase* pLocals, YYObjectBase* pArguments
-        auto& [Script, argc, StackPointer, VM, Locals, Arguments] = pScriptEvent->Arguments();
-
-        if (!Script->s_code)
-            return YYTK_INVALID;
-
-        if (!Script->s_code->i_pName)
-            return YYTK_INVALID;
-
-        if (_stricmp(Script->s_code->i_pName, "gml_Script_scr_monstersetup") == 0)
+        // Change enemy statistics
+        else if (_stricmp(Code->i_pName, "gml_Object_obj_battlecontroller_Create_0") == 0)
         {
-            pScriptEvent->Call(Script, argc, StackPointer, VM, Locals, Arguments);
-            // You can now access monsterhp[myself], monsterexp[myself], and monstergold[myself]
+            pCodeEvent->Call(Self, Other, Code, Res, Flags);
 
-
+            if (Features::IsSnowGraveRoute(pPlugin))
+                Features::ChangeEnemyStats(pPlugin, Self, 0.6, 2.0, 1.8);
+            else
+                Features::ChangeEnemyStats(pPlugin, Self, 0.8, 1.5, 1.2);
         }
     }
 
@@ -58,6 +49,7 @@ YYTKStatus PluginEventHandler(YYTKPlugin* pPlugin, YYTKEventBase* pEvent)
 
 DllExport YYTKStatus PluginUnload(YYTKPlugin* pPlugin)
 {
+    Features::CallBuiltinWrapper(pPlugin, nullptr, "gc_enable", { 1.0 });
     return YYTK_OK;
 }
 
@@ -65,12 +57,14 @@ DllExport YYTKStatus PluginUnload(YYTKPlugin* pPlugin)
 // It also has to be declared DllExport (notice how the other functions are not).
 DllExport YYTKStatus PluginEntry(YYTKPlugin* pPlugin)
 {
+    Features::CallBuiltinWrapper(pPlugin, nullptr, "gc_enable", { 0.0 });
+
     // Set 'PluginEventHandler' as the function to call when we a game event happens.
     // This is not required if you don't need to modify code entries / draw with D3D / anything else that requires precise timing.
     pPlugin->PluginHandler = PluginEventHandler;
     pPlugin->PluginUnload = PluginUnload;
 
-    printf("[DR One Shot] Loaded for version %s", YYSDK_VERSION);
+    printf("[Chapter 2 - Hard For You] Loaded for version %s\n", YYSDK_VERSION);
 
     // Tell the core everything went fine.
     return YYTK_OK;

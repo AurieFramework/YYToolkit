@@ -2,11 +2,21 @@
 
 YYRValue Features::CallBuiltinWrapper(YYTKPlugin* pPlugin, CInstance* Instance, const char* Name, const std::vector<YYRValue>& rvArgs)
 {
+    if (!Instance)
+    {
+        auto GlobalCallFn = pPlugin->GetCoreExport<YYTKStatus(*)(const char*, int, YYRValue&, const YYRValue*)>("Global_CallBuiltin");
+
+        YYRValue Result;
+        GlobalCallFn(Name, rvArgs.size(), Result, rvArgs.data());
+
+        return Result;
+    }
+
     // Modify the args to be const*, so the compiler doesn't complain
-    auto CallBuiltin = pPlugin->GetCoreExport<YYTKStatus(*)(CInstance*, CInstance*, YYRValue&, int, const char*, const YYRValue*)>("CallBuiltinFunction");
+    auto InstCallFn = pPlugin->GetCoreExport<YYTKStatus(*)(CInstance*, CInstance*, YYRValue&, int, const char*, const YYRValue*)>("CallBuiltinFunction");
 
     YYRValue Result;
-    CallBuiltin(Instance, Instance, Result, rvArgs.size(), Name, rvArgs.data());
+    InstCallFn(Instance, Instance, Result, rvArgs.size(), Name, rvArgs.data());
 
     return Result;
 }
@@ -18,6 +28,7 @@ void Features::RemoveSavePoints(YYTKPlugin* Plugin, CInstance* Self)
     // Whitelisted save points
     switch (static_cast<int>(global_CurrentRoom))
     {
+    case 3: // Queen's Mansion - Rooftop
     case 71: // My Castle Town
     case 84: // Dark World?
     case 87: // Cyber Field - Entrance
@@ -35,17 +46,53 @@ void Features::RemoveSavePoints(YYTKPlugin* Plugin, CInstance* Self)
     }
 }
 
-void Features::ChangeEnemyStats(YYTKPlugin* Plugin, CInstance* Self, double XPMul, double KromerMul, double HPMul)
+void Features::ChangeEnemyStats(YYTKPlugin* Plugin, CInstance* Self, double KromerMul, double HPMul, double ATKMul)
 {
-    // var Myself = variable_instance_get(self, "myself");
-    YYRValue Myself = CallBuiltinWrapper(Plugin, Self, "variable_instance_get", { static_cast<double>(VAR_SELF), "myself" });
+    YYRValue Monster = CallBuiltinWrapper(Plugin, nullptr, "variable_global_get", { "monster" });
+    YYRValue MonsterHP = CallBuiltinWrapper(Plugin, nullptr, "variable_global_get", { "monsterhp" });
+    YYRValue MonsterMaxHP = CallBuiltinWrapper(Plugin, nullptr, "variable_global_get", { "monstermaxhp" });
+    YYRValue MonsterKromer = CallBuiltinWrapper(Plugin, nullptr, "variable_global_get", { "monstergold" });
+    YYRValue MonsterATK = CallBuiltinWrapper(Plugin, nullptr, "variable_global_get", { "monsterat" });
 
-    YYRValue MonsterHP = CallBuiltinWrapper(Plugin, Self, "variable_global_get", { "monsterhp" });
-    YYRValue MonsterEXP = CallBuiltinWrapper(Plugin, Self, "variable_global_get", { "monsterexp" });
-    YYRValue MonsterGold = CallBuiltinWrapper(Plugin, Self, "variable_global_get", { "monstergold" });
+    if (Monster.As<RValue>().Kind != VALUE_ARRAY)
+        return;
+    else if (MonsterHP.As<RValue>().Kind != VALUE_ARRAY)
+        return;
+    else if (MonsterMaxHP.As<RValue>().Kind != VALUE_ARRAY)
+        return;
+    else if (MonsterKromer.As<RValue>().Kind != VALUE_ARRAY)
+        return;
+    else if (MonsterATK.As<RValue>().Kind != VALUE_ARRAY)
+        return;
 
-    // global.monsterhp[myself]
-    YYRValue MyHP = CallBuiltinWrapper(Plugin, Self, "array_get", { MonsterHP, Myself });
-    MyHP *= HPMul;
-    YYRValue MyHP = CallBuiltinWrapper(Plugin, Self, "array_set", { MonsterHP, Myself });
+    for (int n = 0; n < 3; n++)
+    {
+        if (Monster.As<RValue>().RefArray->m_Array[n].Real < 0.5)
+            continue;
+
+        if (MonsterHP.As<RValue>().RefArray->m_Array[n].Kind == VALUE_REAL)
+            MonsterHP.As<RValue>().RefArray->m_Array[n].Real *= HPMul;
+
+        if (MonsterMaxHP.As<RValue>().RefArray->m_Array[n].Kind == VALUE_REAL)
+            MonsterMaxHP.As<RValue>().RefArray->m_Array[n].Real *= HPMul;
+
+        if (MonsterKromer.As<RValue>().RefArray->m_Array[n].Kind == VALUE_REAL)
+            MonsterKromer.As<RValue>().RefArray->m_Array[n].Real *= KromerMul;
+
+        if (MonsterATK.As<RValue>().RefArray->m_Array[n].Kind == VALUE_REAL)
+            MonsterATK.As<RValue>().RefArray->m_Array[n].Real *= ATKMul;
+    }
 }
+
+bool Features::IsSnowGraveRoute(YYTKPlugin* Plugin)
+{
+    YYRValue Flags = CallBuiltinWrapper(Plugin, nullptr, "variable_global_get", { "flag" });
+    
+    RValue& rvFlag = Flags.As<RValue>();
+
+    if (rvFlag.Kind != VALUE_ARRAY)
+        return false;
+    
+    return (rvFlag.RefArray->m_Array[916].Real < 0.5) && (rvFlag.RefArray->m_Array[915].Real > 0);
+}
+

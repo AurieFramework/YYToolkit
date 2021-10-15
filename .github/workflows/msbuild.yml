@@ -53,7 +53,13 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: ExamplePlugin
-        path: .\ExamplePlugin\Build\Plugin\Release\ExamplePlugin.dll
+        path: .\YYToolkit\Build\Plugins\Example\Release\ExamplePlugin.dll
+        
+    - name: Upload Hard Mode as artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: HardMode
+        path: .\YYToolkit\Build\Plugins\Hard Mode\Release\Chapter2_HardMode.dll
         
     - name: Upload YYLauncher as artifact
       uses: actions/upload-artifact@v2

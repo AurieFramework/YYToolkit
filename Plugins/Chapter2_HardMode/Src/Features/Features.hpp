@@ -11,5 +11,7 @@ namespace Features
 
 	void RemoveSavePoints(YYTKPlugin* Plugin, CInstance* Self);
 
-	void ChangeEnemyStats(YYTKPlugin* Plugin, CInstance* Self, double XPMul, double KromerMul, double HPMul);
+	void ChangeEnemyStats(YYTKPlugin* Plugin, CInstance* Self, double KromerMul, double HPMul, double ATKMul);
+
+	bool IsSnowGraveRoute(YYTKPlugin* Plugin);
 }
