@@ -15,9 +15,9 @@ void Features::RemoveSavePoints(YYTKPlugin* Plugin, CInstance* Self)
 {
     YYRValue global_CurrentRoom = CallBuiltinWrapper(Plugin, Self, "variable_global_get", { "currentroom" });
 
+    // Whitelisted save points
     switch (static_cast<int>(global_CurrentRoom))
     {
-        // Whitelisted save points
     case 71: // My Castle Town
     case 84: // Dark World?
     case 87: // Cyber Field - Entrance
@@ -33,4 +33,19 @@ void Features::RemoveSavePoints(YYTKPlugin* Plugin, CInstance* Self)
         CallBuiltinWrapper(Plugin, Self, "instance_destroy", {});
         break;
     }
+}
+
+void Features::ChangeEnemyStats(YYTKPlugin* Plugin, CInstance* Self, double XPMul, double KromerMul, double HPMul)
+{
+    // var Myself = variable_instance_get(self, "myself");
+    YYRValue Myself = CallBuiltinWrapper(Plugin, Self, "variable_instance_get", { static_cast<double>(VAR_SELF), "myself" });
+
+    YYRValue MonsterHP = CallBuiltinWrapper(Plugin, Self, "variable_global_get", { "monsterhp" });
+    YYRValue MonsterEXP = CallBuiltinWrapper(Plugin, Self, "variable_global_get", { "monsterexp" });
+    YYRValue MonsterGold = CallBuiltinWrapper(Plugin, Self, "variable_global_get", { "monstergold" });
+
+    // global.monsterhp[myself]
+    YYRValue MyHP = CallBuiltinWrapper(Plugin, Self, "array_get", { MonsterHP, Myself });
+    MyHP *= HPMul;
+    YYRValue MyHP = CallBuiltinWrapper(Plugin, Self, "array_set", { MonsterHP, Myself });
 }

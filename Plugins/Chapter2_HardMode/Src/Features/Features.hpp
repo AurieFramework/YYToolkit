@@ -10,4 +10,6 @@ namespace Features
 	YYRValue CallBuiltinWrapper(YYTKPlugin* pPlugin, CInstance* Instance, const char* Name, const std::vector<YYRValue>& rvArgs);
 
 	void RemoveSavePoints(YYTKPlugin* Plugin, CInstance* Self);
+
+	void ChangeEnemyStats(YYTKPlugin* Plugin, CInstance* Self, double XPMul, double KromerMul, double HPMul);
 }

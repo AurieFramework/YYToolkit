@@ -29,8 +29,28 @@ YYTKStatus PluginEventHandler(YYTKPlugin* pPlugin, YYTKEventBase* pEvent)
             // Restore the HP
             Features::CallBuiltinWrapper(pPlugin, Self, "variable_global_set", { "hp", BeforeSaveHP });
         }
-
         // TODO: When Spamton NEO gets angry af, you gotta no-hit or PERISH.
+    }
+
+    else if (pEvent->GetEventType() == EVT_DOCALLSCRIPT)
+    {
+        YYTKScriptEvent* pScriptEvent = dynamic_cast<decltype(pScriptEvent)>(pEvent);
+        // CScript* pScript, int argc, char* pStackPointer, VMExec* pVM, YYObjectBase* pLocals, YYObjectBase* pArguments
+        auto& [Script, argc, StackPointer, VM, Locals, Arguments] = pScriptEvent->Arguments();
+
+        if (!Script->s_code)
+            return YYTK_INVALID;
+
+        if (!Script->s_code->i_pName)
+            return YYTK_INVALID;
+
+        if (_stricmp(Script->s_code->i_pName, "gml_Script_scr_monstersetup") == 0)
+        {
+            pScriptEvent->Call(Script, argc, StackPointer, VM, Locals, Arguments);
+            // You can now access monsterhp[myself], monsterexp[myself], and monstergold[myself]
+
+
+        }
     }
 
     return YYTK_OK;

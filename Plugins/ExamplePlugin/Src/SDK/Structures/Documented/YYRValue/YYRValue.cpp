@@ -99,8 +99,8 @@ YYRValue::operator double() const noexcept(true)
 	switch (Kind)
 	{
 	case VALUE_REAL:
-		return Real;
 	case VALUE_BOOL: /* Fallthrough */
+		return Real;
 	case VALUE_INT32:
 	case VALUE_INT64:
 		return static_cast<double>(I64);
