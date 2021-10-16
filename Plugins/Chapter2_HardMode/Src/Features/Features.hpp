@@ -13,5 +13,5 @@ namespace Features
 
 	void ChangeEnemyStats(YYTKPlugin* Plugin, CInstance* Self, double KromerMul, double HPMul, double ATKMul);
 
-	bool IsSnowGraveRoute(YYTKPlugin* Plugin);
+	int IsSnowGraveRoute(YYTKPlugin* Plugin);
 }

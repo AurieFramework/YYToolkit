@@ -37,10 +37,32 @@ YYTKStatus PluginEventHandler(YYTKPlugin* pPlugin, YYTKEventBase* pEvent)
         {
             pCodeEvent->Call(Self, Other, Code, Res, Flags);
 
+            printf("Snowgrave: %d\n", Features::IsSnowGraveRoute(pPlugin));
+
+            switch (Features::IsSnowGraveRoute(pPlugin))
+            {
+            case 0: // No SnowGrave
+                Features::ChangeEnemyStats(pPlugin, Self, 0.8, 1.5, 1.25);
+                break;
+            case 1: // First IceShock kill
+                Features::ChangeEnemyStats(pPlugin, Self, 1.0, 1.6, 1.35);
+                break;
+            case 2: // Got FreezeRing - buff HP a lot
+                Features::ChangeEnemyStats(pPlugin, Self, 0.5, 4.0, 2.0);
+                break;
+            case 3: // Killed Berdly
+                Features::ChangeEnemyStats(pPlugin, Self, 1.2, 2.25, 1.6);
+                break;
+            default:
+                break;
+            }
+
+            /*
             if (Features::IsSnowGraveRoute(pPlugin))
                 Features::ChangeEnemyStats(pPlugin, Self, 0.6, 2.0, 1.8);
             else
                 Features::ChangeEnemyStats(pPlugin, Self, 0.8, 1.5, 1.2);
+            */
         }
     }
 
@@ -64,7 +86,8 @@ DllExport YYTKStatus PluginEntry(YYTKPlugin* pPlugin)
     pPlugin->PluginHandler = PluginEventHandler;
     pPlugin->PluginUnload = PluginUnload;
 
-    printf("[Chapter 2 - Hard For You] Loaded for version %s\n", YYSDK_VERSION);
+    MessageBoxA(0, "Keep in mind this plugin is still in development.\nReport any issues / suggestions to the GitHub issue tracker.\nHave fun!", "DR Chapter 2 - Hard Mode plugin", MB_OK | MB_ICONWARNING);
+    printf("[Chapter 2 - Too hard for you] Loaded for version %s\n", YYSDK_VERSION);
 
     // Tell the core everything went fine.
     return YYTK_OK;

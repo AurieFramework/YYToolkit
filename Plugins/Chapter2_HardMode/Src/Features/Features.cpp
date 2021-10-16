@@ -84,15 +84,34 @@ void Features::ChangeEnemyStats(YYTKPlugin* Plugin, CInstance* Self, double Krom
     }
 }
 
-bool Features::IsSnowGraveRoute(YYTKPlugin* Plugin)
+int Features::IsSnowGraveRoute(YYTKPlugin* Plugin)
 {
     YYRValue Flags = CallBuiltinWrapper(Plugin, nullptr, "variable_global_get", { "flag" });
     
     RValue& rvFlag = Flags.As<RValue>();
 
     if (rvFlag.Kind != VALUE_ARRAY)
-        return false;
+        return 0;
     
-    return (rvFlag.RefArray->m_Array[916].Real < 0.5) && (rvFlag.RefArray->m_Array[915].Real > 0);
+    // Direct transcription of scr_sideb_get_phase
+
+    if (rvFlag.RefArray->m_Array[916].Real < 0.5)
+    {
+        int FlagValue = round(rvFlag.RefArray->m_Array[915].Real);
+
+        if (FlagValue > 0 && FlagValue < 4)
+            return 1;
+
+        else if (FlagValue >= 4 && FlagValue < 7)
+            return 2;
+
+        else if (FlagValue >= 7 && FlagValue < 20)
+            return 3;
+
+        else if (FlagValue >= 20)
+            return 4;
+    }
+
+    return 0;
 }
 
