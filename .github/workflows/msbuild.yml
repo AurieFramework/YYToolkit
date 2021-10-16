@@ -35,7 +35,13 @@ jobs:
       working-directory: ${{env.GITHUB_WORKSPACE}}
       # Add additional options to the MSBuild command line here (like platform or verbosity level).
       # See https://docs.microsoft.com/visualstudio/msbuild/msbuild-command-line-reference
-      run: msbuild .\ExamplePlugin\ExamplePlugin.vcxproj /property:Configuration=Release /property:PlatformTarget=x86
+      run: msbuild .\Plugins\ExamplePlugin\ExamplePlugin.vcxproj /property:Configuration=Release /property:PlatformTarget=x86
+
+    - name: Build Chapter2 Hard Mode Plugin
+      working-directory: ${{env.GITHUB_WORKSPACE}}
+      # Add additional options to the MSBuild command line here (like platform or verbosity level).
+      # See https://docs.microsoft.com/visualstudio/msbuild/msbuild-command-line-reference
+      run: msbuild .\Plugins\Chapter2_HardMode\Chapter2_HardMode.vcxproj /property:Configuration=Release /property:PlatformTarget=x86
       
     - name: Build YYLauncher
       working-directory: ${{env.GITHUB_WORKSPACE}}
@@ -53,7 +59,13 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: ExamplePlugin
-        path: .\ExamplePlugin\Build\Plugin\Release\ExamplePlugin.dll
+        path: .\YYToolkit\Build\Plugins\Example\Release\ExamplePlugin.dll
+        
+    - name: Upload Hard Mode as artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: HardMode
+        path: .\YYToolkit\Build\Plugins\Hard Mode\Release\Chapter2_HardMode.dll
         
     - name: Upload YYLauncher as artifact
       uses: actions/upload-artifact@v2

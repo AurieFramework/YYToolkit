@@ -16,7 +16,7 @@ ECHO = echo [$C/$T]
 endif
 
 # Makefile starts here.
-include make_stuff/config.mk
+include MakeConfig/config.mk
 
 SRC := $(call rwildcard,$(SOURCE_DIR),*.c) $(call rwildcard,$(SOURCE_DIR),*.cpp)
 OBJ := $(SRC:%=$(BUILD_DIR)/%.obj)
