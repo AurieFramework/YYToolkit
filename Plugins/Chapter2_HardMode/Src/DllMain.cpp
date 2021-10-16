@@ -86,8 +86,8 @@ DllExport YYTKStatus PluginEntry(YYTKPlugin* pPlugin)
     pPlugin->PluginHandler = PluginEventHandler;
     pPlugin->PluginUnload = PluginUnload;
 
-    MessageBoxA(0, "Keep in mind this plugin is still in development.\nReport any issues / suggestions to the GitHub issue tracker.\nHave fun!", "DR Chapter 2 - Hard Mode plugin", MB_OK | MB_ICONWARNING);
     printf("[Chapter 2 - Too hard for you] Loaded for version %s\n", YYSDK_VERSION);
+    printf("[WARNING] Please keep in mind this plugin is still in development. Report any issues / suggestions!\n");
 
     // Tell the core everything went fine.
     return YYTK_OK;
