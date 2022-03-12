@@ -27,7 +27,11 @@ void __stdcall Main()
 	Hooks::Uninitialize();
 	API::Internal::Unload();
 
-	MessageBoxA(API::gAPIVars.Globals.g_hwWindowHandle, "Unloaded successfully.", "YYToolkit", MB_OK | MB_ICONINFORMATION | MB_TOPMOST);
+	MessageBoxA(
+		API::gAPIVars.Globals.g_hwWindowHandle, 
+		"Unloaded successfully.", 
+		"YYToolkit", 
+		MB_OK | MB_ICONINFORMATION | MB_TOPMOST | MB_SETFOREGROUND);
 
 	FreeLibraryAndExitThread(g_hDLL, 0);
 }

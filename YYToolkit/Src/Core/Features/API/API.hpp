@@ -160,6 +160,7 @@ namespace API
 			unsigned long ulSearchRegionBase,
 			unsigned int ulSearchRegionSize,
 			const char* szMask,
+			bool bStringSearch,
 			DWORD& dwOutBuffer
 		);
 
@@ -169,7 +170,8 @@ namespace API
 			unsigned int uArraySize,
 			unsigned long ulSearchRegionBase,
 			unsigned int ulSearchRegionSize,
-			const char* szMask,
+			const char* szMask, 
+			bool bStringSearch,
 			DWORD& dwOutBuffer
 		);
 
@@ -227,6 +229,11 @@ namespace API
 			const char* szFunctionName,
 			TRoutine& outRoutine,
 			int* pOptOutIndex
+		);
+		
+		DllExport YYTKStatus MmGetScriptArrayPtr(
+			CDynamicArray<CScript*>*& outArray,
+			const int& nMaxInstructions
 		);
 	}
 }

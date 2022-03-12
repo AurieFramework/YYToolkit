@@ -3,28 +3,31 @@
 #include "../../Utils/Error/Error.hpp"
 #include "../../Features/PluginManager/PluginManager.hpp"
 
-namespace Hooks::EndScene
+namespace Hooks
 {
-	HRESULT __stdcall Function(LPDIRECT3DDEVICE9 _this)
+	namespace EndScene
 	{
-		YYTKEndSceneEvent Event = YYTKEndSceneEvent(pfnOriginal, _this);
-		API::PluginManager::RunHooks(&Event);
+		HRESULT __stdcall Function(LPDIRECT3DDEVICE9 _this)
+		{
+			YYTKEndSceneEvent Event = YYTKEndSceneEvent(pfnOriginal, _this);
+			API::PluginManager::RunHooks(&Event);
 
-		if (Event.CalledOriginal())
-			return Event.GetReturn();
+			if (Event.CalledOriginal())
+				return Event.GetReturn();
 
-		return pfnOriginal(_this);
-	}
+			return pfnOriginal(_this);
+		}
 
-	void* GetTargetAddress()
-	{
-		void* ppTable[119];
-		IDirect3DDevice9* pDevice = nullptr;
+		void* GetTargetAddress()
+		{
+			void* ppTable[119];
+			IDirect3DDevice9* pDevice = nullptr;
 
-		pDevice = reinterpret_cast<IDirect3DDevice9*>(API::gAPIVars.Globals.g_pWindowDevice);
+			pDevice = reinterpret_cast<IDirect3DDevice9*>(API::gAPIVars.Globals.g_pWindowDevice);
 
-		memcpy(ppTable, *(void***)(pDevice), sizeof(ppTable));
+			memcpy(ppTable, *(void***)(pDevice), sizeof(ppTable));
 
-		return ppTable[42];
+			return ppTable[42];
+		}
 	}
 }	

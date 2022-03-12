@@ -111,7 +111,7 @@ DllExport unsigned long API::FindPattern(const char* Pattern, const char* Mask, 
 {
 	DWORD dwReturn = 0;
 
-	if (auto Status = Internal::MmFindByteArray(Pattern, UINT_MAX, Base, Size, Mask, dwReturn))
+	if (auto Status = Internal::MmFindByteArray(Pattern, UINT_MAX, Base, Size, Mask, false, dwReturn))
 		Utils::Error::Error(false, "API Error -> %s(\"%s\", \"%s\") -> %s : L%d", __FUNCTION__, Pattern, Mask, Utils::Error::YYTKStatus_ToString(Status).c_str(), __LINE__);
 
 	return dwReturn;

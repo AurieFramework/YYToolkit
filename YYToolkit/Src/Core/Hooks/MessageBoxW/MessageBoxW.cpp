@@ -1,27 +1,36 @@
 #include "MessageBoxW.hpp"
 #include "../../Features/API/API.hpp"
 #include <string>
+#include "../../Features/PluginManager/PluginManager.hpp"
 
-int __stdcall Hooks::MessageBoxW::Function(HWND Hwnd, LPCWSTR lpwText, LPCWSTR lpwCaption, UINT Type)
+namespace Hooks
 {
-	YYTKMessageBoxEvent Event = YYTKMessageBoxEvent(pfnOriginal, Hwnd, lpwText, lpwCaption, Type);
-	//Plugins::RunHooks(&Event);
+	namespace MessageBoxW
+	{
+		int __stdcall Function(HWND Hwnd, LPCWSTR lpwText, LPCWSTR lpwCaption, UINT Type)
+		{
+			YYTKMessageBoxEvent Event = YYTKMessageBoxEvent(pfnOriginal, Hwnd, lpwText, lpwCaption, Type);
+			API::PluginManager::RunHooks(&Event);
 
-	if (Event.CalledOriginal())
-		return Event.GetReturn();
+			if (Event.CalledOriginal())
+				return Event.GetReturn();
 
-	if (std::wstring(lpwText)._Starts_with(L"Win32 function failed"))
-		return 0;
-		
-	return pfnOriginal(Hwnd, lpwText, lpwCaption, Type);
+			if (std::wstring(lpwText)._Starts_with(L"Win32 function failed"))
+				return 0;
+
+			return pfnOriginal(Hwnd, lpwText, lpwCaption, Type);
+		}
+
+		void* GetTargetAddress()
+		{
+			HMODULE Module = GetModuleHandleA("user32.dll");
+
+			if (!Module)
+				return nullptr;
+
+			return reinterpret_cast<void*>(GetProcAddress(Module, "MessageBoxW"));
+		}
+	}
 }
 
-void* Hooks::MessageBoxW::GetTargetAddress()
-{
-	HMODULE Module = GetModuleHandleA("user32.dll");
 
-	if (!Module)
-		return nullptr;
-	
-	return reinterpret_cast<void*>(GetProcAddress(Module, "MessageBoxW"));
-}

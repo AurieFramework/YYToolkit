@@ -1,6 +1,7 @@
 #include "GR_Draw_Text_Transformed.hpp"
 #include "../../../Features/API/API.hpp"
 #include "../../../Utils/Error/Error.hpp"
+#include "../../../Features/PluginManager/PluginManager.hpp"
 
 namespace Hooks
 {
@@ -8,7 +9,7 @@ namespace Hooks
 	{
 		void Function(float x, float y, const char* str, int linesep, int linewidth, float xsc, float ysc, float angle)
 		{
-			//Plugins::CallTextCallbacks(x, y, str, linesep, linewidth);
+			API::PluginManager::CallTextCallbacks(x, y, str, linesep, linewidth);
 
 			return pfnOriginal(x, y, str, linesep, linewidth, xsc, ysc, angle);
 		}

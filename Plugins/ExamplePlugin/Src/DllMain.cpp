@@ -19,6 +19,23 @@ YYRValue EasyGMLCall(YYTKPlugin* pPlugin, const std::string& Name, const std::ve
     return Result;
 }
 
+CCode* GetCodeFromScript(CScript* pScript)
+{
+    // If the script is invalid
+    if (!pScript)
+        return nullptr;
+
+    // Old runner versions (pre DR 1.10 / DR 1.09)
+    if (pScript->s_code)
+        return pScript->s_code;
+
+    // New runners have objects shifted up by 1 (due to the s_text member missing) so cast it to CCode and call it a day.
+    if (pScript->s_text)
+        return (CCode*)pScript->s_text;
+
+    return nullptr;
+}
+
 // Handles all events that happen inside the game.
 // Previously, callbacks served this purpose, however in 0.0.3, an object-oriented design was implemented.
 // If you want to modify a code entry, you're gonna need this function.
@@ -40,8 +57,14 @@ YYTKStatus PluginEventHandler(YYTKPlugin* pPlugin, YYTKEventBase* pEvent)
         // Check if values are valid
         if (pScript)
         {
-            // Run GML: variable_global_set("debug", 1.00)
-            EasyGMLCall(pPlugin, "variable_global_set", { "debug", 1.00 });
+            if (CCode* pCode = GetCodeFromScript(pScript))
+            {
+                if (strcmp(pCode->i_pName, "gml_Script_scr_debug"))
+                {
+                    // Run GML: variable_global_set("debug", 1.00)
+                    EasyGMLCall(pPlugin, "variable_global_set", { "debug", 1.00 });
+                }
+            }
         }
 
         // Go To Room port

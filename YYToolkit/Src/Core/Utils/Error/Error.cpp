@@ -34,7 +34,7 @@ namespace Utils::Error
 
 		if (critical)
 		{
-			MessageBoxA(0, String.c_str(), "Sorry!", MB_TOPMOST | (critical ? MB_ICONERROR : MB_ICONWARNING) | MB_OK);
+			MessageBoxA(0, String.c_str(), "Sorry!", MB_TOPMOST | (critical ? MB_ICONERROR : MB_ICONWARNING) | MB_OK | MB_TOPMOST | MB_SETFOREGROUND);
 			exit(0);
 		}
 		else

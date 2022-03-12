@@ -4,21 +4,24 @@
 #include "../../Utils/Error/Error.hpp"
 #include "../../SDK/Plugins/YYTKEvent/YYTKEvent.hpp"
 
-namespace Hooks::Code_Execute
+namespace Hooks
 {
-	bool Function(CInstance* pSelf, CInstance* pOther, CCode* Code, RValue* Res, int Flags)
+	namespace Code_Execute
 	{
-		YYTKCodeEvent Event = YYTKCodeEvent(pfnOriginal, pSelf, pOther, Code, Res, Flags);
-		API::PluginManager::RunHooks(&Event);
+		bool Function(CInstance* pSelf, CInstance* pOther, CCode* Code, RValue* Res, int Flags)
+		{
+			YYTKCodeEvent Event = YYTKCodeEvent(pfnOriginal, pSelf, pOther, Code, Res, Flags);
+			API::PluginManager::RunHooks(&Event);
 
-		if (Event.CalledOriginal())
-			return Event.GetReturn();
+			if (Event.CalledOriginal())
+				return Event.GetReturn();
 
-		return pfnOriginal(pSelf, pOther, Code, Res, Flags);
-	}
+			return pfnOriginal(pSelf, pOther, Code, Res, Flags);
+		}
 
-	void* GetTargetAddress()
-	{
-		return reinterpret_cast<void*>(API::gAPIVars.Functions.Code_Execute);
+		void* GetTargetAddress()
+		{
+			return reinterpret_cast<void*>(API::gAPIVars.Functions.Code_Execute);
+		}
 	}
 }

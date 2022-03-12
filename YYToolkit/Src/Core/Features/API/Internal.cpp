@@ -1,6 +1,8 @@
 #include "API.hpp"
 #include "../../Utils/Error/Error.hpp"
 #include "../PluginManager/PluginManager.hpp"
+#include "../../Utils/MH/hde/hde32.h"
+#include "../UnitTests/UnitTests.hpp"
 #ifdef min
 #undef min
 #endif
@@ -36,7 +38,7 @@ YYTKStatus API::Internal::Initialize(HMODULE hMainModule)
 	{
 		YYTKStatus Status = API::Internal::MmFindCodeFunction(reinterpret_cast<DWORD&>(gAPIVars.Functions.Code_Function_GET_the_function));
 
-		if (Status)
+		if (Status && gAPIVars.Globals.g_bDebugMode)
 			Utils::Error::Message(CLR_TANGERINE, "[Warning] API::Internal::MmFindCodeFunction() failed. Error: %s", 
 				Utils::Error::YYTKStatus_ToString(Status).c_str());
 	}
@@ -45,7 +47,7 @@ YYTKStatus API::Internal::Initialize(HMODULE hMainModule)
 	{
 		YYTKStatus Status = API::Internal::MmFindCodeExecute(reinterpret_cast<DWORD&>(gAPIVars.Functions.Code_Execute));
 
-		if (Status)
+		if (Status && gAPIVars.Globals.g_bDebugMode)
 			Utils::Error::Message(CLR_TANGERINE, "[Warning] API::Internal::MmFindCodeExecute() failed. Error: %s",
 				Utils::Error::YYTKStatus_ToString(Status).c_str());
 	}
@@ -58,7 +60,7 @@ YYTKStatus API::Internal::Initialize(HMODULE hMainModule)
 		YYRValue Result;
 		bool Success = API::CallBuiltin(Result, "window_handle", &tmp, &tmp, {});
 
-		if (!Success)
+		if (!Success && gAPIVars.Globals.g_bDebugMode)
 			Utils::Error::Message(CLR_TANGERINE, "[Warning] API::CallBuiltin(\"window_handle\") failed.");
 
 		API::gAPIVars.Globals.g_hwWindowHandle = reinterpret_cast<HWND>(Result.As<RValue>().Pointer);
@@ -72,7 +74,7 @@ YYTKStatus API::Internal::Initialize(HMODULE hMainModule)
 		YYRValue Result;
 		bool Success = API::CallBuiltin(Result, "@@GlobalScope@@", &tmp, &tmp, {});
 
-		if (!Success)
+		if (!Success && gAPIVars.Globals.g_bDebugMode)
 			Utils::Error::Message(CLR_TANGERINE, "[Warning] API::CallBuiltin(\"@@GlobalScope@@\") failed.");
 
 		API::gAPIVars.Globals.g_pGlobalObject = Result;
@@ -83,12 +85,28 @@ YYTKStatus API::Internal::Initialize(HMODULE hMainModule)
 		YYRValue Result;
 		bool Success = API::CallBuiltin(Result, "window_device", nullptr, nullptr, {});
 
-		if (!Success)
+		if (!Success && gAPIVars.Globals.g_bDebugMode)
 			Utils::Error::Message(CLR_TANGERINE, "[Warning] API::CallBuiltin(\"window_device\") failed.");
 
 		API::gAPIVars.Globals.g_pWindowDevice = Result.As<RValue>().Pointer;
+	}
 
-		// TODO: Assign the variant of g_pWindowDevice
+	bool bPassedTests = Tests::RunUnitTests();
+
+	if (!bPassedTests)
+	{
+		int nUserChoice = MessageBoxA(
+			0,
+			"YYTK self-check failed to pass.\n"
+			"This means that some features may be broken or completely unavailable.\n"
+			"Plugins relying on this functionality may cease to work.\n\n"
+			"Proceed anyway?",
+			"YYTK - Warning",
+			MB_TOPMOST | MB_YESNO | MB_ICONWARNING | MB_SETFOREGROUND | MB_DEFBUTTON2
+		);
+
+		if (nUserChoice == IDNO)
+			exit(0);
 	}
 
 	PluginManager::Initialize(); // Remove me to turn off plugin functionality.
@@ -121,7 +139,7 @@ DllExport YYTKStatus API::Internal::MmGetModuleInformation(const char* szModuleN
 	return YYTK_OK;
 }
 
-YYTKStatus API::Internal::MmFindByteArray(const byte* pbArray, unsigned int uArraySize, unsigned long ulSearchRegionBase, unsigned int ulSearchRegionSize, const char* szMask, DWORD& dwOutBuffer)
+YYTKStatus API::Internal::MmFindByteArray(const byte* pbArray, unsigned int uArraySize, unsigned long ulSearchRegionBase, unsigned int ulSearchRegionSize, const char* szMask, bool bStringSearch, DWORD& dwOutBuffer)
 {
 	if (gAPIVars.Globals.g_bDebugMode)
 		Utils::Error::Message(CLR_DEFAULT, "%s(%p, %s);", __FUNCTION__, pbArray, szMask);
@@ -151,6 +169,9 @@ YYTKStatus API::Internal::MmFindByteArray(const byte* pbArray, unsigned int uArr
 
 		if (found)
 		{
+			if (bStringSearch && (*reinterpret_cast<char*>(ulSearchRegionBase + i - 1) != '\x00'))
+				continue;
+
 			dwOutBuffer = (ulSearchRegionBase + i);
 			return YYTK_OK;
 		}
@@ -160,12 +181,12 @@ YYTKStatus API::Internal::MmFindByteArray(const byte* pbArray, unsigned int uArr
 	
 }
 
-YYTKStatus API::Internal::MmFindByteArray(const char* pszArray, unsigned int uArraySize, unsigned long ulSearchRegionBase, unsigned int ulSearchRegionSize, const char* szMask, DWORD& dwOutBuffer)
+YYTKStatus API::Internal::MmFindByteArray(const char* pszArray, unsigned int uArraySize, unsigned long ulSearchRegionBase, unsigned int ulSearchRegionSize, const char* szMask, bool bStringSearch, DWORD& dwOutBuffer)
 {
 	if (gAPIVars.Globals.g_bDebugMode)
 		Utils::Error::Message(CLR_DEFAULT, "%s(%p, %s);", __FUNCTION__, pszArray, szMask);
 
-	return MmFindByteArray(reinterpret_cast<byte*>(const_cast<char*>(pszArray)), uArraySize, ulSearchRegionBase, ulSearchRegionSize, szMask, dwOutBuffer);
+	return MmFindByteArray(reinterpret_cast<byte*>(const_cast<char*>(pszArray)), uArraySize, ulSearchRegionBase, ulSearchRegionSize, szMask, bStringSearch, dwOutBuffer);
 }
 
 YYTKStatus API::Internal::MmFindCodeExecute(DWORD& dwOutBuffer)
@@ -181,6 +202,7 @@ YYTKStatus API::Internal::MmFindCodeExecute(DWORD& dwOutBuffer)
 		0,
 		0,
 		"xxxxxxxxx",
+		false,
 		dwPattern
 	))
 		return _Status;
@@ -201,7 +223,7 @@ YYTKStatus API::Internal::MmFindCodeFunction(DWORD& dwOutBuffer)
 	if (gAPIVars.Globals.g_bDebugMode)
 		Utils::Error::Message(CLR_DEFAULT, "%s();", __FUNCTION__);
 
-	return MmFindByteArray("\x8B\x44\x24\x04\x3B\x05\x00\x00\x00\x00\x7F", UINT_MAX, 0, 0, "xxxxxx????x", dwOutBuffer);
+	return MmFindByteArray("\x8B\x44\x24\x04\x3B\x05\x00\x00\x00\x00\x7F", UINT_MAX, 0, 0, "xxxxxx????x", false, dwOutBuffer);
 }
 
 YYTKStatus API::Internal::VfGetFunctionPointer(const char* szFunctionName, EFPType ePointerType, DWORD& dwOutBuffer)
@@ -218,7 +240,7 @@ YYTKStatus API::Internal::VfGetFunctionPointer(const char* szFunctionName, EFPTy
 	{
 		DWORD dwStringReference = 0;
 
-		std::string Mask(strlen(szFunctionName), 'x');
+		std::string Mask(strlen(szFunctionName) + 1, 'x');
 
 		if (YYTKStatus _Status = MmFindByteArray(
 			reinterpret_cast<const byte*>(szFunctionName), 
@@ -226,6 +248,7 @@ YYTKStatus API::Internal::VfGetFunctionPointer(const char* szFunctionName, EFPTy
 			0,
 			0,
 			Mask.c_str(),
+			true,
 			dwStringReference
 		))
 			return _Status;
@@ -244,6 +267,7 @@ YYTKStatus API::Internal::VfGetFunctionPointer(const char* szFunctionName, EFPTy
 			0,
 			0,
 			"xxxxx",
+			false,
 			dwOutBuffer
 		))
 		{
@@ -293,7 +317,6 @@ YYTKStatus API::Internal::VfGetFunctionEntryFromGameArray(int nIndex, TRoutine* 
 	bool bShouldPopulateArgc = (pOutArgumentCount != nullptr);
 	bool bShouldPopulateName = (pOutNameBuffer != nullptr);
 	
-
 	if (!gAPIVars.Functions.Code_Function_GET_the_function)
 		return YYTK_UNAVAILABLE;
 
@@ -351,6 +374,58 @@ YYTKStatus API::Internal::VfLookupFunction(const char* szFunctionName, TRoutine&
 		}
 
 		nIndex++;
+	}
+
+	return YYTK_NOT_FOUND;
+}
+
+YYTKStatus API::Internal::MmGetScriptArrayPtr(CDynamicArray<CScript*>*& outArray, const int& nMaxInstructions)
+{
+	if (gAPIVars.Globals.g_bDebugMode)
+		Utils::Error::Message(CLR_DEFAULT, "%s(%d);", __FUNCTION__, nMaxInstructions);
+
+	DWORD dwScriptExists = 0;
+
+	if (YYTKStatus Status = VfGetFunctionPointer("script_exists", EFPType::FPType_DirectPointer, dwScriptExists))
+		return Status;
+
+	if (dwScriptExists == 0)
+		return YYTK_INVALIDRESULT;
+
+	// call script_exists
+	// xor ecx, ecx
+	// add esp, 0Ch
+	unsigned long pPattern = FindPattern("\xE8\x00\x00\x00\x00\x00\xC9\x83\xC4\x0C", "x?????xxxx", dwScriptExists, 0xFF);
+
+	if (!pPattern)
+		return YYTK_NOMATCH;
+
+	// Get 4 bytes from the JMP opcode (the relative offset)
+	DWORD pJmpOffset = *reinterpret_cast<DWORD*>(pPattern + 1);
+
+	// Calculate the jumped-to address, it's relative from the end of the jmp instruction, the size of which is 5 bytes.
+	DWORD pFunction = (pPattern + 5) + pJmpOffset;
+
+	hde32s hsInstruction;
+	memset(&hsInstruction, 0, sizeof(hde32s));
+
+	for (int nInstr = 0; nInstr < nMaxInstructions; nInstr++)
+	{
+		int nInstructionSize = hde32_disasm(reinterpret_cast<const void*>(pFunction), &hsInstruction);
+
+		// If the opcodes match what we're searching for
+		if ((hsInstruction.opcode == 0xA1 || (hsInstruction.opcode == 0x8B && hsInstruction.modrm)) && nInstructionSize > 4)
+		{
+			if (hsInstruction.imm.imm32)
+				outArray = reinterpret_cast<CDynamicArray<CScript*>*>(hsInstruction.imm.imm32 - sizeof(long*));
+			else
+				outArray = reinterpret_cast<CDynamicArray<CScript*>*>(hsInstruction.disp.disp32 - sizeof(long*));
+
+			return YYTK_OK;
+		}
+	
+		// Skip to the next instruction
+		pFunction += nInstructionSize;
 	}
 
 	return YYTK_NOT_FOUND;
