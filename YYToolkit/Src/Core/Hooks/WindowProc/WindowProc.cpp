@@ -10,7 +10,7 @@ namespace Hooks::WindowProc
 			exit(0);
 
 		YYTKWindowProcEvent Event = YYTKWindowProcEvent(pfnOriginal, hwnd, Msg, w, l);
-		Plugins::RunHooks(&Event);
+		//Plugins::RunHooks(&Event);
 
 		if (Event.CalledOriginal())
 			return Event.GetReturn();
@@ -20,6 +20,6 @@ namespace Hooks::WindowProc
 
 	void _SetWindowsHook()
 	{
-		pfnOriginal = reinterpret_cast<WNDPROC>(SetWindowLong(reinterpret_cast<HWND>(gAPIVars.Window_Handle), GWL_WNDPROC, reinterpret_cast<LONG>(Function)));
+		pfnOriginal = reinterpret_cast<WNDPROC>(SetWindowLong(reinterpret_cast<HWND>(API::gAPIVars.Globals.g_hwWindowHandle), GWL_WNDPROC, reinterpret_cast<LONG>(Function)));
 	}
 }

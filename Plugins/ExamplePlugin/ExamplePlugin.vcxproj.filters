@@ -29,9 +29,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Src\Bytecode.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Src\SDK\Enums\Enums.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -53,10 +50,10 @@
     <ClInclude Include="Src\SDK\Structures\Documented\CDynamicArray\CDynamicArray.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Src\SDK\Structures\Documented\CHashMap\CHashMap.hpp">
+    <ClInclude Include="Src\SDK\Structures\Documented\FunctionInfo\FunctionInfo.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Src\SDK\Structures\Documented\FunctionInfo\FunctionInfo.hpp">
+    <ClInclude Include="Src\SDK\Structures\Documented\CHashMap\CHashMap.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Src\SDK\Structures\Documented\Math\Math.hpp">

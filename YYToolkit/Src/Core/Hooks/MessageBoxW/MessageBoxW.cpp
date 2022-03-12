@@ -5,7 +5,7 @@
 int __stdcall Hooks::MessageBoxW::Function(HWND Hwnd, LPCWSTR lpwText, LPCWSTR lpwCaption, UINT Type)
 {
 	YYTKMessageBoxEvent Event = YYTKMessageBoxEvent(pfnOriginal, Hwnd, lpwText, lpwCaption, Type);
-	Plugins::RunHooks(&Event);
+	//Plugins::RunHooks(&Event);
 
 	if (Event.CalledOriginal())
 		return Event.GetReturn();

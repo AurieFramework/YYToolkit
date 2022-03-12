@@ -11,14 +11,14 @@
 using std::vector;
 using std::string;
 
-static vector<string> StripOutArguments(const string& ref)
+static vector<string> Tokenize(const string& ref)
 {
 	vector<string> vResults;
 	size_t _beginFuncCall = ref.find_first_of('(');
 
 	if (_beginFuncCall == string::npos)
 	{
-		Utils::Error::Error(false, "CONOUT - Failed parsing - no opening parentheses");
+		Utils::Error::Error(false, "Console Error - no opening parentheses");
 		return {};
 	}
 
@@ -26,7 +26,7 @@ static vector<string> StripOutArguments(const string& ref)
 
 	if (_endFuncCall == string::npos)
 	{
-		Utils::Error::Error(false, "CONOUT - Failed parsing - no closing parentheses");
+		Utils::Error::Error(false, "Console Error - no closing parentheses");
 		return {};
 	}
 
@@ -56,17 +56,14 @@ static vector<string> StripOutArguments(const string& ref)
 void Console::DoCommand()
 {
 	// Run in global scope
-	CInstance* pInstance = static_cast<CInstance*>(gAPIVars.g_pGlobal);
-	
-	// Prepare arguments and result buffer
-	YYRValue Buffer, Args[2];
-	
-	Args[0] = "YYToolkit Console Window\nInput your desired command.";
-	Args[1] = "";
+	CInstance* pInstance = static_cast<CInstance*>(API::gAPIVars.Globals.g_pGlobalInstance);
 
-	if (auto Status = API::CallBuiltinFunction(pInstance, nullptr, Buffer, 2, "get_string", Args))
+	// Prepare arguments and result buffer
+	YYRValue Buffer;
+
+	if (!API::CallBuiltin(Buffer, "get_string", pInstance, nullptr, { "Please input your expression:", "" }))
 	{
-		Utils::Error::Error(false, "CONOUT - get_string returned %s", Utils::Error::YYTKStatus_ToString(Status));
+		Utils::Error::Error(false, "Console Error -> API::CallBuiltin returned false");
 		return;
 	}
 	
@@ -94,14 +91,15 @@ void Console::DoCommand()
 		Command = std::regex_replace(Command, regexPeek, "variable_global_get(\"$1\")");
 	}
 
-	vector<string> vecTokens = StripOutArguments(Command);
+	vector<string> vecTokens = Tokenize(Command);
 	
 	if (vecTokens.empty())
 		return;
 
-	if (TRoutine Routine = API::GetBuiltin(vecTokens[0].c_str()))
+	TRoutine Routine;
+	if (API::GetFunctionByName(vecTokens[0], Routine))
 	{
-		RValue Result; Result.Kind = VALUE_UNSET; Result.I64 = 0;
+		RValue Result{}; Result.Kind = VALUE_UNSET; Result.I64 = 0;
 
 		YYRValue* pArgs = new YYRValue[vecTokens.size()];
 
@@ -132,7 +130,7 @@ void Console::DoCommand()
 				}
 			}
 
-			Utils::Error::Error(false, "CONOUT - Unrecognized token %s", token.c_str());
+			Utils::Error::Error(false, "Console Error -> Unrecognized token %s", token.c_str());
 		}
 		// REGEX MESS END
 
@@ -146,16 +144,16 @@ void Console::DoCommand()
 
 		else if (Result.Kind == VALUE_BOOL)
 			Utils::Error::Message(CLR_TANGERINE, "%s", (Result.Real > 0.5) ? "true" : "false");
-			
+
 		else if (Result.Kind == VALUE_STRING)
 			Utils::Error::Message(CLR_YELLOW, "\"%s\"", Result.String->Get());
 
 		else
-			Utils::Error::Message(CLR_GRAY, "undefined");
+			Utils::Error::Message(CLR_GRAY, "Undefined (type 0x%X)", Result.Kind);
 
 		delete[] pArgs;
 		return;
 	}
 
-	Utils::Error::Error(false, "CONOUT - Unrecognized function %s", vecTokens[0].c_str());
+	Utils::Error::Error(false, "Console Error -> Unrecognized function %s", vecTokens[0].c_str());
 }

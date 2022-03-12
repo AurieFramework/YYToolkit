@@ -25,7 +25,7 @@ namespace Hooks
 	{
 		MH_Initialize();
 		{
-			Utils::Error::Message(CLR_LIGHTBLUE, "\nStarting hooks...");
+			Utils::Error::Message(CLR_LIGHTBLUE, "\nInitializing hooks...");
 
 			auto Hook = [](void* NewFunc, void* GetTargetFunc, void** pfnOriginal, const char* Name)
 			{
@@ -33,11 +33,15 @@ namespace Hooks
 				{
 					auto Status = MH_CreateHook(lpFunc, NewFunc, pfnOriginal);
 					if (Status != MH_OK)
-						Utils::Error::Error(false, "Cannot create a hook on %s!\nError Code: %s", Name, MH_StatusToString(Status));
+						Utils::Error::Error(false, "Hook Error -> %s, error code: %s", Name, MH_StatusToString(Status));
 					else
 						MH_EnableHook(lpFunc);
 
 					Utils::Error::Message(CLR_GRAY, "- &%s = 0x%p", Name, lpFunc);
+				}
+				else
+				{
+
 				}
 			};
 
@@ -66,7 +70,7 @@ namespace Hooks
 				ReCa<void**>(&Hooks::YYError::pfnOriginal),
 				"YYError"
 			);
-
+			
 			Hook
 			(
 				ReCa<void*>(&Hooks::GR_Draw_Text::Function), 
@@ -82,7 +86,7 @@ namespace Hooks
 				ReCa<void**>(&Hooks::GR_Draw_Text_Color::pfnOriginal),
 				"GR_Draw_Text_Color"
 			);
-
+			
 			Hook
 			(
 				ReCa<void*>(&Hooks::GR_Draw_Text_Transformed::Function),	
@@ -90,7 +94,7 @@ namespace Hooks
 				ReCa<void**>(&Hooks::GR_Draw_Text_Transformed::pfnOriginal),
 				"GR_Draw_Text_Transformed"
 			);
-
+			
 			Hook
 			(
 				ReCa<void*>(&Hooks::GR_Draw_Text_TC::Function), 
@@ -98,6 +102,7 @@ namespace Hooks
 				ReCa<void**>(&Hooks::GR_Draw_Text_TC::pfnOriginal), 
 				"GR_Draw_Text_TC"
 			);
+			
 
 			Hook
 			(
@@ -141,10 +146,9 @@ namespace Hooks
 
 			auto TimeEnd = std::chrono::high_resolution_clock::now();
 
-			ShowWindow(reinterpret_cast<HWND>(gAPIVars.Window_Device), SW_SHOW);
-			SetForegroundWindow(reinterpret_cast<HWND>(gAPIVars.Window_Device));
-			Utils::Error::Message(CLR_LIGHTBLUE, "All hooks enabled - took %.3f seconds!", static_cast<float>(std::chrono::duration_cast<std::chrono::milliseconds>(TimeEnd - TimeStart).count()) / 1000.0f);
-			Utils::Error::Message(CLR_LIGHTBLUE, "Hint: Press F10 to run GML functions!");
+			ShowWindow(API::gAPIVars.Globals.g_hwWindowHandle, SW_SHOW);
+			SetForegroundWindow(API::gAPIVars.Globals.g_hwWindowHandle);
+			Utils::Error::Message(CLR_LIGHTBLUE, "Hook system done - took %.2f seconds!", static_cast<float>(std::chrono::duration_cast<std::chrono::milliseconds>(TimeEnd - TimeStart).count()) / 1000.0f);
 		}
 	}
 
@@ -154,9 +158,11 @@ namespace Hooks
 		Sleep(100);
 		MH_Uninitialize();
 
-		SetWindowLong((HWND)(gAPIVars.Window_Handle), GWL_WNDPROC, (LONG)Hooks::WindowProc::pfnOriginal);
+		SetWindowLong(API::gAPIVars.Globals.g_hwWindowHandle, GWL_WNDPROC, reinterpret_cast<LONG>(Hooks::WindowProc::pfnOriginal));
 
-		if (gAPIVars.RenderView)
-			reinterpret_cast<ID3D11RenderTargetView*>(gAPIVars.RenderView)->Release();
+		if (API::gAPIVars.Globals.g_pRenderView)
+			API::gAPIVars.Globals.g_pRenderView->Release();
+
+		API::gAPIVars.Globals.g_pRenderView = nullptr;
 	}
 }

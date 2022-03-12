@@ -69,24 +69,26 @@ namespace Utils::Error
 		SetPrintColor(CLR_DEFAULT);
 	}
 
-	const char* YYTKStatus_ToString(YYTKStatus Status)
+	std::string YYTKStatus_ToString(YYTKStatus Status)
 	{
 		switch (Status)
 		{
-		case YYTKStatus::YYTK_OK:
+		case YYTK_OK:
 			return "YYTK_OK";
-		case YYTKStatus::YYTK_FAIL:
+		case YYTK_FAIL:
 			return "YYTK_FAIL";
-		case YYTKStatus::YYTK_UNAVAILABLE:
+		case YYTK_INVALIDARG:
+			return "YYTK_INVALIDARG";
+		case YYTK_INVALIDRESULT:
+			return "YYTK_INVALIDRESULT";
+		case YYTK_NOMATCH:
+			return "YYTK_NOMATCH";
+		case YYTK_UNAVAILABLE:
 			return "YYTK_UNAVAILABLE";
-		case YYTKStatus::YYTK_NO_MEMORY:
-			return "YYTK_NO_MEMORY";
-		case YYTKStatus::YYTK_NOT_FOUND:
+		case YYTK_NOT_FOUND:
 			return "YYTK_NOT_FOUND";
-		case YYTKStatus::YYTK_NOT_IMPLEMENTED:
-			return "YYTK_NOT_IMPLEMENTED";
 		default:
-			return "YYTK_INVALID";
+			return std::to_string(Status);
 		}
 	}
 }

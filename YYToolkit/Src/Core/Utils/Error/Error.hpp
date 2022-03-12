@@ -14,6 +14,6 @@ namespace Utils
 
 		// Apparently this has to be inline and here, or else you get link errors
 		// I don't understand the linker
-		const char* YYTKStatus_ToString(YYTKStatus Status);
+		std::string YYTKStatus_ToString(YYTKStatus Status);
 	}
 }

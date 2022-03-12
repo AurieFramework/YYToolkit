@@ -32,12 +32,12 @@ enum eGMLKind : unsigned int
 enum YYTKStatus : int
 {
 	YYTK_OK = 0,				// The operation completed successfully.
-	YYTK_FAIL = 1,				// Unspecified error occured, see source code.
-	YYTK_UNAVAILABLE = 2,		// The called function is not available in the current context.
-	YYTK_NO_MEMORY = 3,			// No more memory is available to the process.
-	YYTK_NOT_FOUND = 4,			// The specified value could not be found.
-	YYTK_NOT_IMPLEMENTED = 5,	// The specified function doesn't exist. (IPC error)
-	YYTK_INVALID = 6			// One or more arguments were invalid.
+	YYTK_FAIL = 1,				// Unspecified error occured, see documentation.
+	YYTK_INVALIDARG = 2,		// One or more arguments were invalid, see documentation.
+	YYTK_INVALIDRESULT = 3,		// A result of a function was invalid, see documentation.
+	YYTK_NOMATCH = 4,			// A pattern couldn't be found, see documentation.
+	YYTK_UNAVAILABLE = 5,		// The function isn't available in the current context.
+	YYTK_NOT_FOUND = 6,			// The value wasn't found.
 };
 
 enum EventType : int

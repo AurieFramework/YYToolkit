@@ -8,22 +8,22 @@ namespace Hooks
 	{
 		void Function(float x, float y, const char* str, int linesep, int linewidth, float xsc, float ysc, float angle, unsigned int c1, unsigned int c2, unsigned int c3, float alpha, unsigned int c4)
 		{
-			Plugins::CallTextCallbacks(x, y, str, linesep, linewidth);
+			//Plugins::CallTextCallbacks(x, y, str, linesep, linewidth);
 
 			return pfnOriginal(x, y, str, linesep, linewidth, xsc, ysc, angle, c1, c2, c3, alpha, c4);
 		}
 
 		void* GetTargetAddress()
 		{
-			FunctionInfo_t mInfo;
+			TRoutine Routine = nullptr;
 
-			if (auto Status = API::GetFunctionByName("draw_text_transformed_color", mInfo))
+			if (!API::GetFunctionByName("draw_text_transformed_color", Routine))
 			{
-				Utils::Error::Error(1, "Failed to find the draw_text_transformed_color function.\nError Code: %s", Utils::Error::YYTKStatus_ToString(Status));
+				Utils::Error::Error(false, "Failed to find the draw_text_transformed_color function.");
 				return nullptr;
 			}
 
-			unsigned long Pattern = API::FindPattern("\xE8\x00\x00\x00\x00\x00\xE8\x00\x00\x00\x00\x83\xC4\x38", "x?????x????xxx", reinterpret_cast<long>(mInfo.Function), 0xFF);
+			unsigned long Pattern = API::FindPattern("\xE8\x00\x00\x00\x00\x00\xE8\x00\x00\x00\x00\x83\xC4\x38", "x?????x????xxx", reinterpret_cast<unsigned long>(Routine), 0xFFu);
 
 			if (!Pattern)
 				return nullptr;

@@ -8,22 +8,19 @@ HRESULT __stdcall Hooks::ResizeBuffers::Function(IDXGISwapChain* _this, UINT Buf
 	// Call events scope
 	{
 		YYTKResizeBuffersEvent Event = YYTKResizeBuffersEvent(pfnOriginal, _this, BufferCount, Width, Height, NewFormat, SwapChainFlags);
-		Plugins::RunHooks(&Event);
+		//Plugins::RunHooks(&Event);
 
 		if (Event.CalledOriginal())
 			return Event.GetReturn();
 	}
 
 	// Release all needed resources
-	if (gAPIVars.RenderView) 
+	if (API::gAPIVars.Globals.g_pRenderView) 
 	{
-		ID3D11RenderTargetView* pRenderTarget = static_cast<decltype(pRenderTarget)>(gAPIVars.RenderView);
-		ID3D11DeviceContext* pContext = static_cast<decltype(pContext)>(gAPIVars.DeviceContext);
+		API::gAPIVars.Globals.g_pDeviceContext->OMSetRenderTargets(0, nullptr, nullptr);
+		API::gAPIVars.Globals.g_pRenderView->Release();
 
-		pContext->OMSetRenderTargets(0, 0, 0);
-		pRenderTarget->Release();
-
-		gAPIVars.RenderView = nullptr;
+		API::gAPIVars.Globals.g_pRenderView = nullptr;
 	}
 
 
@@ -32,19 +29,17 @@ HRESULT __stdcall Hooks::ResizeBuffers::Function(IDXGISwapChain* _this, UINT Buf
 
 	// Recreate the buffer
 	{
-		ID3D11Device* pDevice = static_cast<decltype(pDevice)>(gAPIVars.Window_Device);
-		ID3D11RenderTargetView** ppRenderTarget = reinterpret_cast<decltype(ppRenderTarget)>(&gAPIVars.RenderView);
-		ID3D11DeviceContext* pContext = static_cast<decltype(pContext)>(gAPIVars.DeviceContext);
+		ID3D11Device* pDevice = reinterpret_cast<ID3D11Device*>(API::gAPIVars.Globals.g_pWindowDevice);
 
 		ID3D11Texture2D* pBuffer;
 		_this->GetBuffer(0, IID_PPV_ARGS(&pBuffer));
 		// TODO: Perform error handling here!
 
-		pDevice->CreateRenderTargetView(pBuffer, NULL, ppRenderTarget);
+		pDevice->CreateRenderTargetView(pBuffer, NULL, &API::gAPIVars.Globals.g_pRenderView);
 		// TODO: Perform error handling here!
 		pBuffer->Release();
 
-		pContext->OMSetRenderTargets(1, ppRenderTarget, NULL);
+		API::gAPIVars.Globals.g_pDeviceContext->OMSetRenderTargets(1, &API::gAPIVars.Globals.g_pRenderView, NULL);
 	}
 
 	return hr;

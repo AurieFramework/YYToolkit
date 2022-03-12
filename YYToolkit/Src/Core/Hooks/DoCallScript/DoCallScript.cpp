@@ -1,10 +1,11 @@
 #include "DoCallScript.hpp"
 #include "../../Features/API/API.hpp"
+#include "../../Features/PluginManager/PluginManager.hpp"
 
 char* Hooks::DoCallScript::Function(CScript* pScript, int argc, char* pStackPointer, VMExec* pVM, YYObjectBase* pLocals, YYObjectBase* pArguments)
 {
 	YYTKScriptEvent Event = YYTKScriptEvent(pfnOriginal, pScript, argc, pStackPointer, pVM, pLocals, pArguments);
-	Plugins::RunHooks(&Event);
+	API::PluginManager::RunHooks(&Event);
 
 	if (Event.CalledOriginal())
 		return Event.GetReturn();
@@ -14,9 +15,7 @@ char* Hooks::DoCallScript::Function(CScript* pScript, int argc, char* pStackPoin
 
 void* Hooks::DoCallScript::GetTargetAddress()
 {
-	auto ModuleInfo = API::GetModuleInfo();
-
-	unsigned long DoCallGMLPattern = API::FindPattern("\x8B\x00\x05\x60\x79\xFE\xFF\x00\xE8", "xxxxxxx?x", ModuleInfo.Base, ModuleInfo.Size);
+	unsigned long DoCallGMLPattern = API::FindPattern("\x8B\x00\x05\x60\x79\xFE\xFF\x00\xE8", "xxxxxxx?x", 0, 0);
 
 	if (!DoCallGMLPattern)
 		return nullptr;

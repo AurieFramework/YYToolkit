@@ -11,7 +11,7 @@ namespace Hooks::YYError
 		// Call events scope
 		{
 			YYTKErrorEvent Event = YYTKErrorEvent(pfnOriginal, pFormat);
-			Plugins::RunHooks(&Event);
+			//Plugins::RunHooks(&Event);
 
 			if (Event.CalledOriginal())
 				return;
@@ -36,15 +36,15 @@ namespace Hooks::YYError
 
 	void* GetTargetAddress()
 	{
-		FunctionInfo_t mInfo;
+		TRoutine Routine;
 
-		if (auto Status = API::GetFunctionByName("camera_create", mInfo))
+		if (!API::GetFunctionByName("camera_create", Routine))
 		{
-			Utils::Error::Error(1, "Failed to find the camera_create function.\nError Code: %s", Utils::Error::YYTKStatus_ToString(Status));
+			Utils::Error::Error(false, "Failed to find the camera_create function.");
 			return nullptr;
 		}
 
-		unsigned long Pattern = API::FindPattern("\x68\x00\x00\x00\x00\xE8\x00\x00\x00\x00\x83\xC4", "x????x????xx", reinterpret_cast<long>(mInfo.Function), 64);
+		unsigned long Pattern = API::FindPattern("\x68\x00\x00\x00\x00\xE8\x00\x00\x00\x00\x83\xC4", "x????x????xx", reinterpret_cast<unsigned long>(Routine), 64u);
 
 		if (!Pattern)
 			return nullptr;

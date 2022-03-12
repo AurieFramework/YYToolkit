@@ -12,15 +12,14 @@ static void SetupDescriptor(DXGI_SWAP_CHAIN_DESC* pDesc)
 	pDesc->BufferDesc.RefreshRate.Denominator = 1;
 	pDesc->Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
 	pDesc->BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-	pDesc->OutputWindow = (HWND)gAPIVars.Window_Handle;
+	pDesc->OutputWindow = API::gAPIVars.Globals.g_hwWindowHandle;
 	pDesc->SampleDesc.Count = 1;
 	pDesc->SampleDesc.Quality = 0;
 	pDesc->SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
 
-	YYRValue Result = YYRValue();
-	if (auto Status = API::Global_CallBuiltin("window_get_fullscreen", 0, Result, nullptr))
-		Utils::Error::Error(true, "Unspecified error while calling window_get_fullscreen.\nError Code: %s", 
-			Utils::Error::YYTKStatus_ToString(Status));
+	YYRValue Result = false;
+	if (!API::CallBuiltin(Result, "window_get_fullscreen", nullptr, nullptr, {}))
+		Utils::Error::Error(false, "Unspecified error while calling window_get_fullscreen.");
 
 	pDesc->Windowed = !(static_cast<bool>(Result));
 }
@@ -38,8 +37,8 @@ static HRESULT GetDummySwapChain_HardwareMethod(PFN_D3D11_CREATE_DEVICE_AND_SWAP
 	DXGI_SWAP_CHAIN_DESC Descriptor;
 
 	SetupDescriptor(&Descriptor);
-	const D3D_FEATURE_LEVEL featureLevelArray[2] = { D3D_FEATURE_LEVEL_11_0, D3D_FEATURE_LEVEL_10_0, };
-	return pFn(nullptr, D3D_DRIVER_TYPE_HARDWARE, NULL, 0, featureLevelArray, 2, D3D11_SDK_VERSION, &Descriptor, &outSwapChain, nullptr, &outLevel, nullptr);
+	const D3D_FEATURE_LEVEL featureLevelArray[3] = { D3D_FEATURE_LEVEL_11_0, D3D_FEATURE_LEVEL_10_0, D3D_FEATURE_LEVEL_10_1 };
+	return pFn(nullptr, D3D_DRIVER_TYPE_HARDWARE, NULL, 0, featureLevelArray, 3, D3D11_SDK_VERSION, &Descriptor, &outSwapChain, nullptr, &outLevel, nullptr);
 }
 
 static HRESULT GetDummySwapChain_ReferenceMethod(PFN_D3D11_CREATE_DEVICE_AND_SWAP_CHAIN pFn, D3D_FEATURE_LEVEL& outLevel, IDXGISwapChain*& outSwapChain)
@@ -47,8 +46,8 @@ static HRESULT GetDummySwapChain_ReferenceMethod(PFN_D3D11_CREATE_DEVICE_AND_SWA
 	DXGI_SWAP_CHAIN_DESC Descriptor;
 
 	SetupDescriptor(&Descriptor);
-	const D3D_FEATURE_LEVEL featureLevelArray[2] = { D3D_FEATURE_LEVEL_11_0, D3D_FEATURE_LEVEL_10_0, };
-	return pFn(nullptr, D3D_DRIVER_TYPE_REFERENCE, NULL, 0, featureLevelArray, 2, D3D11_SDK_VERSION, &Descriptor, &outSwapChain, nullptr, &outLevel, nullptr);
+	const D3D_FEATURE_LEVEL featureLevelArray[3] = { D3D_FEATURE_LEVEL_11_0, D3D_FEATURE_LEVEL_10_0, D3D_FEATURE_LEVEL_10_1 };
+	return pFn(nullptr, D3D_DRIVER_TYPE_REFERENCE, NULL, 0, featureLevelArray, 3, D3D11_SDK_VERSION, &Descriptor, &outSwapChain, nullptr, &outLevel, nullptr);
 }
 
 IDXGISwapChain* Utils::D3D11::GetSwapChain()
@@ -91,6 +90,9 @@ IDXGISwapChain* Utils::D3D11::GetSwapChain()
 				Utils::Error::Error(false, "Dummy swapchain (Ref. Method) failed.");
 				Utils::Error::Error(false, "  - Returned: 0x%X", ResultBuffer);
 				Utils::Error::Error(false, "  - Supported level: 0x%X", SupportedLevel);
+
+				Utils::Error::Error(true, "The dummy swapchain method failed.\nSee the console for detailed output.");
+
 				return nullptr;
 			}
 		}
@@ -104,7 +106,13 @@ void* Utils::D3D11::GetVMTEntry(int index)
 	IDXGISwapChain* pSwapChain = GetSwapChain();
 
 	if (!pSwapChain)
+	{
+		if (API::gAPIVars.Globals.g_bDebugMode)
+			Utils::Error::Message(CLR_DEFAULT, "GetSwapChain() returned nullptr, GetVMTEntry(%d)", index);
+
 		return nullptr;
+	}
+		
 
 	void** ppVMT = *(void***)(pSwapChain);
 	

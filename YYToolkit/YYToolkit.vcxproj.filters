@@ -18,9 +18,6 @@
     <ClInclude Include="Src\Toolkit\Utils\StackTrace.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Src\Core\Features\API\API.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Src\Core\Hooks\Code_Execute\Code_Execute.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -156,12 +153,15 @@
     <ClInclude Include="Src\Core\Utils\D3D11 Hooker\D3D11Hooker.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Src\Core\Features\API\API.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Core\Features\PluginManager\PluginManager.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Src\MainEntry.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Src\Core\Features\API\API.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Src\Core\Hooks\Code_Execute\Code_Execute.cpp">
@@ -243,6 +243,15 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Src\Core\Utils\D3D11 Hooker\D3D11Hooker.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Core\Features\API\Internal.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Core\Features\API\API.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Core\Features\PluginManager\PluginManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

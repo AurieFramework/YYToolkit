@@ -1,13 +1,14 @@
 #include "EndScene.hpp"
 #include "../../Features/API/API.hpp"
 #include "../../Utils/Error/Error.hpp"
+#include "../../Features/PluginManager/PluginManager.hpp"
 
 namespace Hooks::EndScene
 {
 	HRESULT __stdcall Function(LPDIRECT3DDEVICE9 _this)
 	{
 		YYTKEndSceneEvent Event = YYTKEndSceneEvent(pfnOriginal, _this);
-		Plugins::RunHooks(&Event);
+		API::PluginManager::RunHooks(&Event);
 
 		if (Event.CalledOriginal())
 			return Event.GetReturn();
@@ -18,11 +19,11 @@ namespace Hooks::EndScene
 	void* GetTargetAddress()
 	{
 		void* ppTable[119];
+		IDirect3DDevice9* pDevice = nullptr;
 
-		memcpy(ppTable, *(void***)(gAPIVars.Window_Device), sizeof(ppTable));
+		pDevice = reinterpret_cast<IDirect3DDevice9*>(API::gAPIVars.Globals.g_pWindowDevice);
 
-		if (!ppTable[42])
-			Utils::Error::Error(1, "Failed to get the EndScene function pointer.");
+		memcpy(ppTable, *(void***)(pDevice), sizeof(ppTable));
 
 		return ppTable[42];
 	}

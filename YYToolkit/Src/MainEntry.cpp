@@ -11,7 +11,7 @@ static HINSTANCE g_hDLL = 0;
 
 void __stdcall Main()
 {
-	API::Initialize(g_hDLL);
+	API::Internal::Initialize(g_hDLL);
 	Hooks::Initialize();
 
 	while (!GetAsyncKeyState(VK_END)) 
@@ -25,9 +25,9 @@ void __stdcall Main()
 	}
 
 	Hooks::Uninitialize();
-	API::Uninitialize();
+	API::Internal::Unload();
 
-	MessageBoxA((HWND)gAPIVars.Window_Handle, "Unloaded successfully.", "YYToolkit", MB_OK | MB_ICONINFORMATION | MB_TOPMOST);
+	MessageBoxA(API::gAPIVars.Globals.g_hwWindowHandle, "Unloaded successfully.", "YYToolkit", MB_OK | MB_ICONINFORMATION | MB_TOPMOST);
 
 	FreeLibraryAndExitThread(g_hDLL, 0);
 }

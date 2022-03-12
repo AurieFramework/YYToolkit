@@ -1,9 +1,4 @@
 #pragma once
-#ifdef __cplusplus
-#define DllExport extern "C" __declspec(dllexport)
-#else //!__cplusplus
-#define DllExport __declspec(dllexport)
-#endif //__cplusplus
 
 // Forward declarations
 #include "FwdDecls/FwdDecls.hpp"

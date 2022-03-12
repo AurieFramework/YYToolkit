@@ -165,7 +165,6 @@
     <ClCompile Include="Src\SDK\Structures\Documented\YYRValue\YYRValue.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Src\Bytecode.hpp" />
     <ClInclude Include="Src\SDK\Enums\Enums.hpp" />
     <ClInclude Include="Src\SDK\FwdDecls\FwdDecls.hpp" />
     <ClInclude Include="Src\SDK\Plugins\Plugins.hpp" />

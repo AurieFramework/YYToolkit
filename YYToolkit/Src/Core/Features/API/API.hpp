@@ -1,88 +1,232 @@
 #pragma once
 #include "../../SDK/SDK.hpp"
-#include <map>
-// One API to unite them all.
-// If you want IPC for legacy AUMI, use the dedicated plugin.
+#include <vector>
 
-struct ModuleInfo_t 
+struct CModule
 {
-	unsigned long Base;
-	unsigned long Size;
-	unsigned long EntryPoint;
+	DWORD Base;
+	DWORD Size;
+	DWORD EntryPoint;
 };
 
-inline APIVars_t gAPIVars;
+// Function pointer types
+enum EFPType : int
+{
+	FPType_AssemblyReference,
+	FPType_DirectPointer,
+};
 
-/* The actual API functions */
+// Lookup types
+enum ELType : int
+{
+	LType_FunctionName,
+	LType_Index,
+};
+
 namespace API
 {
-	ModuleInfo_t GetModuleInfo();
+	inline CAPIVars gAPIVars;
 
-	// This function gets called once at the start of YYToolkit, so no need to export it.
-	YYTKStatus Initialize(void* pModule);
+	/// <summary>
+	/// GetFunctionByName returns a pointer to a GM builtin function.
+	/// </summary>
+	/// <param name="Name:">
+	/// Controls which function will be found. 
+	/// See GML documentation for further information.
+	/// </param>
+	/// <param name="outRoutine:">
+	/// A pointer to a TRoutine object, will be assigned when the function returns.
+	/// You may use this pointer to call the builtin function.
+	/// </param>
+	/// <returns>
+	/// Returns false if the function wasn't found, true otherwise.
+	/// </returns>
+	DllExport bool GetFunctionByName(
+		const std::string& Name,
+		TRoutine& outRoutine
+	);
 
-	YYTKStatus Uninitialize();
+	/// <summary>
+	/// Retrieves the string representing the SDK version of the Core Module.
+	/// </summary>
+	/// <returns>
+	/// The version string of the core module.
+	/// Can be used to check if your plugin is compiled for the same version.
+	/// </returns>
+	DllExport const char* GetSDKVersion();
 
-	DllExport YYTKStatus GetAPIVersion(char* outBuffer);
+	/// <summary>
+	/// Returns a pointer to the global game instance (globalvar).
+	/// </summary>
+	/// <param name="outInstance:">
+	/// A reference to a CInstance pointer, which will be set upon the function returning.
+	/// </param>
+	/// <returns>
+	/// Returns false if the lookup failed. Otherwise, it returns true.
+	/// </returns>
+	DllExport bool GetGlobalInstance(
+		CInstance*& outInstance
+	);
 
-	DllExport YYTKStatus CreateCodeObject(CCode& out, char* pBytecode, size_t BytecodeSize, unsigned int Locals, const char* pName);
-
-	DllExport YYTKStatus CreateYYCCodeObject(CCode& out, PFUNC_YYGML Routine, const char* pName);
-
-	DllExport YYTKStatus FreeCodeObject(CCode& out);
-
-	DllExport YYTKStatus GetFunctionByIndex(int index, FunctionInfo_t& outInfo);
-
-	DllExport YYTKStatus GetFunctionByName(const char* Name, FunctionInfo_t& outInfo);
-
-	DllExport YYTKStatus GetAPIVars(APIVars_t** ppoutVars);
-
-	DllExport YYTKStatus GetScriptArray(CDynamicArray<CScript*>*& pOutArray);
-
-	DllExport YYTKStatus GetScriptByName(const char* Name, CScript*& outScript);
-
-	DllExport YYTKStatus GetScriptByID(int id, CScript*& outScript);
-
-	DllExport YYTKStatus ScriptExists(const char* Name);
-
-	DllExport YYTKStatus GetCodeExecuteAddr(FNCodeExecute& outAddress);
-
-	DllExport YYTKStatus GetCodeFunctionAddr(FNCodeFunctionGetTheFunction& outAddress);
-
-	DllExport unsigned long FindPattern(const char* Pattern, const char* Mask, long base, unsigned size);
-
-	DllExport YYTKStatus GetGlobalInstance(YYObjectBase** ppoutGlobal);
-
-	DllExport YYTKStatus CallBuiltinFunction(CInstance* _pSelf, CInstance* _pOther, YYRValue& _result, int _argc, const char* Name, YYRValue* Args);
-
-	DllExport TRoutine GetBuiltin(const char* Name);
-	
-	DllExport YYTKStatus Global_CallBuiltin(const char* Name, int argc, YYRValue& _result, YYRValue* Args);
-
+	/// <summary>
+	/// [Deprecated] 
+	/// This function checks if the current game is compiled with YYC.
+	/// Plugins should use IsGameYYC() instead.
+	/// </summary>
+	/// <returns></returns>
 	DllExport bool IsYYC();
 
-	/* Reconstructed YYGML Functions */
-	// Note to self: YYRValue** are actually **, not references, they're passing arrays of pointers...
-	DllExport RValue* YYGML_CallLegacyFunction(CInstance* _pSelf, CInstance* _pOther, RValue& _result, int _argc, int _id, RValue** _args);
+	/// <summary>
+	/// Checks if the game is compiled with YoYoCompiler (YYC).
+	/// YYC compilation means that code is in x86 assembly instead of VM bytecode.
+	/// </summary>
+	/// <returns>
+	/// Returns true only if the game is compiled with YYC. Otherwise, it returns false (even on error!).
+	/// </returns>
+	DllExport bool IsGameYYC();
 
-	DllExport void YYGML_array_set_owner(long long _owner);
+	/// <summary>
+	/// Calls a builtin function with custom arguments.
+	/// </summary>
+	/// <param name="Result:">
+	/// A reference to a YYRValue, to which the return value is stored.
+	/// </param>
+	/// <param name="Name:">
+	/// The name of the builtin (ex. room_goto, game_set_speed)
+	/// </param>
+	/// <param name="Self:">
+	/// The instance 'self' points to - leave both Self and Other nullptr to use the global instance.
+	/// </param>
+	/// <param name="Other:">
+	/// The instance 'other' points to - leave both Self and Other nullptr to use the global instance.
+	/// </param>
+	/// <param name="Args:">
+	/// A vector of YYRValues used as parameters to the builtin function.
+	/// The contents of this vector aren't modified.
+	/// </param>
+	/// <returns>
+	/// The function returns false on error, true otherwise.
+	/// </returns>
+	DllExport bool CallBuiltin(
+		YYRValue& Result,
+		const std::string& Name,
+		CInstance* Self,
+		CInstance* Other,
+		const std::vector<YYRValue>& Args
+	);
 
-	DllExport YYRValue* YYGML_method(CInstance* _pSelf, YYRValue& _result, YYRValue& _pRef);
+	/// <summary>
+	/// Finds an array of bytes in memory.
+	/// </summary>
+	/// <param name="Pattern:">
+	/// The bytes to find.
+	/// </param>
+	/// <param name="Mask:">
+	/// Masks the Pattern array. Use '?' as a wildcard for "any byte", 'x' for a fixed byte.
+	/// Example: "xxx??xxx"
+	/// </param>
+	/// <param name="Base:">
+	/// The base address for the search. If both Base and Size are 0, the entire memory is searched.
+	/// </param>
+	/// <param name="Size:">
+	/// The size of the search. The search is done from (Base) up to (Base + Size).
+	/// </param>
+	/// <returns>
+	/// Returns the base address of the array of bytes (if found), 0 otherwise.
+	/// </returns>
+	DllExport unsigned long FindPattern(
+		const char* Pattern,
+		const char* Mask,
+		unsigned long Base,
+		unsigned long Size
+	);
 
-	DllExport void YYGML_window_set_caption(const char* _pStr);
+	namespace Internal
+	{
+		// PRIVATE FUNCTIONS
+		YYTKStatus Initialize(HMODULE hMainModule);
+
+		YYTKStatus Unload();
+
+		// MEMORY MANAGER FUNCTIONS
+		DllExport YYTKStatus MmGetModuleInformation(
+			const char* szModuleName,
+			CModule& outModule
+		);
+
+		DllExport YYTKStatus MmFindByteArray(
+			const byte* pbArray,
+			unsigned int uArraySize,
+			unsigned long ulSearchRegionBase,
+			unsigned int ulSearchRegionSize,
+			const char* szMask,
+			DWORD& dwOutBuffer
+		);
+
+		// Overloaded just so clang doesn't complain.
+		YYTKStatus MmFindByteArray(
+			const char* pszArray,
+			unsigned int uArraySize,
+			unsigned long ulSearchRegionBase,
+			unsigned int ulSearchRegionSize,
+			const char* szMask,
+			DWORD& dwOutBuffer
+		);
+
+		DllExport YYTKStatus MmFindCodeExecute(
+			DWORD& dwOutBuffer
+		);
+
+		DllExport YYTKStatus MmFindCodeFunction(
+			DWORD& dwOutBuffer
+		);
+
+		// VARIABLE FUNCTIONS
+		DllExport YYTKStatus VfGetFunctionPointer(
+			const char* szFunctionName,
+			EFPType ePointerType,
+			DWORD& pOutBuffer
+		);
+
+		/// <summary>
+		/// Gets the RFunction object of a builtin function by it's index. 
+		/// This function is not to be used by plugins, as it is entirely game-dependant.
+		/// Plugins should use GetFunctionByName or CallBuiltin.
+		/// </summary>
+		/// <param name="nIndex:">
+		/// The index of the function.
+		/// </param>
+		/// <param name="pOutRoutine:">
+		/// A pointer to a buffer which will receive a pointer to the routine. 
+		/// This argument is optional.
+		/// </param>
+		/// <param name="pOutArgumentCount:">
+		/// A pointer to a buffer which will receive the number of arguments required by the routine.
+		/// This argument is optional.
+		/// </param>
+		/// <param name="pOutNameBuffer:">
+		/// A pointer to a buffer which will receive the name of the routine. 
+		/// This argument is optional.
+		/// </param>
+		/// <returns>
+		/// Returns YYTK_INVALIDARG if one or more arguments are invalid.
+		/// Returns YYTK_UNAVAILABLE if the Code_Function_GET_the_function isn't set.
+		/// Returns YYTK_INVALIDRESULT if the index doesn't exist or the function has no name.
+		/// Returns YYTK_OK on success.
+		/// </returns>
+		DllExport YYTKStatus VfGetFunctionEntryFromGameArray(
+			int nIndex, // Required
+			TRoutine* pOutRoutine, // Optional
+			int* pOutArgumentCount, // Optional
+			char** pOutNameBuffer // Optional
+		);
+
+		// Wrapper around VfGetFunctionEntryFromGameArray, loops until it found the matching name
+		// Pretty much the internal 
+		DllExport YYTKStatus VfLookupFunction(
+			const char* szFunctionName,
+			TRoutine& outRoutine,
+			int* pOptOutIndex
+		);
+	}
 }
-
-namespace Plugins
-{
-	DllExport void* GetPluginRoutine(const char* Name);
-
-	DllExport YYTKPlugin* LoadPlugin(const char* Path);
-
-	DllExport bool UnloadPlugin(YYTKPlugin* pPlugin, bool Notify);
-
-	DllExport void RunHooks(YYTKEventBase* pEvent);
-
-	// This doesn't run hooks, this actually runs a callback
-	DllExport void CallTextCallbacks(float& x, float& y, const char* &str, int& linesep, int& linewidth);
-}
-

@@ -1,7 +1,9 @@
 #pragma once
 #pragma region Documented
 // APIVars.hpp
-struct APIVars_t;
+struct CGlobals;
+struct CFunctions;
+struct CAPIVars;
 
 // CCode.hpp
 struct CCode;
@@ -69,8 +71,9 @@ typedef bool (*FNCodeExecute)(YYObjectBase* Self, YYObjectBase* Other, CCode* co
 // Macros
 
 #define WIN32_LEAN_AND_MEAN 1
-#define YYSDK_VERSION "0.0.7-rc3" // YYToolkit version - don't change this!
 #define YYTK_MAGIC 'TFSI'
+
+static const char* YYSDK_VERSION = "0.1-rc1";
 
 // Macros, but complicated
 #ifdef _MSC_VER
@@ -82,3 +85,9 @@ typedef bool (*FNCodeExecute)(YYObjectBase* Self, YYObjectBase* Other, CCode* co
 //#define strcpy_s(x,y,z) strncpy(x,z,y)
 #include <inttypes.h>
 #endif //MSC_VER
+
+#ifdef __cplusplus
+#define DllExport extern "C" __declspec(dllexport)
+#else //!__cplusplus
+#define DllExport __declspec(dllexport)
+#endif //__cplusplus

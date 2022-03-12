@@ -4,6 +4,7 @@
 
 struct YYObjectBase;
 struct RefString;
+struct CInstance;
 
 template <typename T>
 struct CDynamicArrayRef;
@@ -22,6 +23,7 @@ struct RValue
 		union
 		{
 			YYObjectBase* Object;
+			CInstance* Instance;
 			RefString* String;
 			CDynamicArrayRef<RValue>* EmbeddedArray;
 			RefDynamicArrayOfRValue* RefArray;

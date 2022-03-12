@@ -11,12 +11,12 @@ namespace Hooks::Present
 	{
 		YYTKPresentEvent Event = YYTKPresentEvent(pfnOriginal, _this, Sync, Flags);
 
-		Plugins::RunHooks(&Event);
+		//Plugins::RunHooks(&Event);
 
 		std::call_once(g_CreatedRenderView, [&]()
 			{
-				ID3D11Device* pDevice = static_cast<decltype(pDevice)>(gAPIVars.Window_Device);
-				ID3D11RenderTargetView** ppRenderView = reinterpret_cast<decltype(ppRenderView)>(&gAPIVars.RenderView);
+				ID3D11Device* pDevice = reinterpret_cast<ID3D11Device*>(API::gAPIVars.Globals.g_pWindowDevice);
+				ID3D11RenderTargetView** ppRenderView = &API::gAPIVars.Globals.g_pRenderView;
 
 				ID3D11Texture2D* pBackBuffer;
 				_this->GetBuffer(0, IID_PPV_ARGS(&pBackBuffer));
@@ -33,10 +33,10 @@ namespace Hooks::Present
 
 	void* GetTargetAddress()
 	{
-		ID3D11Device* pDevice = static_cast<ID3D11Device*>(gAPIVars.Window_Device);
+		ID3D11Device* pDevice = reinterpret_cast<ID3D11Device*>(API::gAPIVars.Globals.g_pWindowDevice);
 		
 		if (pDevice)
-			pDevice->GetImmediateContext(reinterpret_cast<ID3D11DeviceContext**>(&gAPIVars.DeviceContext));
+			pDevice->GetImmediateContext(&API::gAPIVars.Globals.g_pDeviceContext);
 
 		return Utils::D3D11::GetVMTEntry(8);
 	}
