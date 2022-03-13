@@ -11,13 +11,14 @@ static HINSTANCE g_hDLL = 0;
 
 void __stdcall Main()
 {
+	if (GetAsyncKeyState(VK_RCONTROL))
+		API::gAPIVars.Globals.g_bDebugMode = true;
+
 	API::Internal::Initialize(g_hDLL);
 	Hooks::Initialize();
 
 	while (!GetAsyncKeyState(VK_END)) 
 	{
-		// Run console
-
 		if (GetAsyncKeyState(VK_F10) & 1)
 			Console::DoCommand();
 

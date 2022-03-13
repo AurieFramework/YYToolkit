@@ -24,7 +24,15 @@ namespace Hooks
 				return nullptr;
 			}
 
-			unsigned long Pattern = API::FindPattern("\xE8\x00\x00\x00\x00\x00\xE8\x00\x00\x00\x00\x83\xC4\x2C", "x?????x????xxx", reinterpret_cast<unsigned long>(Routine), 0xFFu);
+			unsigned long Pattern = 0;
+
+			Pattern = API::FindPattern("\xE8\x00\x00\x00\x00\x00\xE8\x00\x00\x00\x00\x83\xC4\x2C", "x?????x????xxx", reinterpret_cast<unsigned long>(Routine), 0xFFu);
+
+			// Fix for DR 1.10 apery
+			if (Pattern == 0)
+			{
+				Pattern = API::FindPattern("\xE8\x00\x00\x00\x00\x00\x00\x00\x00\xE8\x00\x00\x00\x00\x83\xC4\x2C", "x????????x????xxx", reinterpret_cast<unsigned long>(Routine), 0xFFu);
+			}
 
 			if (!Pattern)
 				return nullptr;

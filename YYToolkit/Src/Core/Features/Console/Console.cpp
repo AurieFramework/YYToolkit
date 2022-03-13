@@ -101,7 +101,7 @@ void Console::DoCommand()
 	{
 		RValue Result{}; Result.Kind = VALUE_UNSET; Result.I64 = 0;
 
-		YYRValue* pArgs = new YYRValue[vecTokens.size()];
+		YYRValue* pArgs = new YYRValue[vecTokens.size()]();
 
 		// REGEX MESS START
 		for (int n = 1; n < vecTokens.size(); n++)

@@ -5,6 +5,18 @@ bool API::GetFunctionByName(const std::string& Name, TRoutine& outRoutine)
 {
 	YYTKStatus Status = Internal::VfLookupFunction(Name.c_str(), outRoutine, nullptr);
 
+	if (Status)
+	{
+		Utils::Error::Error(
+			false,
+			"API Error -> %s(%s) -> %s : L%d : ",
+			__FUNCTION__,
+			Name.c_str(),
+			Utils::Error::YYTKStatus_ToString(Status).c_str()
+			, __LINE__
+		);
+	}
+	
 	return Status == YYTK_OK;
 }
 
@@ -20,17 +32,11 @@ bool API::GetGlobalInstance(CInstance*& outInstance)
 
 	// This function returns the global scope
 	if (!GetFunctionByName("@@GlobalScope@@", Function))
-	{
-		Utils::Error::Error(false, "API Error -> %s() : L%d : ", __FUNCTION__, __LINE__);
 		return false;
-	}
 
 	// Functions should be callable
 	if (!Function)
-	{
-		Utils::Error::Error(false, "API Error -> %s() : L%d : ", __FUNCTION__, __LINE__);
 		return false;
-	}
 
 	// Call it and save the result.
 	Function(&Result, nullptr, nullptr, 0, nullptr);

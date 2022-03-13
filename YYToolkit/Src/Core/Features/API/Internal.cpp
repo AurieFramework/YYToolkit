@@ -12,19 +12,16 @@ YYTKStatus API::Internal::Initialize(HMODULE hMainModule)
 	// Don't forget this!
 	gAPIVars.Globals.g_hMainModule = hMainModule;
 
-	// Allocate console
-	AllocConsole();
-	FILE* fDummy;
-	freopen_s(&fDummy, "CONIN$", "r", stdin);
-	freopen_s(&fDummy, "CONOUT$", "w", stderr);
-	freopen_s(&fDummy, "CONOUT$", "w", stdout);
-
-	SetConsoleTitleA("YYTK Log Window");
-
-	if (GetAsyncKeyState(VK_F9))
+	if (GetAsyncKeyState(VK_F8) & 1 || API::gAPIVars.Globals.g_bDebugMode)
 	{
-		SetConsoleTitleA("YYToolkit Console (Developer Mode)");
-		gAPIVars.Globals.g_bDebugMode = true;
+		// Allocate console
+		AllocConsole();
+		FILE* fDummy;
+		freopen_s(&fDummy, "CONIN$", "r", stdin);
+		freopen_s(&fDummy, "CONOUT$", "w", stderr);
+		freopen_s(&fDummy, "CONOUT$", "w", stdout);
+
+		SetConsoleTitleA("YYToolkit Debug Console");
 	}
 
 	// Print the version into the log
@@ -97,11 +94,11 @@ YYTKStatus API::Internal::Initialize(HMODULE hMainModule)
 	{
 		int nUserChoice = MessageBoxA(
 			0,
-			"YYTK self-check failed to pass.\n"
+			"YYToolkit's self-check failed to pass.\n"
 			"This means that some features may be broken or completely unavailable.\n"
 			"Plugins relying on this functionality may cease to work.\n\n"
 			"Proceed anyway?",
-			"YYTK - Warning",
+			"YYToolkit",
 			MB_TOPMOST | MB_YESNO | MB_ICONWARNING | MB_SETFOREGROUND | MB_DEFBUTTON2
 		);
 
@@ -118,6 +115,7 @@ YYTKStatus API::Internal::Unload()
 {
 	PluginManager::Uninitialize();
 
+	ShowWindow(GetConsoleWindow(), SW_HIDE);
 	FreeConsole();
 	return YYTK_OK;
 }
