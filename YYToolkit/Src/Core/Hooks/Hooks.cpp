@@ -33,7 +33,14 @@ namespace Hooks
 				{
 					auto Status = MH_CreateHook(lpFunc, NewFunc, pfnOriginal);
 					if (Status != MH_OK)
-						Utils::Error::Error(false, "Hook Error -> %s, error code: %s", Name, MH_StatusToString(Status));
+						Utils::Error::Error(
+							false,
+							__FILE__,
+							__LINE__,
+							"Failed to hook function %s (MH Status %s)",
+							Name,
+							MH_StatusToString(Status)
+						);
 					else
 						MH_EnableHook(lpFunc);
 
@@ -41,7 +48,13 @@ namespace Hooks
 				}
 				else
 				{
-
+					Utils::Error::Error(
+						false,
+						__FILE__,
+						__LINE__,
+						"Failed to hook function %s (address not found)",
+						Name
+					);
 				}
 			};
 

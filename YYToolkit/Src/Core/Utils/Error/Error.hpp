@@ -6,7 +6,7 @@ namespace Utils
 	{
 		void SetPrintColor(Color color);
 
-		void Error(bool critical, const char* fmt, ...);
+		void Error(bool critical, const char* File, const int& Line, const char* fmt, ...);
 
 		void Message(Color C, const char* fmt, ...);
 

@@ -13,7 +13,7 @@ bool Tests::RunUnitTests()
 
 		if (stFoundCodeExecute || dwCodeExecute == 0)
 		{
-			Utils::Error::Error(0, ""); // todo
+			Utils::Error::Error(0, __FILE__, __LINE__, "Unit Test \"Code_Execute\" failed");
 			bPassedTests = false;
 		}
 	}
@@ -24,7 +24,10 @@ bool Tests::RunUnitTests()
 		YYTKStatus stFoundCodeFunction = API::Internal::MmFindCodeFunction(dwCodeFunction);
 
 		if (stFoundCodeFunction || dwCodeFunction == 0)
+		{
+			Utils::Error::Error(0, __FILE__, __LINE__, "Unit Test \"Code_Function_GET_the_function\" failed");
 			bPassedTests = false;
+		}
 	}
 
 	// Script Array
@@ -33,7 +36,10 @@ bool Tests::RunUnitTests()
 		YYTKStatus stFoundScriptArray = API::Internal::MmGetScriptArrayPtr(pScriptArray, 32);
 
 		if (stFoundScriptArray || pScriptArray == nullptr)
+		{
+			Utils::Error::Error(0, __FILE__, __LINE__, "Unit Test \"Script Array\" failed");
 			bPassedTests = false;
+		}
 	}
 
 	// Function Lookup Test
@@ -45,13 +51,24 @@ bool Tests::RunUnitTests()
 		YYTKStatus stAsmRefCall = API::Internal::VfGetFunctionPointer("instance_destroy", FPType_AssemblyReference, dwAsmRefPointer);
 
 		if (stDirectCall || stAsmRefCall)
+		{
+			Utils::Error::Error(0, __FILE__, __LINE__, "Unit Test \"Function Lookup (Status Check)\" failed");
 			bPassedTests = false;
+		}
+			
 
 		if (!dwDirectPointer || !dwAsmRefPointer)
+		{
+			Utils::Error::Error(0, __FILE__, __LINE__, "Unit Test \"Function Lookup (Null Check)\" failed");
 			bPassedTests = false;
+		}
+			
 
 		if (dwDirectPointer != dwAsmRefPointer)
+		{
+			Utils::Error::Error(0, __FILE__, __LINE__, "Unit Test \"Function Lookup (Equality Check)\" failed");
 			bPassedTests = false;
+		}
 	}
 	
 	return bPassedTests;

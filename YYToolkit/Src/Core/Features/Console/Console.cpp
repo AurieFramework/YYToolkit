@@ -18,7 +18,13 @@ static vector<string> Tokenize(const string& ref)
 
 	if (_beginFuncCall == string::npos)
 	{
-		Utils::Error::Error(false, "Console Error - no opening parentheses");
+		Utils::Error::Error(
+			false,
+			__FILE__,
+			__LINE__,
+			"No function call was found"
+		);
+
 		return {};
 	}
 
@@ -26,7 +32,12 @@ static vector<string> Tokenize(const string& ref)
 
 	if (_endFuncCall == string::npos)
 	{
-		Utils::Error::Error(false, "Console Error - no closing parentheses");
+		Utils::Error::Error(
+			false,
+			__FILE__,
+			__LINE__,
+			"No function call was found"
+		);
 		return {};
 	}
 
@@ -63,7 +74,13 @@ void Console::DoCommand()
 
 	if (!API::CallBuiltin(Buffer, "get_string", pInstance, nullptr, { "Please input your expression:", "" }))
 	{
-		Utils::Error::Error(false, "Console Error -> API::CallBuiltin returned false");
+		Utils::Error::Error(
+			false,
+			__FILE__,
+			__LINE__,
+			"API::CallBuiltin returned false"
+		);
+
 		return;
 	}
 	
@@ -130,7 +147,13 @@ void Console::DoCommand()
 				}
 			}
 
-			Utils::Error::Error(false, "Console Error -> Unrecognized token %s", token.c_str());
+			Utils::Error::Error(
+				false,
+				__FILE__,
+				__LINE__,
+				"Unknown token: %s", 
+				token.c_str()
+			);
 		}
 		// REGEX MESS END
 
@@ -155,5 +178,11 @@ void Console::DoCommand()
 		return;
 	}
 
-	Utils::Error::Error(false, "Console Error -> Unrecognized function %s", vecTokens[0].c_str());
+	Utils::Error::Error(
+		false,
+		__FILE__,
+		__LINE__,
+		"Unrecognized function %s",
+		vecTokens[0].c_str()
+	);
 }

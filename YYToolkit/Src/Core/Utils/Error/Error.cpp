@@ -25,7 +25,7 @@ namespace Utils::Error
 		SetConsoleTextAttribute(hConsole, static_cast<WORD>(color));
 	}
 
-	void Error(bool critical, const char* fmt, ...)
+	void Error(bool critical, const char* File, const int& Line, const char* fmt, ...)
 	{
 		va_list vaArgs;
 		va_start(vaArgs, fmt);
@@ -37,10 +37,10 @@ namespace Utils::Error
 			MessageBoxA(0, String.c_str(), "Sorry!", MB_TOPMOST | (critical ? MB_ICONERROR : MB_ICONWARNING) | MB_OK | MB_TOPMOST | MB_SETFOREGROUND);
 			exit(0);
 		}
-		else if (API::gAPIVars.Globals.g_bDebugMode)
+		else
 		{
 			SetPrintColor(CLR_RED);
-			printf("[Error] %s\n", String.c_str());
+			printf("[Error] %s in %s : %d\n", String.c_str(), File, Line);
 			SetPrintColor(CLR_DEFAULT);
 		}
 	}

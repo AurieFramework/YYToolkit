@@ -41,7 +41,13 @@ namespace Hooks
 
 			if (!API::GetFunctionByName("camera_create", Routine))
 			{
-				Utils::Error::Error(false, "Failed to find the camera_create function.");
+				Utils::Error::Error(
+					false,
+					__FILE__,
+					__LINE__,
+					"Failed to find the camera_create function"
+				);
+
 				return nullptr;
 			}
 

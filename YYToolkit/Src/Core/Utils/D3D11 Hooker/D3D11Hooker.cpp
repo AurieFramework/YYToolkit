@@ -19,7 +19,14 @@ static void SetupDescriptor(DXGI_SWAP_CHAIN_DESC* pDesc)
 
 	YYRValue Result = false;
 	if (!API::CallBuiltin(Result, "window_get_fullscreen", nullptr, nullptr, {}))
-		Utils::Error::Error(false, "Unspecified error while calling window_get_fullscreen.");
+	{
+		Utils::Error::Error(
+			false,
+			__FILE__,
+			__LINE__,
+			"The window_get_fullscreen function couldn't be found"
+		);
+	}
 
 	pDesc->Windowed = !(static_cast<bool>(Result));
 }
@@ -63,7 +70,13 @@ IDXGISwapChain* Utils::D3D11::GetSwapChain()
 
 	if (!pFn)
 	{
-		Utils::Error::Error(false, "Cannot obtain the CreateDevice function pointer.");
+		Utils::Error::Error(
+			false,
+			__FILE__,
+			__LINE__,
+			"The D3D11CreateDeviceAndSwapChain function couldn't be found"
+		);
+
 		return nullptr;
 	}
 
@@ -71,27 +84,27 @@ IDXGISwapChain* Utils::D3D11::GetSwapChain()
 
 	if (FAILED(ResultBuffer))
 	{
-		Utils::Error::Error(false, "Dummy swapchain (NULL Method) failed.");
-		Utils::Error::Error(false, "  - Returned: 0x%X", ResultBuffer);
-		Utils::Error::Error(false, "  - Supported level: 0x%X", SupportedLevel);
+		Utils::Error::Message(CLR_RED, "Dummy swapchain (NULL Method) failed.");
+		Utils::Error::Message(CLR_RED, "  - Returned: 0x%X", ResultBuffer);
+		Utils::Error::Message(CLR_RED, "  - Supported level: 0x%X", SupportedLevel);
 
 		ResultBuffer = GetDummySwapChain_HardwareMethod(pFn, SupportedLevel, pSwapChain);
 
 		if (FAILED(ResultBuffer))
 		{
-			Utils::Error::Error(false, "Dummy swapchain (HW Method) failed.");
-			Utils::Error::Error(false, "  - Returned: 0x%X", ResultBuffer);
-			Utils::Error::Error(false, "  - Supported level: 0x%X", SupportedLevel);
+			Utils::Error::Message(CLR_RED, "Dummy swapchain (HW Method) failed.");
+			Utils::Error::Message(CLR_RED, "  - Returned: 0x%X", ResultBuffer);
+			Utils::Error::Message(CLR_RED, "  - Supported level: 0x%X", SupportedLevel);
 
 			ResultBuffer = GetDummySwapChain_ReferenceMethod(pFn, SupportedLevel, pSwapChain);
 
 			if (FAILED(ResultBuffer))
 			{
-				Utils::Error::Error(false, "Dummy swapchain (Ref. Method) failed.");
-				Utils::Error::Error(false, "  - Returned: 0x%X", ResultBuffer);
-				Utils::Error::Error(false, "  - Supported level: 0x%X", SupportedLevel);
+				Utils::Error::Message(CLR_RED, "Dummy swapchain (NULL Method) failed.");
+				Utils::Error::Message(CLR_RED, "  - Returned: 0x%X", ResultBuffer);
+				Utils::Error::Message(CLR_RED, "  - Supported level: 0x%X", SupportedLevel);
 
-				Utils::Error::Error(true, "The dummy swapchain method failed.\nSee the console for detailed output.");
+				Utils::Error::Error(true, __FILE__, __LINE__, "Failed to acquire a dummy swapchain");
 
 				return nullptr;
 			}

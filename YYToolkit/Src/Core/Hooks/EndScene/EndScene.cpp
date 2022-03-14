@@ -27,7 +27,13 @@ namespace Hooks
 
 			if (pDevice == nullptr)
 			{
-				Utils::Error::Error(0, "[Error] Failed to hook DX9 - the device was nullptr.");
+				Utils::Error::Error(
+					false,
+					__FILE__,
+					__LINE__,
+					"The D3D9 device was nullptr"
+				);
+
 				return nullptr;
 			}
 			

@@ -9,11 +9,12 @@ bool API::GetFunctionByName(const std::string& Name, TRoutine& outRoutine)
 	{
 		Utils::Error::Error(
 			false,
-			"API Error -> %s(%s) -> %s : L%d",
+			__FILE__,
+			__LINE__,
+			"%s(%s) returned %s",
 			__FUNCTION__,
 			Name.c_str(),
 			Utils::Error::YYTKStatus_ToString(Status).c_str()
-			, __LINE__
 		);
 	}
 	
@@ -58,7 +59,12 @@ DllExport bool API::IsGameYYC()
 	// The function shouldn't be nullptr, and it should exist.
 	if (!Routine || !Success)
 	{
-		Utils::Error::Error(false, "API Error -> %s() : L%d", __FUNCTION__, __LINE__);
+		Utils::Error::Error(
+			false,
+			__FILE__,
+			__LINE__,
+			"The code_is_compiled function couldn't be found"
+		);
 		return false;
 	}
 
@@ -78,14 +84,27 @@ DllExport bool API::CallBuiltin(YYRValue& Result, const std::string& Name, CInst
 	// The function should exist.
 	if (!GetFunctionByName(Name, Function))
 	{
-		Utils::Error::Error(false, "API Error -> %s(\"%s\") : L%d", __FUNCTION__, Name.c_str(), __LINE__);
+		Utils::Error::Error(
+			false,
+			__FILE__,
+			__LINE__,
+			"%s(%s) returned %s",
+			__FUNCTION__,
+			Name.c_str(),
+			"false"
+		);
 		return false;
 	}
 	
 	// Builtins should have a function mapped to them, and that function shouldn't be a nullptr.
 	if (!Function)
 	{
-		Utils::Error::Error(false, "API Error -> %s(\"%s\") : L%d", __FUNCTION__, Name.c_str(), __LINE__);
+		Utils::Error::Error(
+			false,
+			__FILE__,
+			__LINE__,
+			"Function was nullptr"
+		);
 		return false;
 	}
 	
@@ -93,16 +112,9 @@ DllExport bool API::CallBuiltin(YYRValue& Result, const std::string& Name, CInst
 	// reinterpret_cast<RValue*>(const_cast<YYRValue*>(Args.data()));
 
 	if (bShouldUseGlobalInstance)
-	{
-		CInstance* g_pGlobal = nullptr;
-		if (!GetGlobalInstance(g_pGlobal))
-		{
-			Utils::Error::Error(false, "API Error -> %s(\"%s\") : L%d", __FUNCTION__, Name.c_str(), __LINE__);
-			return false;
-		}
-		
+	{		
 		// Call as if it was a 2.3 script, both are self and other refer to global.
-		Function((RValue*)&Result, g_pGlobal, g_pGlobal, Args.size(), (RValue*)Args.data());
+		Function((RValue*)&Result, gAPIVars.Globals.g_pGlobalInstance, gAPIVars.Globals.g_pGlobalInstance, Args.size(), (RValue*)Args.data());
 	}
 	else
 	{
@@ -118,7 +130,18 @@ DllExport unsigned long API::FindPattern(const char* Pattern, const char* Mask, 
 	DWORD dwReturn = 0;
 
 	if (auto Status = Internal::MmFindByteArray(Pattern, UINT_MAX, Base, Size, Mask, false, dwReturn))
-		Utils::Error::Error(false, "API Error -> %s(\"%s\", \"%s\") -> %s : L%d", __FUNCTION__, Pattern, Mask, Utils::Error::YYTKStatus_ToString(Status).c_str(), __LINE__);
+	{
+		Utils::Error::Error(
+			false,
+			__FILE__,
+			__LINE__,
+			"%s(%s, %s) returned %s",
+			__FUNCTION__,
+			Pattern,
+			Mask,
+			Utils::Error::YYTKStatus_ToString(Status).c_str()
+		);
+	}
 
 	return dwReturn;
 }

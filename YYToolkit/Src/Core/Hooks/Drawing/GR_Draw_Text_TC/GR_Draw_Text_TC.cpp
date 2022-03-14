@@ -20,7 +20,13 @@ namespace Hooks
 
 			if (!API::GetFunctionByName("draw_text_transformed_color", Routine))
 			{
-				Utils::Error::Error(false, "Failed to find the draw_text_transformed_color function.");
+				Utils::Error::Error(
+					false,
+					__FILE__,
+					__LINE__,
+					"The draw_text_transformed_color couldn't be found"
+				);
+
 				return nullptr;
 			}
 
