@@ -25,6 +25,12 @@ namespace Hooks
 
 			pDevice = reinterpret_cast<IDirect3DDevice9*>(API::gAPIVars.Globals.g_pWindowDevice);
 
+			if (pDevice == nullptr)
+			{
+				Utils::Error::Error(0, "[Error] Failed to hook DX9 - the device was nullptr.");
+				return nullptr;
+			}
+			
 			memcpy(ppTable, *(void***)(pDevice), sizeof(ppTable));
 
 			return ppTable[42];

@@ -9,7 +9,7 @@ bool API::GetFunctionByName(const std::string& Name, TRoutine& outRoutine)
 	{
 		Utils::Error::Error(
 			false,
-			"API Error -> %s(%s) -> %s : L%d : ",
+			"API Error -> %s(%s) -> %s : L%d",
 			__FUNCTION__,
 			Name.c_str(),
 			Utils::Error::YYTKStatus_ToString(Status).c_str()

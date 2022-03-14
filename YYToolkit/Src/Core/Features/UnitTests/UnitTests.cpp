@@ -1,5 +1,6 @@
 #include "UnitTests.hpp"
 #include "../API/API.hpp"
+#include "../../Utils/Error/Error.hpp"
 
 bool Tests::RunUnitTests()
 {
@@ -11,7 +12,10 @@ bool Tests::RunUnitTests()
 		YYTKStatus stFoundCodeExecute = API::Internal::MmFindCodeExecute(dwCodeExecute);
 
 		if (stFoundCodeExecute || dwCodeExecute == 0)
+		{
+			Utils::Error::Error(0, ""); // todo
 			bPassedTests = false;
+		}
 	}
 
 	// Code_Function_GET_the_function
