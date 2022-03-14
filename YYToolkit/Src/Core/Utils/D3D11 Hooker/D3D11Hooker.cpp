@@ -1,6 +1,6 @@
 #include "D3D11Hooker.hpp"
 #include "../../Features/API/API.hpp"
-#include "../Error/Error.hpp"
+#include "../Logging/Logging.hpp"
 
 static void SetupDescriptor(DXGI_SWAP_CHAIN_DESC* pDesc)
 {
@@ -20,8 +20,7 @@ static void SetupDescriptor(DXGI_SWAP_CHAIN_DESC* pDesc)
 	YYRValue Result = false;
 	if (!API::CallBuiltin(Result, "window_get_fullscreen", nullptr, nullptr, {}))
 	{
-		Utils::Error::Error(
-			false,
+		Utils::Logging::Error(
 			__FILE__,
 			__LINE__,
 			"The window_get_fullscreen function couldn't be found"
@@ -70,8 +69,7 @@ IDXGISwapChain* Utils::D3D11::GetSwapChain()
 
 	if (!pFn)
 	{
-		Utils::Error::Error(
-			false,
+		Utils::Logging::Error(
 			__FILE__,
 			__LINE__,
 			"The D3D11CreateDeviceAndSwapChain function couldn't be found"
@@ -84,27 +82,27 @@ IDXGISwapChain* Utils::D3D11::GetSwapChain()
 
 	if (FAILED(ResultBuffer))
 	{
-		Utils::Error::Message(CLR_RED, "Dummy swapchain (NULL Method) failed.");
-		Utils::Error::Message(CLR_RED, "  - Returned: 0x%X", ResultBuffer);
-		Utils::Error::Message(CLR_RED, "  - Supported level: 0x%X", SupportedLevel);
+		Utils::Logging::Message(CLR_RED, "Dummy swapchain (NULL Method) failed.");
+		Utils::Logging::Message(CLR_RED, "  - Returned: 0x%X", ResultBuffer);
+		Utils::Logging::Message(CLR_RED, "  - Supported level: 0x%X", SupportedLevel);
 
 		ResultBuffer = GetDummySwapChain_HardwareMethod(pFn, SupportedLevel, pSwapChain);
 
 		if (FAILED(ResultBuffer))
 		{
-			Utils::Error::Message(CLR_RED, "Dummy swapchain (HW Method) failed.");
-			Utils::Error::Message(CLR_RED, "  - Returned: 0x%X", ResultBuffer);
-			Utils::Error::Message(CLR_RED, "  - Supported level: 0x%X", SupportedLevel);
+			Utils::Logging::Message(CLR_RED, "Dummy swapchain (HW Method) failed.");
+			Utils::Logging::Message(CLR_RED, "  - Returned: 0x%X", ResultBuffer);
+			Utils::Logging::Message(CLR_RED, "  - Supported level: 0x%X", SupportedLevel);
 
 			ResultBuffer = GetDummySwapChain_ReferenceMethod(pFn, SupportedLevel, pSwapChain);
 
 			if (FAILED(ResultBuffer))
 			{
-				Utils::Error::Message(CLR_RED, "Dummy swapchain (NULL Method) failed.");
-				Utils::Error::Message(CLR_RED, "  - Returned: 0x%X", ResultBuffer);
-				Utils::Error::Message(CLR_RED, "  - Supported level: 0x%X", SupportedLevel);
+				Utils::Logging::Message(CLR_RED, "Dummy swapchain (NULL Method) failed.");
+				Utils::Logging::Message(CLR_RED, "  - Returned: 0x%X", ResultBuffer);
+				Utils::Logging::Message(CLR_RED, "  - Supported level: 0x%X", SupportedLevel);
 
-				Utils::Error::Error(true, __FILE__, __LINE__, "Failed to acquire a dummy swapchain");
+				Utils::Logging::Critical(__FILE__, __LINE__, "Failed to acquire a dummy swapchain");
 
 				return nullptr;
 			}
@@ -120,15 +118,20 @@ void* Utils::D3D11::GetVMTEntry(int index)
 
 	if (!pSwapChain)
 	{
-		if (API::gAPIVars.Globals.g_bDebugMode)
-			Utils::Error::Message(CLR_DEFAULT, "GetSwapChain() returned nullptr, GetVMTEntry(%d)", index);
+		Utils::Logging::Error(__FILE__, __LINE__, "GetSwapChain() returned nullptr");
 
 		return nullptr;
 	}
-		
 
 	void** ppVMT = *(void***)(pSwapChain);
 	
+	if (!ppVMT)
+	{
+		Utils::Logging::Error(__FILE__, __LINE__, "ppVMT was nullptr");
+
+		return nullptr;
+	}
+
 	void* Result = ppVMT[index];
 
 	pSwapChain->Release();

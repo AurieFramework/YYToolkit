@@ -1,4 +1,4 @@
-#include "../Utils/Error/Error.hpp"
+#include "../Utils/Logging/Logging.hpp"
 #include "../Utils/MH/MinHook.h"
 #include "Code_Execute/Code_Execute.hpp"
 #include "DoCallScript/DoCallScript.hpp"
@@ -25,7 +25,7 @@ namespace Hooks
 	{
 		MH_Initialize();
 		{
-			Utils::Error::Message(CLR_LIGHTBLUE, "\nInitializing hooks...");
+			Utils::Logging::Message(CLR_LIGHTBLUE, "\nInitializing hooks...");
 
 			auto Hook = [](void* NewFunc, void* GetTargetFunc, void** pfnOriginal, const char* Name)
 			{
@@ -33,8 +33,7 @@ namespace Hooks
 				{
 					auto Status = MH_CreateHook(lpFunc, NewFunc, pfnOriginal);
 					if (Status != MH_OK)
-						Utils::Error::Error(
-							false,
+						Utils::Logging::Error(
 							__FILE__,
 							__LINE__,
 							"Failed to hook function %s (MH Status %s)",
@@ -44,12 +43,11 @@ namespace Hooks
 					else
 						MH_EnableHook(lpFunc);
 
-					Utils::Error::Message(CLR_GRAY, "- &%s = 0x%p", Name, lpFunc);
+					Utils::Logging::Message(CLR_GRAY, "- &%s = 0x%p", Name, lpFunc);
 				}
 				else
 				{
-					Utils::Error::Error(
-						false,
+					Utils::Logging::Error(
 						__FILE__,
 						__LINE__,
 						"Failed to hook function %s (address not found)",
@@ -161,7 +159,7 @@ namespace Hooks
 
 			ShowWindow(API::gAPIVars.Globals.g_hwWindowHandle, SW_SHOW);
 			SetForegroundWindow(API::gAPIVars.Globals.g_hwWindowHandle);
-			Utils::Error::Message(CLR_LIGHTBLUE, "Hook system done - took %.2f seconds!", static_cast<float>(std::chrono::duration_cast<std::chrono::milliseconds>(TimeEnd - TimeStart).count()) / 1000.0f);
+			Utils::Logging::Message(CLR_LIGHTBLUE, "Hook system done - took %.2f seconds!", static_cast<float>(std::chrono::duration_cast<std::chrono::milliseconds>(TimeEnd - TimeStart).count()) / 1000.0f);
 		}
 	}
 

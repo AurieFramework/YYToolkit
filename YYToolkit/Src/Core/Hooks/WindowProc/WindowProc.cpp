@@ -1,5 +1,5 @@
 #include "WindowProc.hpp"
-#include "../../Utils/Error/Error.hpp"
+#include "../../Utils/Logging/Logging.hpp"
 #include "../../Features/API/API.hpp"
 #include "../../Features/PluginManager/PluginManager.hpp"
 

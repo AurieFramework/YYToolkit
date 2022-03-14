@@ -1,5 +1,5 @@
 #include "API.hpp"
-#include "../../Utils/Error/Error.hpp"
+#include "../../Utils/Logging/Logging.hpp"
 #include "../PluginManager/PluginManager.hpp"
 #include "../../Utils/MH/hde/hde32.h"
 #include "../UnitTests/UnitTests.hpp"
@@ -12,23 +12,20 @@ YYTKStatus API::Internal::Initialize(HMODULE hMainModule)
 	// Don't forget this!
 	gAPIVars.Globals.g_hMainModule = hMainModule;
 
-	if (GetAsyncKeyState(VK_F8) & 1 || API::gAPIVars.Globals.g_bDebugMode)
-	{
-		// Allocate console
-		AllocConsole();
-		FILE* fDummy;
-		freopen_s(&fDummy, "CONIN$", "r", stdin);
-		freopen_s(&fDummy, "CONOUT$", "w", stderr);
-		freopen_s(&fDummy, "CONOUT$", "w", stdout);
+	// Allocate console
+	AllocConsole();
+	FILE* fDummy;
+	freopen_s(&fDummy, "CONIN$", "r", stdin);
+	freopen_s(&fDummy, "CONOUT$", "w", stderr);
+	freopen_s(&fDummy, "CONOUT$", "w", stdout);
 
-		SetConsoleTitleA("YYToolkit Debug Console");
-	}
+	SetConsoleTitleA("YYToolkit Log");
 
 	// Print the version into the log
 #if _DEBUG
-	Utils::Error::Message(CLR_GOLD, "YYToolkit %s (Debug) by Archie#8615", YYSDK_VERSION);
+	Utils::Logging::Message(CLR_GOLD, "YYToolkit %s (Debug) by Archie#8615", YYSDK_VERSION);
 #else
-	Utils::Error::Message(CLR_LIGHTBLUE, "YYToolkit %s (Release) by Archie#8615", YYSDK_VERSION);
+	Utils::Logging::Message(CLR_LIGHTBLUE, "YYToolkit %s (Release) by Archie#8615", YYSDK_VERSION);
 #endif
 
 	// Initialize Code_Function_GET_the_function
@@ -36,8 +33,8 @@ YYTKStatus API::Internal::Initialize(HMODULE hMainModule)
 		YYTKStatus Status = API::Internal::MmFindCodeFunction(reinterpret_cast<DWORD&>(gAPIVars.Functions.Code_Function_GET_the_function));
 
 		if (Status && gAPIVars.Globals.g_bDebugMode)
-			Utils::Error::Message(CLR_TANGERINE, "[Warning] API::Internal::MmFindCodeFunction() failed. Error: %s", 
-				Utils::Error::YYTKStatus_ToString(Status).c_str());
+			Utils::Logging::Message(CLR_TANGERINE, "[Warning] API::Internal::MmFindCodeFunction() failed. Error: %s", 
+				Utils::Logging::YYTKStatus_ToString(Status).c_str());
 	}
 
 	// Initialize Code_Execute
@@ -45,8 +42,8 @@ YYTKStatus API::Internal::Initialize(HMODULE hMainModule)
 		YYTKStatus Status = API::Internal::MmFindCodeExecute(reinterpret_cast<DWORD&>(gAPIVars.Functions.Code_Execute));
 
 		if (Status && gAPIVars.Globals.g_bDebugMode)
-			Utils::Error::Message(CLR_TANGERINE, "[Warning] API::Internal::MmFindCodeExecute() failed. Error: %s",
-				Utils::Error::YYTKStatus_ToString(Status).c_str());
+			Utils::Logging::Message(CLR_TANGERINE, "[Warning] API::Internal::MmFindCodeExecute() failed. Error: %s",
+				Utils::Logging::YYTKStatus_ToString(Status).c_str());
 	}
 
 	// Initialize g_hwWindowHandle
@@ -58,7 +55,7 @@ YYTKStatus API::Internal::Initialize(HMODULE hMainModule)
 		bool Success = API::CallBuiltin(Result, "window_handle", &tmp, &tmp, {});
 
 		if (!Success && gAPIVars.Globals.g_bDebugMode)
-			Utils::Error::Message(CLR_TANGERINE, "[Warning] API::CallBuiltin(\"window_handle\") failed.");
+			Utils::Logging::Message(CLR_TANGERINE, "[Warning] API::CallBuiltin(\"window_handle\") failed.");
 
 		API::gAPIVars.Globals.g_hwWindowHandle = reinterpret_cast<HWND>(Result.As<RValue>().Pointer);
 	}
@@ -72,7 +69,7 @@ YYTKStatus API::Internal::Initialize(HMODULE hMainModule)
 		bool Success = API::CallBuiltin(Result, "@@GlobalScope@@", &tmp, &tmp, {});
 
 		if (!Success && gAPIVars.Globals.g_bDebugMode)
-			Utils::Error::Message(CLR_TANGERINE, "[Warning] API::CallBuiltin(\"@@GlobalScope@@\") failed.");
+			Utils::Logging::Message(CLR_TANGERINE, "[Warning] API::CallBuiltin(\"@@GlobalScope@@\") failed.");
 
 		API::gAPIVars.Globals.g_pGlobalObject = Result;
 	}
@@ -83,7 +80,7 @@ YYTKStatus API::Internal::Initialize(HMODULE hMainModule)
 		bool Success = API::CallBuiltin(Result, "window_device", nullptr, nullptr, {});
 
 		if (!Success && gAPIVars.Globals.g_bDebugMode)
-			Utils::Error::Message(CLR_TANGERINE, "[Warning] API::CallBuiltin(\"window_device\") failed.");
+			Utils::Logging::Message(CLR_TANGERINE, "[Warning] API::CallBuiltin(\"window_device\") failed.");
 
 		API::gAPIVars.Globals.g_pWindowDevice = Result.As<RValue>().Pointer;
 	}
@@ -139,9 +136,6 @@ DllExport YYTKStatus API::Internal::MmGetModuleInformation(const char* szModuleN
 
 YYTKStatus API::Internal::MmFindByteArray(const byte* pbArray, unsigned int uArraySize, unsigned long ulSearchRegionBase, unsigned int ulSearchRegionSize, const char* szMask, bool bStringSearch, DWORD& dwOutBuffer)
 {
-	if (gAPIVars.Globals.g_bDebugMode)
-		Utils::Error::Message(CLR_DEFAULT, "%s(%p, %s);", __FUNCTION__, pbArray, szMask);
-
 	dwOutBuffer = 0x00;
 
 	if (!ulSearchRegionBase && !ulSearchRegionSize)
@@ -181,17 +175,11 @@ YYTKStatus API::Internal::MmFindByteArray(const byte* pbArray, unsigned int uArr
 
 YYTKStatus API::Internal::MmFindByteArray(const char* pszArray, unsigned int uArraySize, unsigned long ulSearchRegionBase, unsigned int ulSearchRegionSize, const char* szMask, bool bStringSearch, DWORD& dwOutBuffer)
 {
-	if (gAPIVars.Globals.g_bDebugMode)
-		Utils::Error::Message(CLR_DEFAULT, "%s(%p, %s);", __FUNCTION__, pszArray, szMask);
-
 	return MmFindByteArray(reinterpret_cast<byte*>(const_cast<char*>(pszArray)), uArraySize, ulSearchRegionBase, ulSearchRegionSize, szMask, bStringSearch, dwOutBuffer);
 }
 
 YYTKStatus API::Internal::MmFindCodeExecute(DWORD& dwOutBuffer)
 {
-	if (gAPIVars.Globals.g_bDebugMode)
-		Utils::Error::Message(CLR_DEFAULT, "%s();", __FUNCTION__);
-
 	unsigned long dwPattern = 0;
 	
 	if (YYTKStatus _Status = MmFindByteArray(
@@ -218,17 +206,11 @@ YYTKStatus API::Internal::MmFindCodeExecute(DWORD& dwOutBuffer)
 
 YYTKStatus API::Internal::MmFindCodeFunction(DWORD& dwOutBuffer)
 {
-	if (gAPIVars.Globals.g_bDebugMode)
-		Utils::Error::Message(CLR_DEFAULT, "%s();", __FUNCTION__);
-
 	return MmFindByteArray("\x8B\x44\x24\x04\x3B\x05\x00\x00\x00\x00\x7F", UINT_MAX, 0, 0, "xxxxxx????x", false, dwOutBuffer);
 }
 
 YYTKStatus API::Internal::VfGetFunctionPointer(const char* szFunctionName, EFPType ePointerType, DWORD& dwOutBuffer)
 {
-	if (gAPIVars.Globals.g_bDebugMode)
-		Utils::Error::Message(CLR_DEFAULT, "%s(%s, %d);", __FUNCTION__, szFunctionName, ePointerType);
-
 	if (!szFunctionName)
 		return YYTK_INVALIDARG;
 
@@ -345,9 +327,6 @@ YYTKStatus API::Internal::VfGetFunctionEntryFromGameArray(int nIndex, TRoutine* 
 
 YYTKStatus API::Internal::VfLookupFunction(const char* szFunctionName, TRoutine& outRoutine, int* pOptOutIndex)
 {
-	if (gAPIVars.Globals.g_bDebugMode)
-		Utils::Error::Message(CLR_DEFAULT, "%s(%s, %p);", __FUNCTION__, szFunctionName, pOptOutIndex);
-
 	if (!szFunctionName)
 		return YYTK_INVALIDARG;
 
@@ -379,9 +358,6 @@ YYTKStatus API::Internal::VfLookupFunction(const char* szFunctionName, TRoutine&
 
 YYTKStatus API::Internal::MmGetScriptArrayPtr(CDynamicArray<CScript*>*& outArray, const int& nMaxInstructions)
 {
-	if (gAPIVars.Globals.g_bDebugMode)
-		Utils::Error::Message(CLR_DEFAULT, "%s(%d);", __FUNCTION__, nMaxInstructions);
-
 	DWORD dwScriptExists = 0;
 
 	if (YYTKStatus Status = VfGetFunctionPointer("script_exists", EFPType::FPType_DirectPointer, dwScriptExists))

@@ -1,4 +1,4 @@
-#include "../../Utils/Error/Error.hpp"
+#include "../../Utils/Logging/Logging.hpp"
 #include "../API/API.hpp"
 #include "Console.hpp"
 #include <algorithm>
@@ -18,8 +18,7 @@ static vector<string> Tokenize(const string& ref)
 
 	if (_beginFuncCall == string::npos)
 	{
-		Utils::Error::Error(
-			false,
+		Utils::Logging::Error(
 			__FILE__,
 			__LINE__,
 			"No function call was found"
@@ -32,8 +31,7 @@ static vector<string> Tokenize(const string& ref)
 
 	if (_endFuncCall == string::npos)
 	{
-		Utils::Error::Error(
-			false,
+		Utils::Logging::Error(
 			__FILE__,
 			__LINE__,
 			"No function call was found"
@@ -74,8 +72,7 @@ void Console::DoCommand()
 
 	if (!API::CallBuiltin(Buffer, "get_string", pInstance, nullptr, { "Please input your expression:", "" }))
 	{
-		Utils::Error::Error(
-			false,
+		Utils::Logging::Error(
 			__FILE__,
 			__LINE__,
 			"API::CallBuiltin returned false"
@@ -147,8 +144,7 @@ void Console::DoCommand()
 				}
 			}
 
-			Utils::Error::Error(
-				false,
+			Utils::Logging::Error(
 				__FILE__,
 				__LINE__,
 				"Unknown token: %s", 
@@ -159,27 +155,26 @@ void Console::DoCommand()
 
 		Routine(&Result, pInstance, pInstance, vecTokens.size() - 1, reinterpret_cast<RValue*>(pArgs));
 
-		Utils::Error::NoNewlineMessage(CLR_GOLD, "%s", Command.c_str());
-		Utils::Error::NoNewlineMessage(CLR_DEFAULT, " -> ");
+		Utils::Logging::NoNewlineMessage(CLR_GOLD, "%s", Command.c_str());
+		Utils::Logging::NoNewlineMessage(CLR_DEFAULT, " -> ");
 
 		if (Result.Kind == VALUE_REAL)
-			Utils::Error::Message(CLR_BLUE, "%.2f", Result.Real);
+			Utils::Logging::Message(CLR_BLUE, "%.2f", Result.Real);
 
 		else if (Result.Kind == VALUE_BOOL)
-			Utils::Error::Message(CLR_TANGERINE, "%s", (Result.Real > 0.5) ? "true" : "false");
+			Utils::Logging::Message(CLR_TANGERINE, "%s", (Result.Real > 0.5) ? "true" : "false");
 
 		else if (Result.Kind == VALUE_STRING)
-			Utils::Error::Message(CLR_YELLOW, "\"%s\"", Result.String->Get());
+			Utils::Logging::Message(CLR_YELLOW, "\"%s\"", Result.String->Get());
 
 		else
-			Utils::Error::Message(CLR_GRAY, "Undefined (type 0x%X)", Result.Kind);
+			Utils::Logging::Message(CLR_GRAY, "Undefined (type 0x%X)", Result.Kind);
 
 		delete[] pArgs;
 		return;
 	}
 
-	Utils::Error::Error(
-		false,
+	Utils::Logging::Error(
 		__FILE__,
 		__LINE__,
 		"Unrecognized function %s",

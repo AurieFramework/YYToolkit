@@ -1,6 +1,6 @@
 #include "GR_Draw_Text.hpp"
 #include "../../../Features/API/API.hpp"
-#include "../../../Utils/Error/Error.hpp"
+#include "../../../Utils/Logging/Logging.hpp"
 #include "../../../Features/PluginManager/PluginManager.hpp"
 
 namespace Hooks
@@ -20,8 +20,7 @@ namespace Hooks
 
 			if (!API::GetFunctionByName("draw_text", Routine))
 			{
-				Utils::Error::Error(
-					false,
+				Utils::Logging::Error(
 					__FILE__,
 					__LINE__,
 					"The draw_text function couldn't be found"

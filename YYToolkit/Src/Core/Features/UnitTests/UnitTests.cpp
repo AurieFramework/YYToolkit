@@ -1,10 +1,12 @@
 #include "UnitTests.hpp"
 #include "../API/API.hpp"
-#include "../../Utils/Error/Error.hpp"
+#include "../../Utils/Logging/Logging.hpp"
 
 bool Tests::RunUnitTests()
 {
 	bool bPassedTests = true;
+
+	Utils::Logging::Message(CLR_LIGHTBLUE, "\nRunning Unit Tests...");
 
 	// Code_Execute
 	{
@@ -13,7 +15,7 @@ bool Tests::RunUnitTests()
 
 		if (stFoundCodeExecute || dwCodeExecute == 0)
 		{
-			Utils::Error::Error(0, __FILE__, __LINE__, "Unit Test \"Code_Execute\" failed");
+			Utils::Logging::Error(__FILE__, __LINE__, "Unit Test \"Code_Execute\" failed");
 			bPassedTests = false;
 		}
 	}
@@ -25,7 +27,7 @@ bool Tests::RunUnitTests()
 
 		if (stFoundCodeFunction || dwCodeFunction == 0)
 		{
-			Utils::Error::Error(0, __FILE__, __LINE__, "Unit Test \"Code_Function_GET_the_function\" failed");
+			Utils::Logging::Error(__FILE__, __LINE__, "Unit Test \"Code_Function_GET_the_function\" failed");
 			bPassedTests = false;
 		}
 	}
@@ -37,7 +39,7 @@ bool Tests::RunUnitTests()
 
 		if (stFoundScriptArray || pScriptArray == nullptr)
 		{
-			Utils::Error::Error(0, __FILE__, __LINE__, "Unit Test \"Script Array\" failed");
+			Utils::Logging::Error(__FILE__, __LINE__, "Unit Test \"Script Array\" failed");
 			bPassedTests = false;
 		}
 	}
@@ -52,24 +54,27 @@ bool Tests::RunUnitTests()
 
 		if (stDirectCall || stAsmRefCall)
 		{
-			Utils::Error::Error(0, __FILE__, __LINE__, "Unit Test \"Function Lookup (Status Check)\" failed");
+			Utils::Logging::Error(__FILE__, __LINE__, "Unit Test \"Function Lookup (Status Check)\" failed");
 			bPassedTests = false;
 		}
 			
 
 		if (!dwDirectPointer || !dwAsmRefPointer)
 		{
-			Utils::Error::Error(0, __FILE__, __LINE__, "Unit Test \"Function Lookup (Null Check)\" failed");
+			Utils::Logging::Error(__FILE__, __LINE__, "Unit Test \"Function Lookup (Null Check)\" failed");
 			bPassedTests = false;
 		}
 			
 
 		if (dwDirectPointer != dwAsmRefPointer)
 		{
-			Utils::Error::Error(0, __FILE__, __LINE__, "Unit Test \"Function Lookup (Equality Check)\" failed");
+			Utils::Logging::Error(__FILE__, __LINE__, "Unit Test \"Function Lookup (Equality Check)\" failed");
 			bPassedTests = false;
 		}
 	}
 	
+	if (bPassedTests)
+		Utils::Logging::Message(CLR_GRAY, "Unit Tests passed");
+
 	return bPassedTests;
 }

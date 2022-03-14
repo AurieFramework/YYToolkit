@@ -1,5 +1,5 @@
 #include "API.hpp"
-#include "../../Utils/Error/Error.hpp"
+#include "../../Utils/Logging/Logging.hpp"
 
 bool API::GetFunctionByName(const std::string& Name, TRoutine& outRoutine)
 {
@@ -7,14 +7,13 @@ bool API::GetFunctionByName(const std::string& Name, TRoutine& outRoutine)
 
 	if (Status)
 	{
-		Utils::Error::Error(
-			false,
+		Utils::Logging::Error(
 			__FILE__,
 			__LINE__,
-			"%s(%s) returned %s",
+			"%s(\"%s\") returned %s",
 			__FUNCTION__,
 			Name.c_str(),
-			Utils::Error::YYTKStatus_ToString(Status).c_str()
+			Utils::Logging::YYTKStatus_ToString(Status).c_str()
 		);
 	}
 	
@@ -59,8 +58,7 @@ DllExport bool API::IsGameYYC()
 	// The function shouldn't be nullptr, and it should exist.
 	if (!Routine || !Success)
 	{
-		Utils::Error::Error(
-			false,
+		Utils::Logging::Error(
 			__FILE__,
 			__LINE__,
 			"The code_is_compiled function couldn't be found"
@@ -84,11 +82,10 @@ DllExport bool API::CallBuiltin(YYRValue& Result, const std::string& Name, CInst
 	// The function should exist.
 	if (!GetFunctionByName(Name, Function))
 	{
-		Utils::Error::Error(
-			false,
+		Utils::Logging::Error(
 			__FILE__,
 			__LINE__,
-			"%s(%s) returned %s",
+			"%s(\"%s\") returned %s",
 			__FUNCTION__,
 			Name.c_str(),
 			"false"
@@ -99,8 +96,7 @@ DllExport bool API::CallBuiltin(YYRValue& Result, const std::string& Name, CInst
 	// Builtins should have a function mapped to them, and that function shouldn't be a nullptr.
 	if (!Function)
 	{
-		Utils::Error::Error(
-			false,
+		Utils::Logging::Error(
 			__FILE__,
 			__LINE__,
 			"Function was nullptr"
@@ -131,15 +127,14 @@ DllExport unsigned long API::FindPattern(const char* Pattern, const char* Mask, 
 
 	if (auto Status = Internal::MmFindByteArray(Pattern, UINT_MAX, Base, Size, Mask, false, dwReturn))
 	{
-		Utils::Error::Error(
-			false,
+		Utils::Logging::Error(
 			__FILE__,
 			__LINE__,
-			"%s(%s, %s) returned %s",
+			"%s(\"%s\", \"%s\") returned %s",
 			__FUNCTION__,
 			Pattern,
 			Mask,
-			Utils::Error::YYTKStatus_ToString(Status).c_str()
+			Utils::Logging::YYTKStatus_ToString(Status).c_str()
 		);
 	}
 

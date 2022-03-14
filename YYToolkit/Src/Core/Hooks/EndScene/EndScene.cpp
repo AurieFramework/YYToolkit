@@ -1,6 +1,6 @@
 #include "EndScene.hpp"
 #include "../../Features/API/API.hpp"
-#include "../../Utils/Error/Error.hpp"
+#include "../../Utils/Logging/Logging.hpp"
 #include "../../Features/PluginManager/PluginManager.hpp"
 
 namespace Hooks
@@ -27,8 +27,7 @@ namespace Hooks
 
 			if (pDevice == nullptr)
 			{
-				Utils::Error::Error(
-					false,
+				Utils::Logging::Error(
 					__FILE__,
 					__LINE__,
 					"The D3D9 device was nullptr"

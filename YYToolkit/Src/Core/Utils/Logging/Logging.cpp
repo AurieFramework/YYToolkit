@@ -1,6 +1,6 @@
 #include <Windows.h>
 #include <string>
-#include "Error.hpp"
+#include "Logging.hpp"
 #include "../../Features/API/API.hpp"
 
 static std::string ParseVA(const char* fmt, va_list Args)
@@ -17,7 +17,7 @@ static std::string ParseVA(const char* fmt, va_list Args)
 	return std::string(Buf);
 }
 
-namespace Utils::Error
+namespace Utils::Logging
 {
 	void SetPrintColor(Color color)
 	{
@@ -25,24 +25,57 @@ namespace Utils::Error
 		SetConsoleTextAttribute(hConsole, static_cast<WORD>(color));
 	}
 
-	void Error(bool critical, const char* File, const int& Line, const char* fmt, ...)
+	void Error(const char* File, const int& Line, const char* fmt, ...)
 	{
 		va_list vaArgs;
 		va_start(vaArgs, fmt);
 		auto String = ParseVA(fmt, vaArgs);
 		va_end(vaArgs);
 
-		if (critical)
+		std::string sFileName(File);
+		size_t LastSlashPos = sFileName.find_last_of('\\');
+
+		// We don't wanna do anything if the slash isn't in the string
+		// Nor do we wanna cut it if it's at the end, since that +1 is gonna crash!
+		if (LastSlashPos != std::string::npos && LastSlashPos != sFileName.length())
 		{
-			MessageBoxA(0, String.c_str(), "Sorry!", MB_TOPMOST | (critical ? MB_ICONERROR : MB_ICONWARNING) | MB_OK | MB_TOPMOST | MB_SETFOREGROUND);
-			exit(0);
+			sFileName = sFileName.substr(LastSlashPos + 1);
 		}
-		else
-		{
-			SetPrintColor(CLR_RED);
-			printf("[Error] %s in %s : %d\n", String.c_str(), File, Line);
-			SetPrintColor(CLR_DEFAULT);
-		}
+		
+		SetPrintColor(CLR_DEFAULT);
+		printf("[");
+		SetPrintColor(CLR_BLUE);
+		printf("%s(%d)", sFileName.c_str(), Line);
+		SetPrintColor(CLR_DEFAULT);
+		printf("]");
+		SetPrintColor(CLR_WHITE);
+		printf(" => ");
+		SetPrintColor(CLR_TANGERINE);
+		printf("%s\n", String.c_str());
+		SetPrintColor(CLR_DEFAULT);
+	}
+
+	void Critical(const char* File, const int& Line, const char* fmt, ...)
+	{
+		// Get VA sorted first
+		va_list vaArgs;
+		va_start(vaArgs, fmt);
+		auto sMessage = ParseVA(fmt, vaArgs);
+		va_end(vaArgs);
+
+		std::string sFinalText =
+			"A fatal error has occured inside YYToolkit.\n"
+			"Please report this occurence to the GitHub issue tracker.\n\n";
+
+		sFinalText += "Message: " + sMessage + "\n\n";
+
+		sFinalText += "Version: YYToolkit " + std::string(YYSDK_VERSION) + "\n";
+		sFinalText += "File: " + std::string(File) + "\n";
+		sFinalText += "Line: " + std::to_string(Line) + "\n";
+
+		MessageBoxA(0, sFinalText.c_str(), "YYToolkit - Fatal Error", MB_OK | MB_ICONERROR | MB_SETFOREGROUND | MB_TOPMOST);
+
+		abort();
 	}
 
 	void Message(Color C, const char* fmt, ...)

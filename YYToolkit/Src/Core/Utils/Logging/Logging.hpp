@@ -2,13 +2,15 @@
 
 namespace Utils
 {
-	namespace Error
+	namespace Logging
 	{
 		void SetPrintColor(Color color);
 
-		void Error(bool critical, const char* File, const int& Line, const char* fmt, ...);
-
 		void Message(Color C, const char* fmt, ...);
+
+		void Error(const char* File, const int& Line, const char* fmt, ...);
+
+		void Critical(const char* File, const int& Line, const char* fmt, ...);
 
 		void NoNewlineMessage(Color C, const char* fmt, ...);
 

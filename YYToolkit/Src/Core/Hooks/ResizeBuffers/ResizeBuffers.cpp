@@ -1,6 +1,6 @@
 #include "ResizeBuffers.hpp"
 #include "../../Features/API/API.hpp"
-#include "../../Utils/Error/Error.hpp"
+#include "../../Utils/Logging/Logging.hpp"
 #include "../../Utils/D3D11 Hooker/D3D11Hooker.hpp"
 #include "../../Features/PluginManager/PluginManager.hpp"
 

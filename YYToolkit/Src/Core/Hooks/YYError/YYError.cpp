@@ -1,6 +1,6 @@
 #include "YYError.hpp"
 #include "../../Features/API/API.hpp"
-#include "../../Utils/Error/Error.hpp"
+#include "../../Utils/Logging/Logging.hpp"
 #include "../../Features/PluginManager/PluginManager.hpp"
 
 namespace Hooks
@@ -41,8 +41,7 @@ namespace Hooks
 
 			if (!API::GetFunctionByName("camera_create", Routine))
 			{
-				Utils::Error::Error(
-					false,
+				Utils::Logging::Error(
 					__FILE__,
 					__LINE__,
 					"Failed to find the camera_create function"

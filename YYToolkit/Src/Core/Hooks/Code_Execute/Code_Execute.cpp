@@ -1,7 +1,7 @@
 #include "Code_Execute.hpp"
 #include "../../Features/API/API.hpp"
 #include "../../Features/PluginManager/PluginManager.hpp"
-#include "../../Utils/Error/Error.hpp"
+#include "../../Utils/Logging/Logging.hpp"
 #include "../../SDK/Plugins/YYTKEvent/YYTKEvent.hpp"
 
 namespace Hooks

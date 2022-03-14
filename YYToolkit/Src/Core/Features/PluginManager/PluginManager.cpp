@@ -1,7 +1,7 @@
 #include "PluginManager.hpp"
 #include "../API/API.hpp"
 #include "../../Utils/PE Parser/PEParser.hpp"
-#include "../../Utils/Error/Error.hpp"
+#include "../../Utils/Logging/Logging.hpp"
 #include <filesystem>
 
 void* API::PluginManager::GetPluginRoutine(const char* Name)
@@ -95,9 +95,9 @@ void API::PluginManager::Initialize()
 			{
 				// We have a DLL, try loading it
 				if (YYTKPlugin* p = LoadPlugin(entry.path().string().c_str()))
-					Utils::Error::Message(CLR_GREEN, "[+] Loaded '%s' - mapped to 0x%p.", entry.path().filename().string().c_str(), p->PluginStart);
+					Utils::Logging::Message(CLR_GREEN, "[+] Loaded '%s' - mapped to 0x%p.", entry.path().filename().string().c_str(), p->PluginStart);
 				else
-					Utils::Error::Message(CLR_RED, "[-] Failed to load '%s' - the file may not be a plugin.", entry.path().filename().string().c_str());
+					Utils::Logging::Message(CLR_RED, "[-] Failed to load '%s' - the file may not be a plugin.", entry.path().filename().string().c_str());
 			}
 		}
 	}
