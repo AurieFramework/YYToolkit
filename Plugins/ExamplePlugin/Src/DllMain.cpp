@@ -19,6 +19,7 @@ YYRValue EasyGMLCall(YYTKPlugin* pPlugin, const std::string& Name, const std::ve
     return Result;
 }
 
+// I have to do this because there's some misalignment between older and newer DR versions
 CCode* GetCodeFromScript(CScript* pScript)
 {
     // If the script is invalid
@@ -35,7 +36,6 @@ CCode* GetCodeFromScript(CScript* pScript)
 
     return nullptr;
 }
-
 // Handles all events that happen inside the game.
 // Previously, callbacks served this purpose, however in 0.0.3, an object-oriented design was implemented.
 // If you want to modify a code entry, you're gonna need this function.
@@ -48,34 +48,44 @@ YYTKStatus PluginEventHandler(YYTKPlugin* pPlugin, YYTKEventBase* pEvent)
         // Tip: Use dynamic_cast to catch issues with exceptions!
         YYTKScriptEvent* pCodeEvent = dynamic_cast<YYTKScriptEvent*>(pEvent);
 
-        // Unpack the pScript variable from the tuple, ignore the rest.
-        CScript* pScript = nullptr;
-
         // Extract arguments from the tuple into individual objects. C++ rules apply.
-        std::tie(pScript, std::ignore, std::ignore, std::ignore, std::ignore, std::ignore) = pCodeEvent->Arguments();
+        auto& [Script, v2, v3, v4, v5, v6] = pCodeEvent->Arguments();
 
         // Check if values are valid
-        if (pScript)
+        if (Script)
         {
-            if (CCode* pCode = GetCodeFromScript(pScript))
+            if (CCode* pCode = GetCodeFromScript(Script))
             {
-                if (strcmp(pCode->i_pName, "gml_Script_scr_debug"))
+                if (strcmp(pCode->i_pName, "gml_Script_scr_debug") == 0 ||
+                    strcmp(pCode->i_pName, "gml_Script_scr_debug_ch1") == 0)
                 {
-                    // Run GML: variable_global_set("debug", 1.00)
-                    EasyGMLCall(pPlugin, "variable_global_set", { "debug", 1.00 });
+
+                    // By doing it this way, we avoid the crash with the cutscenes
+                    // which is something that UMT's Ch2 Debug.csx is currently suffering from.
+                    pCode->i_pVM = nullptr;
+                    YYRValue* pReturn = (YYRValue*)pCodeEvent->Call(Script, v2, v3, v4, v5, v6);
+                    *pReturn = 1.0;
+                }
+                else if (strcmp(pCode->i_pName, "gml_Script_scr_dogcheck") == 0 ||
+                    strcmp(pCode->i_pName, "gml_Script_scr_dogcheck_ch1") == 0)
+                {
+                    // Just say we called it LOL
+                    pCode->i_pVM = nullptr;
+                    YYRValue* pReturn = (YYRValue*)pCodeEvent->Call(Script, v2, v3, v4, v5, v6);
+                    *pReturn = 0.0;
                 }
             }
         }
+    }
 
-        // Go To Room port
-        if (GetAsyncKeyState(VK_F3) & 1)
-        {
-            YYRValue CurrentRoom = 30.0;
+    // Go To Room port
+    if (GetAsyncKeyState(VK_F3) & 1)
+    {
+        YYRValue CurrentRoom = 30.0;
 
-            YYRValue Result = EasyGMLCall(pPlugin, "get_integer", { "Go to room (ported by Archie from UMT to YYToolkit).\nEnter the room ID you wish to teleport to.", CurrentRoom });
+        YYRValue Result = EasyGMLCall(pPlugin, "get_integer", { "Go to room (ported by Archie from UMT to YYToolkit).\nEnter the room ID you wish to teleport to.", CurrentRoom });
 
-            EasyGMLCall(pPlugin, "room_goto", { Result });
-        }
+        EasyGMLCall(pPlugin, "room_goto", { Result });
     }
     return YYTK_OK;
 }
