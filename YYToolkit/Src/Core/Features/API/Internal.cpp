@@ -13,13 +13,22 @@ YYTKStatus API::Internal::Initialize(HMODULE hMainModule)
 	gAPIVars.Globals.g_hMainModule = hMainModule;
 
 	// Allocate console
-	AllocConsole();
-	FILE* fDummy;
-	freopen_s(&fDummy, "CONIN$", "r", stdin);
-	freopen_s(&fDummy, "CONOUT$", "w", stderr);
-	freopen_s(&fDummy, "CONOUT$", "w", stdout);
+	{
+		AllocConsole();
+		FILE* fDummy;
+		freopen_s(&fDummy, "CONIN$", "r", stdin);
+		freopen_s(&fDummy, "CONOUT$", "w", stderr);
+		freopen_s(&fDummy, "CONOUT$", "w", stdout);
 
-	SetConsoleTitleA("YYToolkit Log");
+		SetConsoleTitleA("YYToolkit Log");
+
+		// Disable the "left-click to select" autism which pauses the entire tool
+		HANDLE hInput = GetStdHandle(STD_INPUT_HANDLE);
+		DWORD dwMode;
+		GetConsoleMode(hInput, &dwMode);
+		SetConsoleMode(hInput, ENABLE_EXTENDED_FLAGS | (dwMode & ~ENABLE_QUICK_EDIT_MODE));
+	}
+	
 
 	// Print the version into the log
 #if _DEBUG
@@ -48,11 +57,8 @@ YYTKStatus API::Internal::Initialize(HMODULE hMainModule)
 
 	// Initialize g_hwWindowHandle
 	{
-		CInstance tmp;
-		memset(&tmp, 0, sizeof(tmp));
-
 		YYRValue Result;
-		bool Success = API::CallBuiltin(Result, "window_handle", &tmp, &tmp, {});
+		bool Success = API::CallBuiltin(Result, "window_handle", nullptr, nullptr, {});
 
 		if (!Success && gAPIVars.Globals.g_bDebugMode)
 			Utils::Logging::Message(CLR_TANGERINE, "[Warning] API::CallBuiltin(\"window_handle\") failed.");
@@ -62,16 +68,15 @@ YYTKStatus API::Internal::Initialize(HMODULE hMainModule)
 
 	// Initialize g_pGlobalInstance
 	{
-		CInstance tmp;
-		memset(&tmp, 0, sizeof(tmp));
-
 		YYRValue Result;
-		bool Success = API::CallBuiltin(Result, "@@GlobalScope@@", &tmp, &tmp, {});
+		bool Success = API::CallBuiltin(Result, "@@GlobalScope@@", nullptr, nullptr, {});
 
 		if (!Success && gAPIVars.Globals.g_bDebugMode)
 			Utils::Logging::Message(CLR_TANGERINE, "[Warning] API::CallBuiltin(\"@@GlobalScope@@\") failed.");
 
 		API::gAPIVars.Globals.g_pGlobalObject = Result;
+
+		gAPIVars.Globals.g_pGlobalObject->InternalGetYYVarRef(0);
 	}
 	
 	// Initialize g_WindowDevice

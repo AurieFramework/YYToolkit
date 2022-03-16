@@ -73,8 +73,7 @@ bool Tests::RunUnitTests()
 		}
 	}
 	
-	if (bPassedTests)
-		Utils::Logging::Message(CLR_GRAY, "Unit Tests passed");
+	Utils::Logging::Message(CLR_LIGHTBLUE, "Unit Test Status: %s", bPassedTests ? "Passed" : "Failed");
 
 	return bPassedTests;
 }

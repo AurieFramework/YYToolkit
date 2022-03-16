@@ -1,65 +1,61 @@
 #include "MurMurHash.hpp"
+#include <memory.h>
+using uint32_t = unsigned int;
 
-FORCE_INLINE uint32_t Utils::Hash::fmix32(uint32_t h)
+uint32_t Utils::Hash::MurMurHash(const unsigned char* key, int len, uint32_t seed)
 {
-	h ^= h >> 16;
-	h *= 0x85ebca6b;
-	h ^= h >> 13;
-	h *= 0xc2b2ae35;
-	h ^= h >> 16;
+    uint32_t c1 = 0xcc9e2d51;
+    uint32_t c2 = 0x1b873593;
+    uint32_t r1 = 15;
+    uint32_t r2 = 13;
+    uint32_t m = 5;
+    uint32_t n = 0xe6546b64;
+    uint32_t h = 0;
+    uint32_t k = 0;
+    uint8_t* d = (uint8_t*)key;
+    const uint32_t* chunks = NULL;
+    const uint8_t* tail = NULL;
+    int i = 0;
+    int l = len / 4;
 
-	return h;
-}
+    h = seed;
 
-uint32_t Utils::Hash::MurMurHash(const void* key, int len, uint32_t seed)
-{
-	const uint8_t* data = (const uint8_t*)key;
-	const int nblocks = len / 4;
+    chunks = (const uint32_t*)(d + l * 4);
+    tail = (const uint8_t*)(d + l * 4);
 
-	uint32_t h1 = seed;
+    for (i = -l; i != 0; ++i) {
+        k = chunks[i];
 
-	const uint32_t c1 = 0xcc9e2d51;
-	const uint32_t c2 = 0x1b873593;
+        k *= c1;
+        k = (k << r1) | (k >> (32 - r1));
+        k *= c2;
 
-	//----------
-	// body
+        h ^= k;
+        h = (h << r2) | (h >> (32 - r2));
+        h = h * m + n;
+    }
 
-	const uint32_t* blocks = (const uint32_t*)(data + nblocks * 4);
+    k = 0;
 
-	for (int i = -nblocks; i; i++)
-	{
-		uint32_t k1 = blocks[i];
+    switch (len & 3) {
+    case 3: k ^= (tail[2] << 16);
+    case 2: k ^= (tail[1] << 8);
 
-		k1 *= c1;
-		k1 = ROTL32(k1, 15);
-		k1 *= c2;
+    case 1:
+        k ^= tail[0];
+        k *= c1;
+        k = (k << r1) | (k >> (32 - r1));
+        k *= c2;
+        h ^= k;
+    }
 
-		h1 ^= k1;
-		h1 = ROTL32(h1, 13);
-		h1 = h1 * 5 + 0xe6546b64;
-	}
+    h ^= len;
 
-	//----------
-	// tail
+    h ^= (h >> 16);
+    h *= 0x85ebca6b;
+    h ^= (h >> 13);
+    h *= 0xc2b2ae35;
+    h ^= (h >> 16);
 
-	const uint8_t* tail = (const uint8_t*)(data + nblocks * 4);
-
-	uint32_t k1 = 0;
-
-	switch (len & 3)
-	{
-	case 3: k1 ^= tail[2] << 16; /* Fallthrough on all these */
-	case 2: k1 ^= tail[1] << 8;
-	case 1: k1 ^= tail[0];
-		k1 *= c1; k1 = ROTL32(k1, 15); k1 *= c2; h1 ^= k1;
-	};
-
-	//----------
-	// finalization
-
-	h1 ^= len;
-
-	h1 = fmix32(h1);
-
-	return h1;
+    return h;
 }

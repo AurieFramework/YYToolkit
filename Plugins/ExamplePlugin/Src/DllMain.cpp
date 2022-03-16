@@ -107,7 +107,6 @@ DllExport YYTKStatus PluginEntry(YYTKPlugin* pPlugin)
     pPlugin->PluginUnload = PluginUnload;
     
     printf("[Chapter2++] - Plugin loaded for YYTK version %s\n", YYSDK_VERSION);
-    printf("[Chapter2++] - Note the newest DR version is not fully supported.\n");
     printf("[Chapter2++] - Please report any bugs you encounter on GitHub or the Underminers Discord.\n");
 
     // Tell the core everything went fine.

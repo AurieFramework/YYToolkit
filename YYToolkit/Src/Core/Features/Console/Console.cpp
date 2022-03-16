@@ -139,7 +139,7 @@ void Console::DoCommand()
 				{
 					// Find the quotes (") - we know there's at least two of them, since the regex matched.
 
-					pArgs[n - 1] = static_cast<std::string>(token.substr(1, token.length() - 2)); // 'Do you also cast your eggs to eggs before making dinner?'
+					pArgs[n - 1] = token.substr(1, token.length() - 2);
 					continue;
 				}
 			}
