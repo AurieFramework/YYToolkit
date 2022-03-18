@@ -47,7 +47,7 @@ jobs:
       working-directory: ${{env.GITHUB_WORKSPACE}}
       # Add additional options to the MSBuild command line here (like platform or verbosity level).
       # See https://docs.microsoft.com/visualstudio/msbuild/msbuild-command-line-reference
-      run: msbuild .\Launcher\Launcher.csproj /property:Configuration=Release /property:PlatformTarget=x86
+      run: msbuild .\YYLauncher\YYLauncher.csproj /property:Configuration=Release /property:PlatformTarget=x86
       
     - name: Upload YYTK Core as artifact
       uses: actions/upload-artifact@v2
