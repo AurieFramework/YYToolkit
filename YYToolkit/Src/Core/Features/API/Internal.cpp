@@ -75,8 +75,6 @@ YYTKStatus API::Internal::Initialize(HMODULE hMainModule)
 			Utils::Logging::Message(CLR_TANGERINE, "[Warning] API::CallBuiltin(\"@@GlobalScope@@\") failed.");
 
 		API::gAPIVars.Globals.g_pGlobalObject = Result;
-
-		gAPIVars.Globals.g_pGlobalObject->InternalGetYYVarRef(0);
 	}
 	
 	// Initialize g_WindowDevice
