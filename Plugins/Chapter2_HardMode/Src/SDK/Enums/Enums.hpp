@@ -29,15 +29,21 @@ enum eGMLKind : unsigned int
 	eGMLK_INT32 = 0x4,
 };
 
+enum class EJSRetValBool {
+	EJSRVB_FALSE,
+	EJSRVB_TRUE,
+	EJSRVB_TYPE_ERROR
+};
+
 enum YYTKStatus : int
 {
 	YYTK_OK = 0,				// The operation completed successfully.
-	YYTK_FAIL = 1,				// Unspecified error occured, see source code.
-	YYTK_UNAVAILABLE = 2,		// The called function is not available in the current context.
-	YYTK_NO_MEMORY = 3,			// No more memory is available to the process.
-	YYTK_NOT_FOUND = 4,			// The specified value could not be found.
-	YYTK_NOT_IMPLEMENTED = 5,	// The specified function doesn't exist. (IPC error)
-	YYTK_INVALID = 6			// One or more arguments were invalid.
+	YYTK_FAIL = 1,				// Unspecified error occured, see documentation.
+	YYTK_INVALIDARG = 2,		// One or more arguments were invalid, see documentation.
+	YYTK_INVALIDRESULT = 3,		// A result of a function was invalid, see documentation.
+	YYTK_NOMATCH = 4,			// A pattern couldn't be found, see documentation.
+	YYTK_UNAVAILABLE = 5,		// The function isn't available in the current context.
+	YYTK_NOT_FOUND = 6,			// The value wasn't found.
 };
 
 enum EventType : int
@@ -57,7 +63,7 @@ enum Color : int
 {
 	CLR_BLACK = 0,
 	CLR_DARKBLUE = 1,
-	CLR_MATRIXGREEN = 2,
+	CLR_GREEN = 2,
 	CLR_AQUA = 3,
 	CLR_RED = 4,
 	CLR_PURPLE = 5,
@@ -65,10 +71,10 @@ enum Color : int
 	CLR_DEFAULT = 7,
 	CLR_GRAY = 8,
 	CLR_BLUE = 9,
-	CLR_GREEN = 10,
+	CLR_MATRIXGREEN = 10,
 	CLR_LIGHTBLUE = 11,
 	CLR_TANGERINE = 12,
-	CLR_PINK = 13,
+	CLR_BRIGHTPURPLE = 13,
 	CLR_YELLOW = 14,
 	CLR_WHITE = 15
 };

@@ -37,9 +37,8 @@ struct CDynamicArrayRef
 	}
 };
 
-struct RefDynamicArrayOfRValue
+struct RefDynamicArrayOfRValue : YYObjectBase
 {
-	YYObjectBase m_Object;
 	int m_refCount;
 	int m_flags;
 	RValue* m_Array;

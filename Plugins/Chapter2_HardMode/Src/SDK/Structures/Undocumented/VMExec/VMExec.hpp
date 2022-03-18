@@ -12,8 +12,6 @@ struct VMExec
 	YYObjectBase* pLocals;
 	YYObjectBase* pSelf;
 	YYObjectBase* pOther;
-	// Misalignment here!!
-	/*
 	CCode* pCCode;
 	YYRValue* pArgs;
 	int argumentCount;
@@ -32,5 +30,4 @@ struct VMExec
 	int prevoffs;
 	void** buff;
 	int* jt;
-	*/
 };

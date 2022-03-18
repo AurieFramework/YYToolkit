@@ -9,9 +9,9 @@ struct CStream
 	void* internal_buffer;
 };
 
-struct CScript
+struct alignedTo(4) CScript
 {
-	int (**_vptr$CScript)(void);
+	void** pVMT;
 	CStream* s_text;
 	CCode* s_code;
 	YYGMLFuncs* s_pFunc;
@@ -25,6 +25,4 @@ struct CScript
 
 	const char* s_name;
 	int s_offset;
-
-	// const char* GetScriptName();
 };

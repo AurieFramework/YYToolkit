@@ -11,7 +11,7 @@ YYTKStatus PluginEventHandler(YYTKPlugin* pPlugin, YYTKEventBase* pEvent)
         auto& [Self, Other, Code, Res, Flags] = pCodeEvent->Arguments();
 
         if (!Code->i_pName)
-            return YYTK_INVALID;
+            return YYTK_INVALIDARG;
 
         // Remove Save points
         if (_stricmp(Code->i_pName, "gml_Object_obj_savepoint_Create_0") == 0)
@@ -48,10 +48,10 @@ YYTKStatus PluginEventHandler(YYTKPlugin* pPlugin, YYTKEventBase* pEvent)
                 Features::ChangeEnemyStats(pPlugin, Self, 1.0, 1.6, 1.35);
                 break;
             case 2: // Got FreezeRing - buff HP a lot
-                Features::ChangeEnemyStats(pPlugin, Self, 0.5, 4.0, 2.0);
+                Features::ChangeEnemyStats(pPlugin, Self, 0.5, 4.0, 2.5);
                 break;
             case 3: // Killed Berdly
-                Features::ChangeEnemyStats(pPlugin, Self, 1.2, 2.25, 1.6);
+                Features::ChangeEnemyStats(pPlugin, Self, 1.2, 2.25, 2.6);
                 break;
             default:
                 break;
@@ -86,8 +86,7 @@ DllExport YYTKStatus PluginEntry(YYTKPlugin* pPlugin)
     pPlugin->PluginHandler = PluginEventHandler;
     pPlugin->PluginUnload = PluginUnload;
 
-    printf("[Chapter 2 - Too hard for you] Loaded for version %s\n", YYSDK_VERSION);
-    printf("[WARNING] Please keep in mind this plugin is still in development. Report any issues / suggestions!\n");
+    printf("[Chapter 2 - 2 Hard 4 You] Loaded for version %s\n", YYSDK_VERSION);
 
     // Tell the core everything went fine.
     return YYTK_OK;

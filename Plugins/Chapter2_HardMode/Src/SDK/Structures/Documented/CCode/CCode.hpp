@@ -2,6 +2,8 @@
 #include "../YYRValue/YYRValue.hpp"
 #include "../RToken/RToken.hpp"
 #include "../VMBuffer/VMBuffer.hpp"
+struct YYGMLFuncs;
+
 struct CCode
 {
 	int (**_vptr$CCode)(void);

@@ -2,21 +2,10 @@
 
 YYRValue Features::CallBuiltinWrapper(YYTKPlugin* pPlugin, CInstance* Instance, const char* Name, const std::vector<YYRValue>& rvArgs)
 {
-    if (!Instance)
-    {
-        auto GlobalCallFn = pPlugin->GetCoreExport<YYTKStatus(*)(const char*, int, YYRValue&, const YYRValue*)>("Global_CallBuiltin");
-
-        YYRValue Result;
-        GlobalCallFn(Name, rvArgs.size(), Result, rvArgs.data());
-
-        return Result;
-    }
-
-    // Modify the args to be const*, so the compiler doesn't complain
-    auto InstCallFn = pPlugin->GetCoreExport<YYTKStatus(*)(CInstance*, CInstance*, YYRValue&, int, const char*, const YYRValue*)>("CallBuiltinFunction");
+    auto InstCallFn = pPlugin->GetCoreExport<bool(*)(YYRValue&, const std::string&, CInstance*, CInstance*, const std::vector<YYRValue>&)>("CallBuiltin");
 
     YYRValue Result;
-    InstCallFn(Instance, Instance, Result, rvArgs.size(), Name, rvArgs.data());
+    InstCallFn(Result, Name, Instance, Instance, rvArgs);
 
     return Result;
 }
@@ -28,6 +17,7 @@ void Features::RemoveSavePoints(YYTKPlugin* Plugin, CInstance* Self)
     // Whitelisted save points
     switch (static_cast<int>(global_CurrentRoom))
     {
+    /*
     case 3: // Queen's Mansion - Rooftop
     case 71: // My Castle Town
     case 84: // Dark World?
@@ -37,9 +27,9 @@ void Features::RemoveSavePoints(YYTKPlugin* Plugin, CInstance* Self)
     case 142: // Cyber City - Heights
     case 166: // Queen's Mansion - Entrance
     case 180: // Queen's Mansion - Basement
+    */
     case 205: // Queen's Mansion - 4F
         break;
-
     default: // Destroy the savepoint.
         CallBuiltinWrapper(Plugin, Self, "instance_destroy", {});
         break;
@@ -114,4 +104,3 @@ int Features::IsSnowGraveRoute(YYTKPlugin* Plugin)
 
     return 0;
 }
-

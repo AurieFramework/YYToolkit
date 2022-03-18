@@ -29,6 +29,12 @@ enum eGMLKind : unsigned int
 	eGMLK_INT32 = 0x4,
 };
 
+enum class EJSRetValBool {
+	EJSRVB_FALSE,
+	EJSRVB_TRUE,
+	EJSRVB_TYPE_ERROR
+};
+
 enum YYTKStatus : int
 {
 	YYTK_OK = 0,				// The operation completed successfully.
