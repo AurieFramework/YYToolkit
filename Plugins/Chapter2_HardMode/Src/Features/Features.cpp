@@ -17,18 +17,10 @@ void Features::RemoveSavePoints(YYTKPlugin* Plugin, CInstance* Self)
     // Whitelisted save points
     switch (static_cast<int>(global_CurrentRoom))
     {
-    /*
-    case 3: // Queen's Mansion - Rooftop
-    case 71: // My Castle Town
-    case 84: // Dark World?
-    case 87: // Cyber Field - Entrance
-    case 98: // Cyber Field - Music Shop
-    case 130: // Cyber City - Music Shop
-    case 142: // Cyber City - Heights
-    case 166: // Queen's Mansion - Entrance
-    case 180: // Queen's Mansion - Basement
-    */
-    case 205: // Queen's Mansion - 4F
+    case 84: // intro_connector (DR 1.0x)
+    case 85: // intro_connector (DR 1.10)
+    case 166: // dw_mansion_entrace (DR 1.0x)
+    case 167: // dw_mansion_entrace (DR 1.10)
         break;
     default: // Destroy the savepoint.
         CallBuiltinWrapper(Plugin, Self, "instance_destroy", {});
