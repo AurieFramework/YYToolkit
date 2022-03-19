@@ -37,6 +37,14 @@ YYTKStatus API::Internal::Initialize(HMODULE hMainModule)
 	Utils::Logging::Message(CLR_LIGHTBLUE, "YYToolkit %s (Release) by Archie#8615", YYSDK_VERSION);
 #endif
 
+#if _DEBUG
+	Utils::Logging::Message(CLR_LIGHTBLUE, "Waiting till enter");
+	while (!GetAsyncKeyState(VK_F12))
+	{
+		Sleep(1);
+	}
+#endif
+
 	// Initialize Code_Function_GET_the_function
 	{
 		YYTKStatus Status = API::Internal::MmFindCodeFunction(reinterpret_cast<DWORD&>(gAPIVars.Functions.Code_Function_GET_the_function));
@@ -274,10 +282,10 @@ YYTKStatus API::Internal::VfGetFunctionPointer(const char* szFunctionName, EFPTy
 	else
 	{
 		TRoutine pRoutine = nullptr;
-		auto bSuccess = API::GetFunctionByName(szFunctionName, pRoutine);
+		YYTKStatus stLookupResult = Internal::VfLookupFunction(szFunctionName, pRoutine, nullptr);
 
-		if (!bSuccess)
-			return YYTK_FAIL;
+		if (stLookupResult)
+			return stLookupResult;
 
 		if (!pRoutine)
 			return YYTK_INVALIDRESULT;
