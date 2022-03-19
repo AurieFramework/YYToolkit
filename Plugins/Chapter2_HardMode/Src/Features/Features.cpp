@@ -23,7 +23,8 @@ void Features::RemoveSavePoints(YYTKPlugin* Plugin, CInstance* Self)
     case 167: // dw_mansion_entrace (DR 1.10)
         break;
     default: // Destroy the savepoint.
-        CallBuiltinWrapper(Plugin, Self, "instance_destroy", {});
+        YYRValue rvSavePointID = CallBuiltinWrapper(Plugin, nullptr, "asset_get_index", { "obj_savepoint" });
+        CallBuiltinWrapper(Plugin, Self, "instance_deactivate_object", { rvSavePointID });
         break;
     }
 }
