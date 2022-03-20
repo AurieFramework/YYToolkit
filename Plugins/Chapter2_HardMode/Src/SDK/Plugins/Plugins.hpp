@@ -26,10 +26,11 @@ struct YYTKPlugin
 	FNPluginUnload PluginUnload;		// Pointer to the unload function - optional, set by the plugin.
 	FNEventHandler PluginHandler;		// Pointer to an event handler function - optional, set by the plugin.
 	FNTextRenderCallback OnTextRender;	// Pointer to a text render callback - optional, set by the plugin.
-	FNPluginPreloadEntry PluginPreload; // Pointer to the plugin preload handler - set by the core if the plugin has one defined.
 
 	void* PluginStart;					// The base address of the plugin (can be casted to a HMODULE).
 	void* CoreStart;					// The base address of the core (can be casted to a HMODULE).
+
+	FNPluginPreloadEntry PluginPreload; // Pointer to the plugin preload handler - set by the core if the plugin has one defined.
 
 	template <typename T>
 	T GetCoreExport(const char* Name)

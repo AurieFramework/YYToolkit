@@ -11,9 +11,6 @@
 
 YYTKStatus API::Internal::__Initialize__(HMODULE hMainModule)
 {
-	// Don't forget this!
-	gAPIVars.Globals.g_hMainModule = hMainModule;
-
 	if (gAPIVars.Globals.g_bWasPreloaded)
 	{
 		DWORD dwGetDevice = 0;

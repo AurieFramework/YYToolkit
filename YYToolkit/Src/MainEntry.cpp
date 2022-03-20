@@ -11,14 +11,14 @@
 
 void __stdcall Main(HINSTANCE g_hDLL)
 {
+	API::gAPIVars.Globals.g_hMainModule = g_hDLL;
+
 	API::Internal::__InitializeConsole__();
 
 	if (Utils::WinAPI::IsPreloaded())
 	{
-		Utils::Logging::Message(Color::CLR_BLUE, "Early Launch was used!");
-		API::gAPIVars.Globals.g_bWasPreloaded = true;
-
 		API::Internal::__InitializePreload__();
+		API::gAPIVars.Globals.g_bWasPreloaded = true;
 	}
 
 	Utils::WinAPI::ResumeGameProcess();
