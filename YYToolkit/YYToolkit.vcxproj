@@ -160,6 +160,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Src\Core\Features\API\Internal.hpp" />
     <ClInclude Include="Src\Core\Features\Console\Console.hpp" />
     <ClInclude Include="Src\Core\Features\API\API.hpp" />
     <ClInclude Include="Src\Core\Features\PluginManager\PluginManager.hpp" />

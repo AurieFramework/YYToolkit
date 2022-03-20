@@ -116,5 +116,7 @@ namespace Utils
         bool GetSysProcInfo(SYSTEM_PROCESS_INFORMATION** outInfo);
 
         bool GetThreadStartAddr(HANDLE ThreadHandle, unsigned long& outAddr);
+
+        bool DoesProcessHaveWindow(HANDLE hProcess);
 	}
 }

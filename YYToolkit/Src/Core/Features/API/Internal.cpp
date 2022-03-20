@@ -1,47 +1,69 @@
-#include "API.hpp"
-#include "../../Utils/Logging/Logging.hpp"
 #include "../PluginManager/PluginManager.hpp"
+#include "../../Utils/Logging/Logging.hpp"
 #include "../../Utils/MH/hde/hde32.h"
 #include "../UnitTests/UnitTests.hpp"
+#include "Internal.hpp"
+#include "API.hpp"
+
 #ifdef min
 #undef min
 #endif
 
-YYTKStatus API::Internal::Initialize(HMODULE hMainModule)
+YYTKStatus API::Internal::__Initialize__(HMODULE hMainModule)
 {
 	// Don't forget this!
 	gAPIVars.Globals.g_hMainModule = hMainModule;
 
-	// Allocate console
+	if (gAPIVars.Globals.g_bWasPreloaded)
 	{
-		AllocConsole();
-		FILE* fDummy;
-		freopen_s(&fDummy, "CONIN$", "r", stdin);
-		freopen_s(&fDummy, "CONOUT$", "w", stderr);
-		freopen_s(&fDummy, "CONOUT$", "w", stdout);
+		DWORD dwGetWindow = 0;
+		YYTKStatus Status = VfGetFunctionPointer("window_handle", EFPType::FPType_AssemblyReference, dwGetWindow);
 
-		SetConsoleTitleA("YYToolkit Log");
+		if (Status || !dwGetWindow)
+			Utils::Logging::Critical(
+				__FILE__,
+				__LINE__, 
+				"[Early Launch] VfGetFunctionPointer(\"window_handle\") failed with %s", 
+				Utils::Logging::YYTKStatus_ToString(Status).c_str()
+			);
 
-		// Disable the "left-click to select" autism which pauses the entire tool
-		HANDLE hInput = GetStdHandle(STD_INPUT_HANDLE);
-		DWORD dwMode;
-		GetConsoleMode(hInput, &dwMode);
-		SetConsoleMode(hInput, ENABLE_EXTENDED_FLAGS | (dwMode & ~ENABLE_QUICK_EDIT_MODE));
+		TRoutine pfnGetWindow = reinterpret_cast<TRoutine>(dwGetWindow);
+
+		HWND hwWindow = 0;
+
+		// Wait until the runner has a window before we initialize the API
+		while (!hwWindow)
+		{
+			// stfu clang
+			if (!pfnGetWindow)
+				break;
+
+			RValue Result = RValue();
+			pfnGetWindow(&Result, nullptr, nullptr, 0, nullptr);
+
+			hwWindow = (HWND)Result.Pointer;
+
+			Sleep(100);
+		}
 	}
 
-	// Print the version into the log
-#if _DEBUG
-	Utils::Logging::Message(CLR_GOLD, "YYToolkit %s (Debug) by Archie#8615", YYSDK_VERSION);
-#else
-	Utils::Logging::Message(CLR_LIGHTBLUE, "YYToolkit %s (Release) by Archie#8615", YYSDK_VERSION);
-#endif
+	__InitializeGlobalVars__();
 
+	Tests::RunUnitTests();
+
+	PluginManager::Initialize(); // Remove me to turn off plugin functionality.
+
+	return YYTK_OK;
+}
+
+YYTKStatus API::Internal::__InitializeGlobalVars__()
+{
 	// Initialize Code_Function_GET_the_function
 	{
 		YYTKStatus Status = API::Internal::MmFindCodeFunction(reinterpret_cast<DWORD&>(gAPIVars.Functions.Code_Function_GET_the_function));
 
-		if (Status && gAPIVars.Globals.g_bDebugMode)
-			Utils::Logging::Message(CLR_TANGERINE, "[Warning] API::Internal::MmFindCodeFunction() failed. Error: %s", 
+		if (Status)
+			Utils::Logging::Message(CLR_TANGERINE, "[Warning] API::Internal::MmFindCodeFunction() failed. Error: %s",
 				Utils::Logging::YYTKStatus_ToString(Status).c_str());
 	}
 
@@ -49,7 +71,7 @@ YYTKStatus API::Internal::Initialize(HMODULE hMainModule)
 	{
 		YYTKStatus Status = API::Internal::MmFindCodeExecute(reinterpret_cast<DWORD&>(gAPIVars.Functions.Code_Execute));
 
-		if (Status && gAPIVars.Globals.g_bDebugMode)
+		if (Status)
 			Utils::Logging::Message(CLR_TANGERINE, "[Warning] API::Internal::MmFindCodeExecute() failed. Error: %s",
 				Utils::Logging::YYTKStatus_ToString(Status).c_str());
 	}
@@ -59,7 +81,7 @@ YYTKStatus API::Internal::Initialize(HMODULE hMainModule)
 		YYRValue Result;
 		bool Success = API::CallBuiltin(Result, "window_handle", nullptr, nullptr, {});
 
-		if (!Success && gAPIVars.Globals.g_bDebugMode)
+		if (!Success)
 			Utils::Logging::Message(CLR_TANGERINE, "[Warning] API::CallBuiltin(\"window_handle\") failed.");
 
 		API::gAPIVars.Globals.g_hwWindowHandle = reinterpret_cast<HWND>(Result.As<RValue>().Pointer);
@@ -70,47 +92,52 @@ YYTKStatus API::Internal::Initialize(HMODULE hMainModule)
 		YYRValue Result;
 		bool Success = API::CallBuiltin(Result, "@@GlobalScope@@", nullptr, nullptr, {});
 
-		if (!Success && gAPIVars.Globals.g_bDebugMode)
+		if (!Success)
 			Utils::Logging::Message(CLR_TANGERINE, "[Warning] API::CallBuiltin(\"@@GlobalScope@@\") failed.");
 
 		API::gAPIVars.Globals.g_pGlobalObject = Result;
 	}
-	
+
 	// Initialize g_WindowDevice
 	{
 		YYRValue Result;
 		bool Success = API::CallBuiltin(Result, "window_device", nullptr, nullptr, {});
 
-		if (!Success && gAPIVars.Globals.g_bDebugMode)
+		if (!Success)
 			Utils::Logging::Message(CLR_TANGERINE, "[Warning] API::CallBuiltin(\"window_device\") failed.");
 
 		API::gAPIVars.Globals.g_pWindowDevice = Result.As<RValue>().Pointer;
 	}
 
-	bool bPassedTests = Tests::RunUnitTests();
+	return YYTK_OK;
+}
 
-	if (!bPassedTests)
-	{
-		int nUserChoice = MessageBoxA(
-			0,
-			"YYToolkit's self-check failed to pass.\n"
-			"This means that some features may be broken or completely unavailable.\n"
-			"Plugins relying on this functionality may cease to work.\n\n"
-			"Proceed anyway?",
-			"YYToolkit",
-			MB_TOPMOST | MB_YESNO | MB_ICONWARNING | MB_SETFOREGROUND | MB_DEFBUTTON2
-		);
+YYTKStatus API::Internal::__InitializeConsole__()
+{
+	AllocConsole();
+	FILE* fDummy;
+	freopen_s(&fDummy, "CONIN$", "r", stdin);
+	freopen_s(&fDummy, "CONOUT$", "w", stderr);
+	freopen_s(&fDummy, "CONOUT$", "w", stdout);
 
-		if (nUserChoice == IDNO)
-			exit(0);
-	}
+	SetConsoleTitleA("YYToolkit Log");
 
-	PluginManager::Initialize(); // Remove me to turn off plugin functionality.
+	// Disable the "left-click to select" autism which pauses the entire tool
+	HANDLE hInput = GetStdHandle(STD_INPUT_HANDLE);
+	DWORD dwMode;
+	GetConsoleMode(hInput, &dwMode);
+	SetConsoleMode(hInput, ENABLE_EXTENDED_FLAGS | (dwMode & ~ENABLE_QUICK_EDIT_MODE));
+
+#if _DEBUG
+	Utils::Logging::Message(CLR_GOLD, "YYToolkit %s (Debug) by Archie#8615", YYSDK_VERSION);
+#else
+	Utils::Logging::Message(CLR_LIGHTBLUE, "YYToolkit %s (Release) by Archie#8615", YYSDK_VERSION);
+#endif
 
 	return YYTK_OK;
 }
 
-YYTKStatus API::Internal::Unload()
+YYTKStatus API::Internal::__Unload__()
 {
 	PluginManager::Uninitialize();
 
@@ -371,7 +398,11 @@ YYTKStatus API::Internal::MmGetScriptArrayPtr(CDynamicArray<CScript*>*& outArray
 	// call script_exists
 	// xor ecx, ecx
 	// add esp, 0Ch
-	unsigned long pPattern = FindPattern("\xE8\x00\x00\x00\x00\x00\xC9\x83\xC4\x0C", "x?????xxxx", dwScriptExists, 0xFF);
+	unsigned long pPattern = 0;
+	YYTKStatus Status = MmFindByteArray("\xE8\x00\x00\x00\x00\x00\xC9\x83\xC4\x0C", UINT_MAX, dwScriptExists, 0xFF, "x?????xxxx", false, pPattern);
+
+	if (Status)
+		return Status;
 
 	if (!pPattern)
 		return YYTK_NOMATCH;

@@ -4,6 +4,7 @@
 #include "../../Utils/D3D11 Hooker/D3D11Hooker.hpp"
 #include <mutex> // std::call_once
 #include "../../Features/PluginManager/PluginManager.hpp"
+#include "../../SDK/Plugins/YYTKEvent/YYTKEvent.hpp"
 
 static std::once_flag g_CreatedRenderView;
 

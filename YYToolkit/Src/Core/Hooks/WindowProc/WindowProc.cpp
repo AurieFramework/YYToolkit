@@ -2,6 +2,7 @@
 #include "../../Utils/Logging/Logging.hpp"
 #include "../../Features/API/API.hpp"
 #include "../../Features/PluginManager/PluginManager.hpp"
+#include "../../SDK/Plugins/YYTKEvent/YYTKEvent.hpp"
 
 namespace Hooks
 {

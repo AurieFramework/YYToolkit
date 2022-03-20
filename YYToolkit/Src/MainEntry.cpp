@@ -1,8 +1,8 @@
-#include <Windows.h>
-#include "Core/Features/API/API.hpp"
+#include "Core/Features/API/Internal.hpp"
 #include "Core/Features/Console/Console.hpp"
 #include "Core/Hooks/Hooks.hpp"
 #include "Core/Utils/WinAPI/WinAPI.hpp"
+#include "Core/Utils/Logging/Logging.hpp"
 
 #if _WIN64
 #error Don't compile in x64!
@@ -72,15 +72,19 @@ static bool IsPreloaded()
 
 void __stdcall Main()
 {
-	while (IsPreloaded())
+	API::Internal::__InitializeConsole__();
+
+	if (IsPreloaded())
 	{
+		Utils::Logging::Message(Color::CLR_YELLOW, "Warning: Early Launch was used!");
+		API::gAPIVars.Globals.g_bWasPreloaded = true;
 	}
 
 	// Let the runner initialize - this is NOT an adequate check!
 	// The ideal check would be to see if a D3D device was initialized yet, or if the window exists.
 	Sleep(1000); 
 
-	API::Internal::Initialize(g_hDLL);
+	API::Internal::__Initialize__(g_hDLL);
 	Hooks::Initialize();
 
 	while (!GetAsyncKeyState(VK_END)) 
@@ -92,7 +96,7 @@ void __stdcall Main()
 	}
 
 	Hooks::Uninitialize();
-	API::Internal::Unload();
+	API::Internal::__Unload__();
 
 	MessageBoxA(
 		API::gAPIVars.Globals.g_hwWindowHandle, 
