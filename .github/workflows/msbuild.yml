@@ -47,7 +47,7 @@ jobs:
       working-directory: ${{env.GITHUB_WORKSPACE}}
       # Add additional options to the MSBuild command line here (like platform or verbosity level).
       # See https://docs.microsoft.com/visualstudio/msbuild/msbuild-command-line-reference
-      run: msbuild .\YYLauncher\YYLauncher.csproj /property:Configuration=Release /property:PlatformTarget=x86
+      run: msbuild .\YYLauncher\Launcher.csproj /property:Configuration=Release /property:PlatformTarget=x86
       
     - name: Upload YYTK Core as artifact
       uses: actions/upload-artifact@v2
@@ -59,16 +59,16 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: ExamplePlugin
-        path: .\YYToolkit\Build\Plugins\Example\Release\ExamplePlugin.dll
+        path: .\Plugins\ExamplePlugin\Build\Plugins\Example\Release\ExamplePlugin.dll
         
     - name: Upload Hard Mode as artifact
       uses: actions/upload-artifact@v2
       with:
         name: HardMode
-        path: .\YYToolkit\Build\Plugins\Hard Mode\Release\Chapter2_HardMode.dll
+        path: .\Plugins\Chapter2_HardMode\Build\Plugins\Hard Mode\Release\Chapter2_HardMode.dll
         
     - name: Upload YYLauncher as artifact
       uses: actions/upload-artifact@v2
       with:
         name: YYLauncher
-        path: .\Launcher\bin\Release\Launcher.exe
+        path: .\YYLauncher\bin\Release\Launcher.exe
