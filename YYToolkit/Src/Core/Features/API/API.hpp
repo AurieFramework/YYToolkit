@@ -1,6 +1,7 @@
 #pragma once
-#include "../../SDK/FwdDecls/FwdDecls.hpp"
+#include "../../SDK/Structures/Documented/YYRValue/YYRValue.hpp"
 #include "../../SDK/Structures/Documented/APIVars/APIVars.hpp"
+#include "../../SDK/FwdDecls/FwdDecls.hpp"
 #include <string>
 #include <vector>
 

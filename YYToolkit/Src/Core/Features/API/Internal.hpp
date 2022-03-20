@@ -46,7 +46,7 @@ namespace API
 		);
 
 		DllExport YYTKStatus MmFindByteArray(
-			const byte* pbArray,
+			const unsigned char* pbArray,
 			unsigned int uArraySize,
 			unsigned long ulSearchRegionBase,
 			unsigned int ulSearchRegionSize,

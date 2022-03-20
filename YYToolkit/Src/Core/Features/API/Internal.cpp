@@ -16,34 +16,32 @@ YYTKStatus API::Internal::__Initialize__(HMODULE hMainModule)
 
 	if (gAPIVars.Globals.g_bWasPreloaded)
 	{
-		DWORD dwGetWindow = 0;
-		YYTKStatus Status = VfGetFunctionPointer("window_handle", EFPType::FPType_AssemblyReference, dwGetWindow);
+		DWORD dwGetDevice = 0;
+		YYTKStatus Status = VfGetFunctionPointer("window_device", EFPType::FPType_AssemblyReference, dwGetDevice);
 
-		if (Status || !dwGetWindow)
+		if (Status || !dwGetDevice)
 			Utils::Logging::Critical(
 				__FILE__,
 				__LINE__, 
-				"[Early Launch] VfGetFunctionPointer(\"window_handle\") failed with %s", 
+				"[Early Launch] VfGetFunctionPointer(\"window_device\") failed with %s", 
 				Utils::Logging::YYTKStatus_ToString(Status).c_str()
 			);
 
-		TRoutine pfnGetWindow = reinterpret_cast<TRoutine>(dwGetWindow);
+		TRoutine pfnGetDevice = reinterpret_cast<TRoutine>(dwGetDevice);
 
-		HWND hwWindow = 0;
+		void* hwWindow = nullptr;
 
 		// Wait until the runner has a window before we initialize the API
 		while (!hwWindow)
 		{
 			// stfu clang
-			if (!pfnGetWindow)
+			if (!pfnGetDevice)
 				break;
 
 			RValue Result = RValue();
-			pfnGetWindow(&Result, nullptr, nullptr, 0, nullptr);
+			pfnGetDevice(&Result, nullptr, nullptr, 0, nullptr);
 
-			hwWindow = (HWND)Result.Pointer;
-
-			Sleep(100);
+			hwWindow = Result.Pointer;
 		}
 	}
 
@@ -163,7 +161,7 @@ DllExport YYTKStatus API::Internal::MmGetModuleInformation(const char* szModuleN
 	return YYTK_OK;
 }
 
-YYTKStatus API::Internal::MmFindByteArray(const byte* pbArray, unsigned int uArraySize, unsigned long ulSearchRegionBase, unsigned int ulSearchRegionSize, const char* szMask, bool bStringSearch, DWORD& dwOutBuffer)
+YYTKStatus API::Internal::MmFindByteArray(const unsigned char* pbArray, unsigned int uArraySize, unsigned long ulSearchRegionBase, unsigned int ulSearchRegionSize, const char* szMask, bool bStringSearch, DWORD& dwOutBuffer)
 {
 	dwOutBuffer = 0x00;
 
@@ -185,7 +183,7 @@ YYTKStatus API::Internal::MmFindByteArray(const byte* pbArray, unsigned int uArr
 		int found = 1;
 		for (unsigned j = 0; j < PatternSize; j++)
 		{
-			found &= szMask[j] == '?' || pbArray[j] == *(const byte*)(ulSearchRegionBase + i + j);
+			found &= szMask[j] == '?' || pbArray[j] == *(const unsigned char*)(ulSearchRegionBase + i + j);
 		}
 
 		if (found)
@@ -204,7 +202,7 @@ YYTKStatus API::Internal::MmFindByteArray(const byte* pbArray, unsigned int uArr
 
 YYTKStatus API::Internal::MmFindByteArray(const char* pszArray, unsigned int uArraySize, unsigned long ulSearchRegionBase, unsigned int ulSearchRegionSize, const char* szMask, bool bStringSearch, DWORD& dwOutBuffer)
 {
-	return MmFindByteArray(reinterpret_cast<byte*>(const_cast<char*>(pszArray)), uArraySize, ulSearchRegionBase, ulSearchRegionSize, szMask, bStringSearch, dwOutBuffer);
+	return MmFindByteArray(reinterpret_cast<unsigned char*>(const_cast<char*>(pszArray)), uArraySize, ulSearchRegionBase, ulSearchRegionSize, szMask, bStringSearch, dwOutBuffer);
 }
 
 YYTKStatus API::Internal::MmFindCodeExecute(DWORD& dwOutBuffer)
@@ -252,7 +250,7 @@ YYTKStatus API::Internal::VfGetFunctionPointer(const char* szFunctionName, EFPTy
 		std::string Mask(strlen(szFunctionName) + 1, 'x');
 
 		if (YYTKStatus _Status = MmFindByteArray(
-			reinterpret_cast<const byte*>(szFunctionName), 
+			reinterpret_cast<const unsigned char*>(szFunctionName), 
 			UINT_MAX, 
 			0,
 			0,
@@ -265,13 +263,13 @@ YYTKStatus API::Internal::VfGetFunctionPointer(const char* szFunctionName, EFPTy
 		if (dwStringReference == 0)
 			return YYTK_INVALIDRESULT;
 
-		byte* pbNewPattern = new byte[5];
+		unsigned char* pbNewPattern = new unsigned char[5];
 		pbNewPattern[0] = 0x68;
 
 		memcpy(pbNewPattern + 1, &dwStringReference, sizeof(DWORD));
 
 		if (YYTKStatus _Status = MmFindByteArray(
-			const_cast<const byte*>(pbNewPattern),
+			const_cast<const unsigned char*>(pbNewPattern),
 			5,
 			0,
 			0,

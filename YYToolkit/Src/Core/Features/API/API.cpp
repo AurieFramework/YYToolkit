@@ -1,6 +1,6 @@
-#include "API.hpp"
 #include "../../Utils/Logging/Logging.hpp"
 #include "Internal.hpp"
+#include "API.hpp"
 
 bool API::GetFunctionByName(const std::string& Name, TRoutine& outRoutine)
 {

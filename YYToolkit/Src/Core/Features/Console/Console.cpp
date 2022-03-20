@@ -1,3 +1,5 @@
+#include "../../SDK/Structures/Documented/YYRValue/YYRValue.hpp"
+#include "../../SDK/Structures/Documented/RefThing/RefThing.hpp"
 #include "../../Utils/Logging/Logging.hpp"
 #include "../API/API.hpp"
 #include "Console.hpp"

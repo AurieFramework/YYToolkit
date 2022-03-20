@@ -1,7 +1,7 @@
-#include <Windows.h>
-#include <string>
+#include "../../SDK/Structures/Documented/YYRValue/YYRValue.hpp"
+#include "../../SDK/FwdDecls/FwdDecls.hpp"
 #include "Logging.hpp"
-#include "../../Features/API/API.hpp"
+#include <Windows.h>
 
 static std::string ParseVA(const char* fmt, va_list Args)
 {

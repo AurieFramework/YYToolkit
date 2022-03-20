@@ -2,10 +2,12 @@
 #include <Windows.h>
 #include <winternl.h>
 
+using FNProcessIterationFunc = void(*)(void* pProcessInformation, void* pParameter);
+
 namespace Utils
 {
-	namespace WinAPI
-	{
+    namespace WinAPI
+    {
         typedef enum _KWAIT_REASON
         {
             Executive = 0,
@@ -63,20 +65,20 @@ namespace Utils
             MaximumThreadState
         } KTHREAD_STATE, * PKTHREAD_STATE;
 
-		typedef struct _SYSTEM_THREAD {
-			LARGE_INTEGER           KernelTime;
-			LARGE_INTEGER           UserTime;
-			LARGE_INTEGER           CreateTime;
-			ULONG                   WaitTime;
-			PVOID                   StartAddress;
-			CLIENT_ID               ClientId;
-			KPRIORITY               Priority;
-			LONG                    BasePriority;
-			ULONG                   ContextSwitchCount;
+        typedef struct _SYSTEM_THREAD {
+            LARGE_INTEGER           KernelTime;
+            LARGE_INTEGER           UserTime;
+            LARGE_INTEGER           CreateTime;
+            ULONG                   WaitTime;
+            PVOID                   StartAddress;
+            CLIENT_ID               ClientId;
+            KPRIORITY               Priority;
+            LONG                    BasePriority;
+            ULONG                   ContextSwitchCount;
             KTHREAD_STATE           State;
-			KWAIT_REASON            WaitReason;
+            KWAIT_REASON            WaitReason;
 
-		} SYSTEM_THREAD, * PSYSTEM_THREAD;
+        } SYSTEM_THREAD, * PSYSTEM_THREAD;
 
         typedef struct _VM_COUNTERS
         {
@@ -90,33 +92,37 @@ namespace Utils
             SIZE_T QuotaPeakNonPagedPoolUsage;
             SIZE_T QuotaNonPagedPoolUsage;
             SIZE_T PagefileUsage;
-           SIZE_T PeakPagefileUsage;
-         } VM_COUNTERS, * PVM_COUNTERS;
+            SIZE_T PeakPagefileUsage;
+        } VM_COUNTERS, * PVM_COUNTERS;
 
-		typedef struct _SYSTEM_PROCESS_INFORMATION {
-			ULONG                   NextEntryOffset;
-			ULONG                   NumberOfThreads;
-			LARGE_INTEGER           Reserved[3];
-			LARGE_INTEGER           CreateTime;
-			LARGE_INTEGER           UserTime;
-			LARGE_INTEGER           KernelTime;
-			UNICODE_STRING          ImageName;
-			KPRIORITY               BasePriority;
-			HANDLE                  ProcessId;
-			HANDLE                  InheritedFromProcessId;
-			ULONG                   HandleCount;
-			ULONG                   Reserved2[2];
-			ULONG                   PrivatePageCount;
-			VM_COUNTERS             VirtualMemoryCounters;
-			IO_COUNTERS             IoCounters;
-			SYSTEM_THREAD           Threads[0];
+        typedef struct _SYSTEM_PROCESS_INFORMATION {
+            ULONG                   NextEntryOffset;
+            ULONG                   NumberOfThreads;
+            LARGE_INTEGER           Reserved[3];
+            LARGE_INTEGER           CreateTime;
+            LARGE_INTEGER           UserTime;
+            LARGE_INTEGER           KernelTime;
+            UNICODE_STRING          ImageName;
+            KPRIORITY               BasePriority;
+            HANDLE                  ProcessId;
+            HANDLE                  InheritedFromProcessId;
+            ULONG                   HandleCount;
+            ULONG                   Reserved2[2];
+            ULONG                   PrivatePageCount;
+            VM_COUNTERS             VirtualMemoryCounters;
+            IO_COUNTERS             IoCounters;
+            SYSTEM_THREAD           Threads[0];
 
-		} SYSTEM_PROCESS_INFORMATION, * PSYSTEM_PROCESS_INFORMATION;
+        } SYSTEM_PROCESS_INFORMATION, * PSYSTEM_PROCESS_INFORMATION;
 
         bool GetSysProcInfo(SYSTEM_PROCESS_INFORMATION** outInfo);
 
         bool GetThreadStartAddr(HANDLE ThreadHandle, unsigned long& outAddr);
 
-        bool DoesProcessHaveWindow(HANDLE hProcess);
-	}
+        void IterateProcesses(FNProcessIterationFunc IteratorFunction, void* Parameter);
+
+        bool IsPreloaded();
+
+        void ResumeGameProcess();
+    }
 }
