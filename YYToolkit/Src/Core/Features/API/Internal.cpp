@@ -28,21 +28,12 @@ YYTKStatus API::Internal::Initialize(HMODULE hMainModule)
 		GetConsoleMode(hInput, &dwMode);
 		SetConsoleMode(hInput, ENABLE_EXTENDED_FLAGS | (dwMode & ~ENABLE_QUICK_EDIT_MODE));
 	}
-	
 
 	// Print the version into the log
 #if _DEBUG
 	Utils::Logging::Message(CLR_GOLD, "YYToolkit %s (Debug) by Archie#8615", YYSDK_VERSION);
 #else
 	Utils::Logging::Message(CLR_LIGHTBLUE, "YYToolkit %s (Release) by Archie#8615", YYSDK_VERSION);
-#endif
-
-#if _DEBUG
-	Utils::Logging::Message(CLR_LIGHTBLUE, "Waiting till enter");
-	while (!GetAsyncKeyState(VK_F12))
-	{
-		Sleep(1);
-	}
 #endif
 
 	// Initialize Code_Function_GET_the_function

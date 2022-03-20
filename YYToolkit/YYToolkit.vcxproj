@@ -208,6 +208,7 @@
     <ClInclude Include="Src\Core\Utils\MH\trampoline.h" />
     <ClInclude Include="Src\Core\Utils\Hashing\MurMurHash.hpp" />
     <ClInclude Include="Src\Core\Utils\PE Parser\PEParser.hpp" />
+    <ClInclude Include="Src\Core\Utils\WinAPI\WinAPI.hpp" />
     <ClInclude Include="Src\Toolkit\Utils\StackTrace.hpp" />
   </ItemGroup>
   <ItemGroup>
@@ -242,6 +243,7 @@
     <ClCompile Include="Src\Core\Utils\MH\trampoline.c" />
     <ClCompile Include="Src\Core\Utils\Hashing\MurMurHash.cpp" />
     <ClCompile Include="Src\Core\Utils\PE Parser\PEParser.cpp" />
+    <ClCompile Include="Src\Core\Utils\WinAPI\WinAPI.cpp" />
     <ClCompile Include="Src\MainEntry.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
