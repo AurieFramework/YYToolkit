@@ -53,22 +53,22 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: YYTK-Core
-        path: .\Build\Core\Release\YYToolkit.dll
+        path: .\YYToolkit\Build\Core\Release\YYToolkit.dll
       
     - name: Upload ExamplePlugin as artifact
       uses: actions/upload-artifact@v2
       with:
         name: ExamplePlugin
-        path: .\Build\Plugins\Example\Release\ExamplePlugin.dll
+        path: .\Plugins\ExamplePlugin\Build\Plugins\Example\Release\ExamplePlugin.dll
         
     - name: Upload Hard Mode as artifact
       uses: actions/upload-artifact@v2
       with:
         name: HardMode
-        path: .\Build\Plugins\Hard Mode\Release\Chapter2_HardMode.dll
+        path: .\Plugins\Chapter2_HardMode\Build\Plugins\Hard Mode\Release\Chapter2_HardMode.dll
         
     - name: Upload YYLauncher as artifact
       uses: actions/upload-artifact@v2
       with:
         name: YYLauncher
-        path: .\Launcher\bin\Release\Launcher.exe
+        path: .\YYLauncher\bin\Release\Launcher.exe
