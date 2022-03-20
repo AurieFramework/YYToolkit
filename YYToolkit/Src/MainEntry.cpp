@@ -17,11 +17,13 @@ void __stdcall Main(HINSTANCE g_hDLL)
 	{
 		Utils::Logging::Message(Color::CLR_BLUE, "Early Launch was used!");
 		API::gAPIVars.Globals.g_bWasPreloaded = true;
+
+		API::Internal::__InitializePreload__();
 	}
 
-	auto TimeStart = std::chrono::high_resolution_clock::now();
-	
 	Utils::WinAPI::ResumeGameProcess();
+
+	auto TimeStart = std::chrono::high_resolution_clock::now();
 
 	API::Internal::__Initialize__(g_hDLL);
 	Hooks::Initialize();
@@ -33,6 +35,9 @@ void __stdcall Main(HINSTANCE g_hDLL)
 
 	while (!GetAsyncKeyState(VK_END)) 
 	{
+		if (GetAsyncKeyState(VK_DOWN) && GetAsyncKeyState(VK_NEXT))
+			Utils::Logging::Critical(__FILE__, __LINE__, "The user manually initiated a crash.");
+
 		if (GetAsyncKeyState(VK_F10) & 1)
 			Console::DoCommand();
 

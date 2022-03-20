@@ -31,11 +31,18 @@ namespace API
 	namespace Internal
 	{
 		// PRIVATE FUNCTIONS
+
+		// Initializes completely, beginning to end - runs unit tests, etc.
 		YYTKStatus __Initialize__(HMODULE hMainModule);
 
+		// Initialize only the global variables (gAPIVars)
 		YYTKStatus __InitializeGlobalVars__();
 
+		// Opens up the console and prints the version to it
 		YYTKStatus __InitializeConsole__();
+
+		// Initialize preload-only features, like plugins
+		YYTKStatus __InitializePreload__();
 
 		YYTKStatus __Unload__();
 

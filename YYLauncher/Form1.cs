@@ -101,20 +101,27 @@ namespace Launcher
                 }
             }
             
-            Process p;
-
-            if (!string.IsNullOrEmpty(sDataFilePath))
-                p = Process.Start(sRunnerFilePath, "-game \"" + sDataFilePath + "\"");
-            else
-                p = Process.Start(sRunnerFilePath);
-
-            while (string.IsNullOrEmpty(p.MainWindowTitle))
+            if (!cbUsePreloading.Checked)
             {
-                Thread.Sleep(500);
-                p.Refresh();
-            }
+                Process p;
 
-            Utils.Inject(p, TempPath);
+                if (!string.IsNullOrEmpty(sDataFilePath))
+                    p = Process.Start(sRunnerFilePath, "-game \"" + sDataFilePath + "\"");
+                else
+                    p = Process.Start(sRunnerFilePath);
+
+                while (string.IsNullOrEmpty(p.MainWindowTitle))
+                {
+                    Thread.Sleep(500);
+                    p.Refresh();
+                }
+
+                Utils.Inject(p, TempPath);
+            }
+            else
+            {
+                Utils.StartPreloaded(sRunnerFilePath, sDataFilePath, TempPath);
+            }
         }
 
         private void btNoModLaunch_Click(object sender, EventArgs e)
@@ -326,20 +333,27 @@ namespace Launcher
             {
                 if (fileDialog.ShowDialog() == DialogResult.OK)
                 {
-                    Process p;
-
-                    if (!string.IsNullOrEmpty(sDataFilePath))
-                        p = Process.Start(sRunnerFilePath, "-game \"" + sDataFilePath + "\"");
-                    else
-                        p = Process.Start(sRunnerFilePath);
-
-                    while (string.IsNullOrEmpty(p.MainWindowTitle))
+                    if (!cbUsePreloading.Checked)
                     {
-                        Thread.Sleep(500);
-                        p.Refresh();
-                    }
+                        Process p;
 
-                    Utils.Inject(p, fileDialog.FileName);
+                        if (!string.IsNullOrEmpty(sDataFilePath))
+                            p = Process.Start(sRunnerFilePath, "-game \"" + sDataFilePath + "\"");
+                        else
+                            p = Process.Start(sRunnerFilePath);
+
+                        while (string.IsNullOrEmpty(p.MainWindowTitle))
+                        {
+                            Thread.Sleep(500);
+                            p.Refresh();
+                        }
+
+                        Utils.Inject(p, fileDialog.FileName);
+                    }
+                    else
+                    {
+                        Utils.StartPreloaded(sRunnerFilePath, sDataFilePath, fileDialog.FileName);
+                    }
                 }
             }
         }
@@ -347,11 +361,6 @@ namespace Launcher
         private void btOpenUMTGitHub_Click(object sender, EventArgs e)
         {
             Process.Start("explorer.exe", $"\"https://github.com/krzys-h/UndertaleModTool/releases\"");
-        }
-
-        private void listPlugins_SelectedIndexChanged(object sender, EventArgs e)
-        {
-
         }
     }
 }

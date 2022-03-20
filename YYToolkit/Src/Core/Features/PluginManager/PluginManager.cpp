@@ -19,6 +19,7 @@ YYTKPlugin* API::PluginManager::LoadPlugin(const char* Path)
 {
 	char Buffer[MAX_PATH] = { 0 };
 	FNPluginEntry lpPluginEntry = nullptr;
+	FNPluginPreloadEntry lpPluginPreloadEntry = nullptr;
 
 	GetFullPathNameA(Path, MAX_PATH, Buffer, 0);
 
@@ -31,22 +32,23 @@ YYTKPlugin* API::PluginManager::LoadPlugin(const char* Path)
 		return nullptr;
 
 	lpPluginEntry = reinterpret_cast<FNPluginEntry>(GetProcAddress(PluginModule, "PluginEntry"));
+	lpPluginPreloadEntry = reinterpret_cast<FNPluginPreloadEntry>(GetProcAddress(PluginModule, "PluginPreload"));
 
 	// Emplace in map scope
 	{
 		auto PluginObject = YYTKPlugin();
 		memset(&PluginObject, 0, sizeof(YYTKPlugin));
 
+		PluginObject.PluginPreload = lpPluginPreloadEntry;
 		PluginObject.PluginEntry = lpPluginEntry;
 		PluginObject.PluginStart = PluginModule;
+
 		PluginObject.CoreStart = gAPIVars.Globals.g_hMainModule;
 
 		gAPIVars.Globals.g_PluginStorage.emplace(std::make_pair(reinterpret_cast<unsigned long>(PluginObject.PluginStart), PluginObject));
 	}
 
 	YYTKPlugin* refVariableInMap = &gAPIVars.Globals.g_PluginStorage.at(reinterpret_cast<unsigned long>(PluginModule));
-
-	lpPluginEntry(refVariableInMap);
 
 	return refVariableInMap;
 }
@@ -73,6 +75,28 @@ void API::PluginManager::RunHooks(YYTKEventBase* pEvent)
 	}
 }
 
+void API::PluginManager::RunPluginMains()
+{
+	for (auto& [__base, Plugin] : gAPIVars.Globals.g_PluginStorage)
+	{
+		UNREFERENCED_PARAMETER(__base);
+
+		if (Plugin.PluginEntry)
+			Plugin.PluginEntry(&Plugin);
+	}
+}
+
+DllExport void API::PluginManager::RunPluginPreloads()
+{
+	for (auto& [__base, Plugin] : gAPIVars.Globals.g_PluginStorage)
+	{
+		UNREFERENCED_PARAMETER(__base);
+
+		if (Plugin.PluginPreload)
+			Plugin.PluginPreload(&Plugin);
+	}
+}
+
 void API::PluginManager::CallTextCallbacks(float& x, float& y, const char*& str, int& linesep, int& linewidth)
 {
 	for (auto& Pair : gAPIVars.Globals.g_PluginStorage)
@@ -84,6 +108,11 @@ void API::PluginManager::CallTextCallbacks(float& x, float& y, const char*& str,
 
 void API::PluginManager::Initialize()
 {
+	if (__bInitialized)
+		return;
+
+	__bInitialized = true;
+
 	namespace fs = std::filesystem;
 	std::wstring Path = fs::current_path().wstring().append(L"\\autoexec");
 

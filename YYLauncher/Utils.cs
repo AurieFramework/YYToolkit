@@ -20,6 +20,47 @@ namespace Launcher
             WinAPI.CreateRemoteThread(p.Handle, IntPtr.Zero, 0u, pLoadLib, pRemoteString, 0u, IntPtr.Zero);
         }
 
+        public static void Inject(IntPtr Handle, string pathToDLL)
+        {
+            IntPtr pLoadLib = WinAPI.GetProcAddress(WinAPI.GetModuleHandle("kernel32.dll"), "LoadLibraryA");
+
+            IntPtr pRemoteString = WinAPI.VirtualAllocEx(Handle, IntPtr.Zero, (uint)((pathToDLL.Length + 1) * Marshal.SizeOf(typeof(char))), 12288u, 4u);
+
+            WinAPI.WriteProcessMemory(Handle, pRemoteString, System.Text.Encoding.Default.GetBytes(pathToDLL), (uint)((pathToDLL.Length + 1) * Marshal.SizeOf(typeof(char))), out var _);
+
+            WinAPI.CreateRemoteThread(Handle, IntPtr.Zero, 0u, pLoadLib, pRemoteString, 0u, IntPtr.Zero);
+        }
+
+        public static void StartPreloaded(string sRunnerFilePath, string sDataFilePath, string sPathToDll)
+        {
+            WinAPI.PROCESS_INFORMATION pInfo = new WinAPI.PROCESS_INFORMATION();
+            WinAPI.STARTUPINFO sInfo = new WinAPI.STARTUPINFO();
+            WinAPI.SECURITY_ATTRIBUTES pSec = new WinAPI.SECURITY_ATTRIBUTES();
+            WinAPI.SECURITY_ATTRIBUTES tSec = new WinAPI.SECURITY_ATTRIBUTES();
+            pSec.nLength = Marshal.SizeOf(pSec);
+            tSec.nLength = Marshal.SizeOf(tSec);
+
+            bool Success = false;
+            if (String.IsNullOrEmpty(sDataFilePath))
+            {
+                Success = WinAPI.CreateProcess(sRunnerFilePath, "", ref pSec, ref tSec, false,
+               4 /* CREATE_SUSPENDED */, IntPtr.Zero, Path.GetDirectoryName(sRunnerFilePath), ref sInfo, out pInfo);
+            }
+            else
+            {
+                Success = WinAPI.CreateProcess(sRunnerFilePath, "-game \"" + sDataFilePath + "\"", ref pSec, ref tSec, false,
+               4 /* CREATE_SUSPENDED */, IntPtr.Zero, Path.GetDirectoryName(sRunnerFilePath), ref sInfo, out pInfo);
+            }
+
+            if (!Success)
+            {
+                MessageBox.Show("Failed to create a process.\nGetLastError() returned " + Marshal.GetLastWin32Error().ToString(), "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            Utils.Inject(pInfo.hProcess, sPathToDll);
+        }
+
         public static OpenFileDialog CreateFileDialog(string StartPath, string Title, string Filter, int FilterIndex)
         {
             OpenFileDialog dialog = new OpenFileDialog

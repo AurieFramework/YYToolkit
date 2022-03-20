@@ -50,6 +50,7 @@ YYTKStatus API::Internal::__Initialize__(HMODULE hMainModule)
 	Tests::RunUnitTests();
 
 	PluginManager::Initialize(); // Remove me to turn off plugin functionality.
+	PluginManager::RunPluginMains();
 
 	return YYTK_OK;
 }
@@ -131,6 +132,14 @@ YYTKStatus API::Internal::__InitializeConsole__()
 #else
 	Utils::Logging::Message(CLR_LIGHTBLUE, "YYToolkit %s (Release) by Archie#8615", YYSDK_VERSION);
 #endif
+
+	return YYTK_OK;
+}
+
+YYTKStatus API::Internal::__InitializePreload__()
+{
+	PluginManager::Initialize();
+	PluginManager::RunPluginPreloads();
 
 	return YYTK_OK;
 }
