@@ -41,9 +41,6 @@ namespace API
 		// Opens up the console and prints the version to it
 		YYTKStatus __InitializeConsole__();
 
-		// Initialize preload-only features, like plugins
-		YYTKStatus __InitializePreload__();
-
 		YYTKStatus __Unload__();
 
 		// MEMORY MANAGER FUNCTIONS

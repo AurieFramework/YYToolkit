@@ -1,9 +1,9 @@
-#include "Core/Features/API/Internal.hpp"
+#include "Core/Features/PluginManager/PluginManager.hpp"
 #include "Core/Features/Console/Console.hpp"
-#include "Core/Hooks/Hooks.hpp"
-#include "Core/Utils/WinAPI/WinAPI.hpp"
+#include "Core/Features/API/Internal.hpp"
 #include "Core/Utils/Logging/Logging.hpp"
-#include <chrono>
+#include "Core/Utils/WinAPI/WinAPI.hpp"
+#include "Core/Hooks/Hooks.hpp"
 
 #if _WIN64
 #error Don't compile in x64!
@@ -11,48 +11,53 @@
 
 void __stdcall Main(HINSTANCE g_hDLL)
 {
-	API::gAPIVars.Globals.g_hMainModule = g_hDLL;
+	using namespace API;
 
-	API::Internal::__InitializeConsole__();
+	// Tell the API which module we are in memory
+	gAPIVars.Globals.g_hMainModule = g_hDLL;
 
+	// Open the console, write the version number
+	Internal::__InitializeConsole__();
+
+	// Map all the auto-executed plugins to memory, don't run any functions though
+	PluginManager::Initialize();
+
+	// If we're using Early Launch
 	if (Utils::WinAPI::IsPreloaded())
 	{
-		API::Internal::__InitializePreload__();
-		API::gAPIVars.Globals.g_bWasPreloaded = true;
+		// Run PluginPreload() on all loaded plugins
+		PluginManager::RunPluginPreloads();
+
+		// Resume the game process and note that we preloaded.
+		Utils::WinAPI::ResumeGameProcess();
+		gAPIVars.Globals.g_bWasPreloaded = true;
 	}
 
-	Utils::WinAPI::ResumeGameProcess();
+	// Runs PluginEntry() on all loaded plugins
+	// This function doesn't return until the runner finishes initialization.
+	Internal::__Initialize__(g_hDLL);
 
-	auto TimeStart = std::chrono::high_resolution_clock::now();
-
-	API::Internal::__Initialize__(g_hDLL);
+	// Hook functions like Code_Execute
 	Hooks::Initialize();
 
-	auto TimeEnd = std::chrono::high_resolution_clock::now();
+	Utils::Logging::Message(CLR_LIGHTBLUE, "Initialization done!");
 
-	Utils::Logging::Message(CLR_LIGHTBLUE, "Initialization done - took %d milliseconds!", 
-		std::chrono::duration_cast<std::chrono::milliseconds>(TimeEnd - TimeStart).count());
-
+	// Loop
 	while (!GetAsyncKeyState(VK_END)) 
 	{
-		if (GetAsyncKeyState(VK_DOWN) && GetAsyncKeyState(VK_NEXT))
-			Utils::Logging::Critical(__FILE__, __LINE__, "The user manually initiated a crash.");
-
 		if (GetAsyncKeyState(VK_F10) & 1)
 			Console::DoCommand();
 
 		Sleep(5); 
 	}
 
+	// Unhook
 	Hooks::Uninitialize();
-	API::Internal::__Unload__();
 
-	MessageBoxA(
-		API::gAPIVars.Globals.g_hwWindowHandle, 
-		"Unloaded successfully.", 
-		"YYToolkit", 
-		MB_OK | MB_ICONINFORMATION | MB_TOPMOST | MB_SETFOREGROUND);
+	// Unload all plugins
+	Internal::__Unload__();
 
+	// Actually unload the library
 	FreeLibraryAndExitThread(g_hDLL, 0);
 }
 

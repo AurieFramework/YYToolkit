@@ -108,11 +108,6 @@ void API::PluginManager::CallTextCallbacks(float& x, float& y, const char*& str,
 
 void API::PluginManager::Initialize()
 {
-	if (__bInitialized)
-		return;
-
-	__bInitialized = true;
-
 	namespace fs = std::filesystem;
 	std::wstring Path = fs::current_path().wstring().append(L"\\autoexec");
 

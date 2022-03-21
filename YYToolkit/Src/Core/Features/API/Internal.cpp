@@ -43,10 +43,7 @@ YYTKStatus API::Internal::__Initialize__(HMODULE hMainModule)
 	}
 
 	__InitializeGlobalVars__();
-
 	Tests::RunUnitTests();
-
-	PluginManager::Initialize(); // Remove me to turn off plugin functionality.
 	PluginManager::RunPluginMains();
 
 	return YYTK_OK;
@@ -133,20 +130,15 @@ YYTKStatus API::Internal::__InitializeConsole__()
 	return YYTK_OK;
 }
 
-YYTKStatus API::Internal::__InitializePreload__()
-{
-	PluginManager::Initialize();
-	PluginManager::RunPluginPreloads();
-
-	return YYTK_OK;
-}
-
 YYTKStatus API::Internal::__Unload__()
 {
 	PluginManager::Uninitialize();
 
 	ShowWindow(GetConsoleWindow(), SW_HIDE);
 	FreeConsole();
+
+	API::PopToastNotification("YYToolkit has been unloaded.", "Goodbye!", 0);
+
 	return YYTK_OK;
 }
 

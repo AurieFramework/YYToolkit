@@ -6,8 +6,6 @@ namespace API
 {
 	namespace PluginManager 
 	{
-		inline bool __bInitialized = false;
-
 		DllExport YYTKPlugin* LoadPlugin(const char* Path);
 
 		DllExport bool UnloadPlugin(YYTKPlugin* pPlugin, bool Notify);

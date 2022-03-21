@@ -122,4 +122,18 @@ namespace API
 		unsigned long Base,
 		unsigned long Size
 	);
+
+	DllExport void PopToastNotification(
+		const std::string& Text,
+		const std::string& Caption,
+		int IconType
+	);
+
+	DllExport void PopFileOpenDialog(
+		const std::string& WindowTitle,
+		const std::string& InitialPath,
+		const std::vector<std::string>& Filters,
+		bool AllowMultiselect,
+		std::vector<std::string>& outSelected
+	);
 }
