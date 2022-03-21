@@ -233,6 +233,7 @@
     <ClCompile Include="Src\Core\Hooks\WindowProc\WindowProc.cpp" />
     <ClCompile Include="Src\Core\Hooks\YYError\YYError.cpp" />
     <ClCompile Include="Src\Core\Hooks\Drawing\GR_Draw_Text\GR_Draw_Text.cpp" />
+    <ClCompile Include="Src\Core\SDK\Plugins\Plugins.cpp" />
     <ClCompile Include="Src\Core\SDK\Structures\Documented\CDynamicArray\CDynamicArray.cpp" />
     <ClCompile Include="Src\Core\SDK\Structures\Documented\RefThing\RefThing.cpp" />
     <ClCompile Include="Src\Core\SDK\Structures\Documented\YYRValue\YYRValue.cpp" />

@@ -272,5 +272,8 @@
     <ClCompile Include="Src\Core\Utils\WinAPI\WinAPI.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Src\Core\SDK\Plugins\Plugins.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
