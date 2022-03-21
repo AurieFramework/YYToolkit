@@ -26,6 +26,22 @@ YYTKPlugin* API::PluginManager::LoadPlugin(const char* Path)
 	if (!Utils::DoesPEExportRoutine(Buffer, "PluginEntry"))
 		return nullptr;
 
+	if (!Utils::DoesPEExportRoutine(Buffer, "__PluginGetSDKVersion"))
+	{
+		std::string FileName(Buffer);
+
+		std::string AlertMessage(
+			"The version of plugin \"" + FileName.substr(FileName.find_last_of("/\\") + 1) + "\" couldn't be fetched.\n"
+			"This usually means it was made for an old version of YYToolkit.\n"
+			"Try updating the plugin if a newer version is available.\n\n"
+			"Load anyway?");
+
+		int Result = MessageBoxA(0, AlertMessage.c_str(), "Warning", MB_ICONWARNING | MB_YESNO | MB_TOPMOST | MB_SETFOREGROUND);
+
+		if (Result == IDNO)
+			return nullptr;
+	}
+
 	HMODULE PluginModule = LoadLibraryA(Buffer);
 
 	if (!PluginModule)
@@ -33,6 +49,36 @@ YYTKPlugin* API::PluginManager::LoadPlugin(const char* Path)
 
 	lpPluginEntry = reinterpret_cast<FNPluginEntry>(GetProcAddress(PluginModule, "PluginEntry"));
 	lpPluginPreloadEntry = reinterpret_cast<FNPluginPreloadEntry>(GetProcAddress(PluginModule, "PluginPreload"));
+
+	// Check version scope
+	{
+		using FNGetSDKVersion = const char* (*)();
+		auto __PluginGetSDKVersion = reinterpret_cast<FNGetSDKVersion>(GetProcAddress(PluginModule, "__PluginGetSDKVersion"));
+
+		if (__PluginGetSDKVersion)
+		{
+			const char* PluginSDKVersion = __PluginGetSDKVersion();
+
+			if (_stricmp(PluginSDKVersion, YYSDK_VERSION))
+			{
+				std::string FileName(Buffer);
+
+				std::string AlertMessage(
+					"The plugin \"" + FileName.substr(FileName.find_last_of("/\\") + 1) + "\" was made for\n"
+					"SDK version " + std::string(PluginSDKVersion) + ", but the expected one is " + std::string(YYSDK_VERSION) + ".\n"
+					"Try updating the plugin if a newer version is available.\n\n"
+					"Load anyway?");
+
+				int Result = MessageBoxA(0, AlertMessage.c_str(), "Warning", MB_ICONWARNING | MB_YESNO | MB_TOPMOST | MB_SETFOREGROUND);
+
+				if (Result == IDNO)
+				{
+					FreeLibrary(PluginModule);
+					return nullptr;
+				}
+			}
+		}
+	}
 
 	// Emplace in map scope
 	{

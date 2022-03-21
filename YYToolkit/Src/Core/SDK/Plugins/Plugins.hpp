@@ -49,3 +49,9 @@ struct YYTKPlugin
 };
 
 #pragma pack(pop)
+
+#ifdef YYSDK_PLUGIN
+
+DllExport inline const char* __PluginGetSDKVersion();
+
+#endif

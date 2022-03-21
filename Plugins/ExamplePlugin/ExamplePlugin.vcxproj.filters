@@ -27,6 +27,9 @@
     <ClCompile Include="Src\SDK\Structures\Documented\YYRValue\YYRValue.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Src\SDK\Plugins\Plugins.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Src\SDK\Enums\Enums.hpp">
