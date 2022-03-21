@@ -33,6 +33,7 @@ YYTKPlugin* API::PluginManager::LoadPlugin(const char* Path)
 		std::string AlertMessage(
 			"The version of plugin \"" + FileName.substr(FileName.find_last_of("/\\") + 1) + "\" couldn't be fetched.\n"
 			"This usually means it was made for an old version of YYToolkit.\n"
+			"Loading this plugin may introduce instability / outright crash the game.\n"
 			"Try updating the plugin if a newer version is available.\n\n"
 			"Load anyway?");
 
@@ -57,15 +58,20 @@ YYTKPlugin* API::PluginManager::LoadPlugin(const char* Path)
 
 		if (__PluginGetSDKVersion)
 		{
-			const char* PluginSDKVersion = __PluginGetSDKVersion();
+			std::string PluginSDKVersion(__PluginGetSDKVersion());
+			std::string CoreSDKVersion(YYSDK_VERSION);
 
-			if (_stricmp(PluginSDKVersion, YYSDK_VERSION))
+			std::string PluginMajorVersion = std::string(PluginSDKVersion).substr(0, PluginSDKVersion.find_first_of('.'));
+			std::string CoreMajorVersion = std::string(CoreSDKVersion).substr(0, CoreSDKVersion.find_first_of('.'));
+
+			if (PluginMajorVersion != CoreMajorVersion)
 			{
 				std::string FileName(Buffer);
 
 				std::string AlertMessage(
 					"The plugin \"" + FileName.substr(FileName.find_last_of("/\\") + 1) + "\" was made for\n"
 					"SDK version " + std::string(PluginSDKVersion) + ", but the expected one is " + std::string(YYSDK_VERSION) + ".\n"
+					"Loading this plugin may introduce instability / outright crash the game.\n"
 					"Try updating the plugin if a newer version is available.\n\n"
 					"Load anyway?");
 
