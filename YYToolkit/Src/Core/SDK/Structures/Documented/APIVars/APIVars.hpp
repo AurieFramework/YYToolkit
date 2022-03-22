@@ -22,7 +22,7 @@ struct CGlobals
 	ID3D11RenderTargetView*							g_pRenderView		= nullptr;
 	ID3D11DeviceContext*							g_pDeviceContext	= nullptr;
 	IDXGISwapChain*									g_pSwapChain		= nullptr;
-	bool											g_bDebugMode		= false;
+	bool											g_bWasPreloaded		= false;
 };
 
 struct CFunctions

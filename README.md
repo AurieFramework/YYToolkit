@@ -20,7 +20,9 @@ Currently, only Windows is supported.
 **Note:** GML Compilation is only supported if UndertaleModTool v0.4.0-pre2 or newer is running.
 
 ## Directory Structure
-- ExamplePlugin - contains source code for the example plugin DLL
-- Launcher - contains source code for the launcher (YYLauncher, the EXE you run)
-- YYExplorer - contains source code for an explorer plugin, which can change most aspects of a running game through a GUI.
-- YYToolkit - contains source code for the core module - used when you select ``Launch with YYToolkit`` in the Launcher.
+- MakeConfig - a directory for ``make`` files - currently unused, I don't even know how it works tbh.
+- Plugins - Contains source code of all the plugins
+  - ExamplePlugin - Source code for the Example plugin
+  - Chapter2_HardMode - Source code for the Hard Mode plugin
+- YYLauncher - Source code for the launcher
+- YYToolkit - Source code for the DLL

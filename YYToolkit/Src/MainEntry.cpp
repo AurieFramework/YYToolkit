@@ -1,88 +1,48 @@
-#include <Windows.h>
-#include "Core/Features/API/API.hpp"
+#include "Core/Features/PluginManager/PluginManager.hpp"
 #include "Core/Features/Console/Console.hpp"
-#include "Core/Hooks/Hooks.hpp"
+#include "Core/Features/API/Internal.hpp"
+#include "Core/Utils/Logging/Logging.hpp"
 #include "Core/Utils/WinAPI/WinAPI.hpp"
+#include "Core/Hooks/Hooks.hpp"
 
 #if _WIN64
 #error Don't compile in x64!
 #endif
 
-static HINSTANCE g_hDLL = 0;
-
-
-// I might have just grown a brain tumor writing this
-static bool IsPreloaded()
+void __stdcall Main(HINSTANCE g_hDLL)
 {
-	Utils::WinAPI::SYSTEM_PROCESS_INFORMATION* pSpi = nullptr;
-	void* pBackupToFree = nullptr; // Since we iterate using pSpi, we have to backup the original malloc'ed address to free later.
+	using namespace API;
 
-	if (!Utils::WinAPI::GetSysProcInfo(&pSpi))
-		return false;
-	
-	pBackupToFree = pSpi;
+	// Tell the API which module we are in memory
+	gAPIVars.Globals.g_hMainModule = g_hDLL;
 
-	CModule GameModule;
-	API::Internal::MmGetModuleInformation(nullptr, GameModule);
+	// Open the console, write the version number
+	Internal::__InitializeConsole__();
 
-	while (true)
+	// Map all the auto-executed plugins to memory, don't run any functions though
+	PluginManager::Initialize();
+
+	// If we're using Early Launch
+	if (Utils::WinAPI::IsPreloaded())
 	{
-		if ((DWORD)pSpi->ProcessId == GetCurrentProcessId())
-		{
-			for (int n = 0; n < pSpi->NumberOfThreads; n++)
-			{
-				// Check if we're withing bounds
-				unsigned long dwStartAddr = 0;
+		// Run PluginPreload() on all loaded plugins
+		PluginManager::RunPluginPreloads();
 
-				// fuck you Microsoft
-				HANDLE ThreadHandle = OpenThread(THREAD_ALL_ACCESS, FALSE, (DWORD)pSpi->Threads[n].ClientId.UniqueThread);
-
-				bool Success = Utils::WinAPI::GetThreadStartAddr(ThreadHandle, dwStartAddr);
-
-				CloseHandle(ThreadHandle);
-
-				if (!Success)
-					continue;
-
-				if (dwStartAddr == GameModule.EntryPoint)
-				{
-					// Check if the thread is sleeping
-					if (pSpi->Threads[n].State != Utils::WinAPI::KTHREAD_STATE::Waiting)
-						continue;
-
-					if (pSpi->Threads[n].WaitReason != Utils::WinAPI::KWAIT_REASON::Suspended)
-						continue;
-
-					// We found one!
-					free(pBackupToFree);
-					return true;
-				}
-			}
-		}
-
-		if (pSpi->NextEntryOffset == 0)
-			break;
-
-		pSpi = reinterpret_cast<Utils::WinAPI::SYSTEM_PROCESS_INFORMATION*>(reinterpret_cast<PBYTE>(pSpi) + pSpi->NextEntryOffset);
+		// Resume the game process and note that we preloaded.
+		Utils::WinAPI::ResumeGameProcess();
+		gAPIVars.Globals.g_bWasPreloaded = true;
 	}
 
-	free(pBackupToFree);
-	return false;
-}
+	// Runs PluginEntry() on all loaded plugins
+	// This function doesn't return until the runner finishes initialization.
+	Internal::__Initialize__(g_hDLL);
 
-void __stdcall Main()
-{
-	while (IsPreloaded())
-	{
-	}
-
-	// Let the runner initialize - this is NOT an adequate check!
-	// The ideal check would be to see if a D3D device was initialized yet, or if the window exists.
-	Sleep(1000); 
-
-	API::Internal::Initialize(g_hDLL);
+	// Hook functions like Code_Execute
 	Hooks::Initialize();
 
+	Utils::Logging::Message(CLR_LIGHTBLUE, "Initialization done!");
+
+	// Loop
 	while (!GetAsyncKeyState(VK_END)) 
 	{
 		if (GetAsyncKeyState(VK_F10) & 1)
@@ -91,15 +51,13 @@ void __stdcall Main()
 		Sleep(5); 
 	}
 
+	// Unhook
 	Hooks::Uninitialize();
-	API::Internal::Unload();
 
-	MessageBoxA(
-		API::gAPIVars.Globals.g_hwWindowHandle, 
-		"Unloaded successfully.", 
-		"YYToolkit", 
-		MB_OK | MB_ICONINFORMATION | MB_TOPMOST | MB_SETFOREGROUND);
+	// Unload all plugins
+	Internal::__Unload__();
 
+	// Actually unload the library
 	FreeLibraryAndExitThread(g_hDLL, 0);
 }
 
@@ -107,8 +65,7 @@ int __stdcall DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpReserved)
 {
 	if (fdwReason == DLL_PROCESS_ATTACH)
 	{
-		g_hDLL = hinstDLL;
-		CloseHandle(CreateThread(0, 0, (LPTHREAD_START_ROUTINE)Main, 0, 0, 0));
+		CloseHandle(CreateThread(0, 0, (LPTHREAD_START_ROUTINE)Main, hinstDLL, 0, 0));
 	}
 	return TRUE;
 }

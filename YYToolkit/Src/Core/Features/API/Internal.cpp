@@ -1,47 +1,62 @@
-#include "API.hpp"
-#include "../../Utils/Logging/Logging.hpp"
 #include "../PluginManager/PluginManager.hpp"
+#include "../../Utils/Logging/Logging.hpp"
 #include "../../Utils/MH/hde/hde32.h"
 #include "../UnitTests/UnitTests.hpp"
+#include "Internal.hpp"
+#include "API.hpp"
+
 #ifdef min
 #undef min
 #endif
 
-YYTKStatus API::Internal::Initialize(HMODULE hMainModule)
+YYTKStatus API::Internal::__Initialize__(HMODULE hMainModule)
 {
-	// Don't forget this!
-	gAPIVars.Globals.g_hMainModule = hMainModule;
-
-	// Allocate console
+	if (gAPIVars.Globals.g_bWasPreloaded)
 	{
-		AllocConsole();
-		FILE* fDummy;
-		freopen_s(&fDummy, "CONIN$", "r", stdin);
-		freopen_s(&fDummy, "CONOUT$", "w", stderr);
-		freopen_s(&fDummy, "CONOUT$", "w", stdout);
+		DWORD dwGetDevice = 0;
+		YYTKStatus Status = VfGetFunctionPointer("window_device", EFPType::FPType_AssemblyReference, dwGetDevice);
 
-		SetConsoleTitleA("YYToolkit Log");
+		if (Status || !dwGetDevice)
+			Utils::Logging::Critical(
+				__FILE__,
+				__LINE__, 
+				"[Early Launch] VfGetFunctionPointer(\"window_device\") failed with %s", 
+				Utils::Logging::YYTKStatus_ToString(Status).c_str()
+			);
 
-		// Disable the "left-click to select" autism which pauses the entire tool
-		HANDLE hInput = GetStdHandle(STD_INPUT_HANDLE);
-		DWORD dwMode;
-		GetConsoleMode(hInput, &dwMode);
-		SetConsoleMode(hInput, ENABLE_EXTENDED_FLAGS | (dwMode & ~ENABLE_QUICK_EDIT_MODE));
+		TRoutine pfnGetDevice = reinterpret_cast<TRoutine>(dwGetDevice);
+
+		void* hwWindow = nullptr;
+
+		// Wait until the runner has a window before we initialize the API
+		while (!hwWindow)
+		{
+			// stfu clang
+			if (!pfnGetDevice)
+				break;
+
+			RValue Result = RValue();
+			pfnGetDevice(&Result, nullptr, nullptr, 0, nullptr);
+
+			hwWindow = Result.Pointer;
+		}
 	}
 
-	// Print the version into the log
-#if _DEBUG
-	Utils::Logging::Message(CLR_GOLD, "YYToolkit %s (Debug) by Archie#8615", YYSDK_VERSION);
-#else
-	Utils::Logging::Message(CLR_LIGHTBLUE, "YYToolkit %s (Release) by Archie#8615", YYSDK_VERSION);
-#endif
+	__InitializeGlobalVars__();
+	Tests::RunUnitTests();
+	PluginManager::RunPluginMains();
 
+	return YYTK_OK;
+}
+
+YYTKStatus API::Internal::__InitializeGlobalVars__()
+{
 	// Initialize Code_Function_GET_the_function
 	{
 		YYTKStatus Status = API::Internal::MmFindCodeFunction(reinterpret_cast<DWORD&>(gAPIVars.Functions.Code_Function_GET_the_function));
 
-		if (Status && gAPIVars.Globals.g_bDebugMode)
-			Utils::Logging::Message(CLR_TANGERINE, "[Warning] API::Internal::MmFindCodeFunction() failed. Error: %s", 
+		if (Status)
+			Utils::Logging::Message(CLR_TANGERINE, "[Warning] API::Internal::MmFindCodeFunction() failed. Error: %s",
 				Utils::Logging::YYTKStatus_ToString(Status).c_str());
 	}
 
@@ -49,7 +64,7 @@ YYTKStatus API::Internal::Initialize(HMODULE hMainModule)
 	{
 		YYTKStatus Status = API::Internal::MmFindCodeExecute(reinterpret_cast<DWORD&>(gAPIVars.Functions.Code_Execute));
 
-		if (Status && gAPIVars.Globals.g_bDebugMode)
+		if (Status)
 			Utils::Logging::Message(CLR_TANGERINE, "[Warning] API::Internal::MmFindCodeExecute() failed. Error: %s",
 				Utils::Logging::YYTKStatus_ToString(Status).c_str());
 	}
@@ -59,7 +74,7 @@ YYTKStatus API::Internal::Initialize(HMODULE hMainModule)
 		YYRValue Result;
 		bool Success = API::CallBuiltin(Result, "window_handle", nullptr, nullptr, {});
 
-		if (!Success && gAPIVars.Globals.g_bDebugMode)
+		if (!Success)
 			Utils::Logging::Message(CLR_TANGERINE, "[Warning] API::CallBuiltin(\"window_handle\") failed.");
 
 		API::gAPIVars.Globals.g_hwWindowHandle = reinterpret_cast<HWND>(Result.As<RValue>().Pointer);
@@ -70,52 +85,60 @@ YYTKStatus API::Internal::Initialize(HMODULE hMainModule)
 		YYRValue Result;
 		bool Success = API::CallBuiltin(Result, "@@GlobalScope@@", nullptr, nullptr, {});
 
-		if (!Success && gAPIVars.Globals.g_bDebugMode)
+		if (!Success)
 			Utils::Logging::Message(CLR_TANGERINE, "[Warning] API::CallBuiltin(\"@@GlobalScope@@\") failed.");
 
 		API::gAPIVars.Globals.g_pGlobalObject = Result;
 	}
-	
+
 	// Initialize g_WindowDevice
 	{
 		YYRValue Result;
 		bool Success = API::CallBuiltin(Result, "window_device", nullptr, nullptr, {});
 
-		if (!Success && gAPIVars.Globals.g_bDebugMode)
+		if (!Success)
 			Utils::Logging::Message(CLR_TANGERINE, "[Warning] API::CallBuiltin(\"window_device\") failed.");
 
 		API::gAPIVars.Globals.g_pWindowDevice = Result.As<RValue>().Pointer;
 	}
 
-	bool bPassedTests = Tests::RunUnitTests();
+	return YYTK_OK;
+}
 
-	if (!bPassedTests)
-	{
-		int nUserChoice = MessageBoxA(
-			0,
-			"YYToolkit's self-check failed to pass.\n"
-			"This means that some features may be broken or completely unavailable.\n"
-			"Plugins relying on this functionality may cease to work.\n\n"
-			"Proceed anyway?",
-			"YYToolkit",
-			MB_TOPMOST | MB_YESNO | MB_ICONWARNING | MB_SETFOREGROUND | MB_DEFBUTTON2
-		);
+YYTKStatus API::Internal::__InitializeConsole__()
+{
+	AllocConsole();
+	FILE* fDummy;
+	freopen_s(&fDummy, "CONIN$", "r", stdin);
+	freopen_s(&fDummy, "CONOUT$", "w", stderr);
+	freopen_s(&fDummy, "CONOUT$", "w", stdout);
 
-		if (nUserChoice == IDNO)
-			exit(0);
-	}
+	SetConsoleTitleA("YYToolkit Log");
 
-	PluginManager::Initialize(); // Remove me to turn off plugin functionality.
+	// Disable the "left-click to select" autism which pauses the entire tool
+	HANDLE hInput = GetStdHandle(STD_INPUT_HANDLE);
+	DWORD dwMode;
+	GetConsoleMode(hInput, &dwMode);
+	SetConsoleMode(hInput, ENABLE_EXTENDED_FLAGS | (dwMode & ~ENABLE_QUICK_EDIT_MODE));
+
+#if _DEBUG
+	Utils::Logging::Message(CLR_GOLD, "YYToolkit %s (Debug) by Archie#8615", YYSDK_VERSION);
+#else
+	Utils::Logging::Message(CLR_LIGHTBLUE, "YYToolkit %s (Release) by Archie#8615", YYSDK_VERSION);
+#endif
 
 	return YYTK_OK;
 }
 
-YYTKStatus API::Internal::Unload()
+YYTKStatus API::Internal::__Unload__()
 {
 	PluginManager::Uninitialize();
 
 	ShowWindow(GetConsoleWindow(), SW_HIDE);
 	FreeConsole();
+
+	API::PopToastNotification("YYToolkit has been unloaded.", "Goodbye!", 0);
+
 	return YYTK_OK;
 }
 
@@ -136,7 +159,7 @@ DllExport YYTKStatus API::Internal::MmGetModuleInformation(const char* szModuleN
 	return YYTK_OK;
 }
 
-YYTKStatus API::Internal::MmFindByteArray(const byte* pbArray, unsigned int uArraySize, unsigned long ulSearchRegionBase, unsigned int ulSearchRegionSize, const char* szMask, bool bStringSearch, DWORD& dwOutBuffer)
+YYTKStatus API::Internal::MmFindByteArray(const unsigned char* pbArray, unsigned int uArraySize, unsigned long ulSearchRegionBase, unsigned int ulSearchRegionSize, const char* szMask, bool bStringSearch, DWORD& dwOutBuffer)
 {
 	dwOutBuffer = 0x00;
 
@@ -158,7 +181,7 @@ YYTKStatus API::Internal::MmFindByteArray(const byte* pbArray, unsigned int uArr
 		int found = 1;
 		for (unsigned j = 0; j < PatternSize; j++)
 		{
-			found &= szMask[j] == '?' || pbArray[j] == *(const byte*)(ulSearchRegionBase + i + j);
+			found &= szMask[j] == '?' || pbArray[j] == *(const unsigned char*)(ulSearchRegionBase + i + j);
 		}
 
 		if (found)
@@ -177,7 +200,7 @@ YYTKStatus API::Internal::MmFindByteArray(const byte* pbArray, unsigned int uArr
 
 YYTKStatus API::Internal::MmFindByteArray(const char* pszArray, unsigned int uArraySize, unsigned long ulSearchRegionBase, unsigned int ulSearchRegionSize, const char* szMask, bool bStringSearch, DWORD& dwOutBuffer)
 {
-	return MmFindByteArray(reinterpret_cast<byte*>(const_cast<char*>(pszArray)), uArraySize, ulSearchRegionBase, ulSearchRegionSize, szMask, bStringSearch, dwOutBuffer);
+	return MmFindByteArray(reinterpret_cast<unsigned char*>(const_cast<char*>(pszArray)), uArraySize, ulSearchRegionBase, ulSearchRegionSize, szMask, bStringSearch, dwOutBuffer);
 }
 
 YYTKStatus API::Internal::MmFindCodeExecute(DWORD& dwOutBuffer)
@@ -225,7 +248,7 @@ YYTKStatus API::Internal::VfGetFunctionPointer(const char* szFunctionName, EFPTy
 		std::string Mask(strlen(szFunctionName) + 1, 'x');
 
 		if (YYTKStatus _Status = MmFindByteArray(
-			reinterpret_cast<const byte*>(szFunctionName), 
+			reinterpret_cast<const unsigned char*>(szFunctionName), 
 			UINT_MAX, 
 			0,
 			0,
@@ -238,13 +261,13 @@ YYTKStatus API::Internal::VfGetFunctionPointer(const char* szFunctionName, EFPTy
 		if (dwStringReference == 0)
 			return YYTK_INVALIDRESULT;
 
-		byte* pbNewPattern = new byte[5];
+		unsigned char* pbNewPattern = new unsigned char[5];
 		pbNewPattern[0] = 0x68;
 
 		memcpy(pbNewPattern + 1, &dwStringReference, sizeof(DWORD));
 
 		if (YYTKStatus _Status = MmFindByteArray(
-			const_cast<const byte*>(pbNewPattern),
+			const_cast<const unsigned char*>(pbNewPattern),
 			5,
 			0,
 			0,
@@ -371,7 +394,11 @@ YYTKStatus API::Internal::MmGetScriptArrayPtr(CDynamicArray<CScript*>*& outArray
 	// call script_exists
 	// xor ecx, ecx
 	// add esp, 0Ch
-	unsigned long pPattern = FindPattern("\xE8\x00\x00\x00\x00\x00\xC9\x83\xC4\x0C", "x?????xxxx", dwScriptExists, 0xFF);
+	unsigned long pPattern = 0;
+	YYTKStatus Status = MmFindByteArray("\xE8\x00\x00\x00\x00\x00\xC9\x83\xC4\x0C", UINT_MAX, dwScriptExists, 0xFF, "x?????xxxx", false, pPattern);
+
+	if (Status)
+		return Status;
 
 	if (!pPattern)
 		return YYTK_NOMATCH;

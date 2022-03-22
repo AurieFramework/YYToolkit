@@ -1,7 +1,8 @@
-#include <Windows.h>
-#include <string>
-#include "Logging.hpp"
 #include "../../Features/API/API.hpp"
+#include "../../SDK/Structures/Documented/YYRValue/YYRValue.hpp"
+#include "../../SDK/FwdDecls/FwdDecls.hpp"
+#include "Logging.hpp"
+#include <Windows.h>
 
 static std::string ParseVA(const char* fmt, va_list Args)
 {
@@ -70,6 +71,12 @@ namespace Utils::Logging
 		sFinalText += "Message: " + sMessage + "\n\n";
 
 		sFinalText += "Version: YYToolkit " + std::string(YYSDK_VERSION) + "\n";
+
+		if (API::gAPIVars.Globals.g_bWasPreloaded)
+			sFinalText += "Early Injection: Enabled\n";
+		else
+			sFinalText += "Early Injection: Disabled\n";
+		
 		sFinalText += "File: " + std::string(File) + "\n";
 		sFinalText += "Line: " + std::to_string(Line) + "\n";
 

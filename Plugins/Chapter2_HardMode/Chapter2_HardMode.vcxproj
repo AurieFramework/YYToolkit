@@ -148,6 +148,7 @@
   <ItemGroup>
     <ClCompile Include="Src\DllMain.cpp" />
     <ClCompile Include="Src\Features\Features.cpp" />
+    <ClCompile Include="Src\SDK\Plugins\Plugins.cpp" />
     <ClCompile Include="Src\SDK\Structures\Documented\CDynamicArray\CDynamicArray.cpp" />
     <ClCompile Include="Src\SDK\Structures\Documented\RefThing\RefThing.cpp" />
     <ClCompile Include="Src\SDK\Structures\Documented\YYRValue\YYRValue.cpp" />

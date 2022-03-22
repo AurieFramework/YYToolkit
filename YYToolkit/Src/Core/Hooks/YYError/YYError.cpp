@@ -2,6 +2,7 @@
 #include "../../Features/API/API.hpp"
 #include "../../Utils/Logging/Logging.hpp"
 #include "../../Features/PluginManager/PluginManager.hpp"
+#include "../../SDK/Plugins/YYTKEvent/YYTKEvent.hpp"
 
 namespace Hooks
 {
@@ -21,7 +22,7 @@ namespace Hooks
 			// Override scope
 			{
 
-				va_list vaArgs;
+				va_list vaArgs{};
 				va_start(vaArgs, pFormat);
 
 				char Message[2048] = { 0 };

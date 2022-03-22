@@ -1,4 +1,5 @@
-#include "../../SDK/SDK.hpp"
+#include "../../SDK/Enums/Enums.hpp"
+#include <string>
 
 namespace Utils
 {

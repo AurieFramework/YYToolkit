@@ -14,7 +14,6 @@
 #include "Drawing/GR_Draw_Text_TC/GR_Draw_Text_TC_header.hpp"
 #include "../Features/API/API.hpp"
 #include "Hooks.hpp"
-#include <chrono>
 #include <array>
 
 #define ReCa reinterpret_cast
@@ -55,8 +54,6 @@ namespace Hooks
 					);
 				}
 			};
-
-			auto TimeStart = std::chrono::high_resolution_clock::now();
 
 			Hook
 			(
@@ -155,11 +152,8 @@ namespace Hooks
 
 			WindowProc::_SetWindowsHook();
 
-			auto TimeEnd = std::chrono::high_resolution_clock::now();
-
 			ShowWindow(API::gAPIVars.Globals.g_hwWindowHandle, SW_SHOW);
 			SetForegroundWindow(API::gAPIVars.Globals.g_hwWindowHandle);
-			Utils::Logging::Message(CLR_LIGHTBLUE, "Hook system done - took %.2f seconds!", static_cast<float>(std::chrono::duration_cast<std::chrono::milliseconds>(TimeEnd - TimeStart).count()) / 1000.0f);
 		}
 	}
 

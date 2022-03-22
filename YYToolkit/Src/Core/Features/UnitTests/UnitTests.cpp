@@ -1,5 +1,5 @@
 #include "UnitTests.hpp"
-#include "../API/API.hpp"
+#include "../API/Internal.hpp"
 #include "../../Utils/Logging/Logging.hpp"
 
 bool Tests::RunUnitTests()
@@ -74,6 +74,22 @@ bool Tests::RunUnitTests()
 	}
 	
 	Utils::Logging::Message(CLR_LIGHTBLUE, "Unit Test Status: %s", bPassedTests ? "Passed" : "Failed");
+
+	if (!bPassedTests)
+	{
+		int nUserChoice = MessageBoxA(
+			0,
+			"YYToolkit's self-check failed to pass.\n"
+			"This means that some features may be broken or completely unavailable.\n"
+			"Plugins relying on this functionality may cease to work.\n\n"
+			"Proceed anyway?",
+			"YYToolkit",
+			MB_TOPMOST | MB_YESNO | MB_ICONWARNING | MB_SETFOREGROUND | MB_DEFBUTTON2
+		);
+
+		if (nUserChoice == IDNO)
+			exit(0);
+	}
 
 	return bPassedTests;
 }

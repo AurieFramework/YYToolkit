@@ -1,5 +1,7 @@
-#include "API.hpp"
 #include "../../Utils/Logging/Logging.hpp"
+#include "Internal.hpp"
+#include "API.hpp"
+#include "../../Utils/PortableFileDialog/PFD.hpp"
 
 bool API::GetFunctionByName(const std::string& Name, TRoutine& outRoutine)
 {
@@ -45,12 +47,12 @@ bool API::GetGlobalInstance(CInstance*& outInstance)
 	return true;
 }
 
-DllExport bool API::IsYYC()
+bool API::IsYYC()
 {
 	return IsGameYYC();
 }
 
-DllExport bool API::IsGameYYC()
+bool API::IsGameYYC()
 {
 	TRoutine Routine = nullptr;
 	bool Success = GetFunctionByName("code_is_compiled", Routine);
@@ -73,7 +75,7 @@ DllExport bool API::IsGameYYC()
 	return Result.Real > 0.5;
 }
 
-DllExport bool API::CallBuiltin(YYRValue& Result, const std::string& Name, CInstance* Self, CInstance* Other, const std::vector<YYRValue>& Args)
+bool API::CallBuiltin(YYRValue& Result, const std::string& Name, CInstance* Self, CInstance* Other, const std::vector<YYRValue>& Args)
 {
 	bool bShouldUseGlobalInstance = (!Self && !Other);
 
@@ -121,7 +123,7 @@ DllExport bool API::CallBuiltin(YYRValue& Result, const std::string& Name, CInst
 	return true;
 }
 
-DllExport unsigned long API::FindPattern(const char* Pattern, const char* Mask, unsigned long Base, unsigned long Size)
+unsigned long API::FindPattern(const char* Pattern, const char* Mask, unsigned long Base, unsigned long Size)
 {
 	DWORD dwReturn = 0;
 
@@ -139,4 +141,14 @@ DllExport unsigned long API::FindPattern(const char* Pattern, const char* Mask, 
 	}
 
 	return dwReturn;
+}
+
+void API::PopToastNotification(const std::string& Text, const std::string& Caption, int IconType)
+{
+	pfd::notify(Caption, Text, static_cast<pfd::icon>(IconType));
+}
+
+void API::PopFileOpenDialog(const std::string& WindowTitle, const std::string& InitialPath, const std::vector<std::string>& Filters, bool AllowMultiselect, std::vector<std::string>& outSelected)
+{
+	outSelected = pfd::open_file(WindowTitle, InitialPath, Filters, (AllowMultiselect ? pfd::opt::multiselect : pfd::opt::none)).result();
 }

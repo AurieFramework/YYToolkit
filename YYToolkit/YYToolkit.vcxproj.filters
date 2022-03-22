@@ -165,6 +165,12 @@
     <ClInclude Include="Src\Core\Utils\WinAPI\WinAPI.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Src\Core\Features\API\Internal.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Core\Utils\PortableFileDialog\PFD.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Src\MainEntry.cpp">
@@ -264,6 +270,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Src\Core\Utils\WinAPI\WinAPI.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Core\SDK\Plugins\Plugins.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -3,6 +3,7 @@
 #include "../../Utils/Logging/Logging.hpp"
 #include "../../Utils/D3D11 Hooker/D3D11Hooker.hpp"
 #include "../../Features/PluginManager/PluginManager.hpp"
+#include "../../SDK/Plugins/YYTKEvent/YYTKEvent.hpp"
 
 namespace Hooks
 {

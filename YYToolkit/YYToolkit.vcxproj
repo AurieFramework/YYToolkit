@@ -160,6 +160,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Src\Core\Features\API\Internal.hpp" />
     <ClInclude Include="Src\Core\Features\Console\Console.hpp" />
     <ClInclude Include="Src\Core\Features\API\API.hpp" />
     <ClInclude Include="Src\Core\Features\PluginManager\PluginManager.hpp" />
@@ -208,6 +209,7 @@
     <ClInclude Include="Src\Core\Utils\MH\trampoline.h" />
     <ClInclude Include="Src\Core\Utils\Hashing\MurMurHash.hpp" />
     <ClInclude Include="Src\Core\Utils\PE Parser\PEParser.hpp" />
+    <ClInclude Include="Src\Core\Utils\PortableFileDialog\PFD.hpp" />
     <ClInclude Include="Src\Core\Utils\WinAPI\WinAPI.hpp" />
     <ClInclude Include="Src\Toolkit\Utils\StackTrace.hpp" />
   </ItemGroup>
@@ -231,6 +233,7 @@
     <ClCompile Include="Src\Core\Hooks\WindowProc\WindowProc.cpp" />
     <ClCompile Include="Src\Core\Hooks\YYError\YYError.cpp" />
     <ClCompile Include="Src\Core\Hooks\Drawing\GR_Draw_Text\GR_Draw_Text.cpp" />
+    <ClCompile Include="Src\Core\SDK\Plugins\Plugins.cpp" />
     <ClCompile Include="Src\Core\SDK\Structures\Documented\CDynamicArray\CDynamicArray.cpp" />
     <ClCompile Include="Src\Core\SDK\Structures\Documented\RefThing\RefThing.cpp" />
     <ClCompile Include="Src\Core\SDK\Structures\Documented\YYRValue\YYRValue.cpp" />
