@@ -113,7 +113,11 @@ YYTKStatus API::Internal::__InitializeConsole__()
 	freopen_s(&fDummy, "CONOUT$", "w", stderr);
 	freopen_s(&fDummy, "CONOUT$", "w", stdout);
 
-	SetConsoleTitleA("YYToolkit Log");
+	// Set console title scope
+	{
+		std::string sTitleString = std::string("YYToolkit Log (") + YYSDK_VERSION + ")";
+		SetConsoleTitleA(sTitleString.c_str());
+	}
 
 	// Disable the "left-click to select" autism which pauses the entire tool
 	HANDLE hInput = GetStdHandle(STD_INPUT_HANDLE);
