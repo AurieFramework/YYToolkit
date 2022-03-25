@@ -71,33 +71,24 @@ YYTKStatus API::Internal::__InitializeGlobalVars__()
 
 	// Initialize g_hwWindowHandle
 	{
-		YYRValue Result;
-		bool Success = API::CallBuiltin(Result, "window_handle", nullptr, nullptr, {});
-
-		if (!Success)
-			Utils::Logging::Message(CLR_TANGERINE, "[Warning] API::CallBuiltin(\"window_handle\") failed.");
+		YYRValue Result = {};
+		API::CallBuiltin(Result, "window_handle", nullptr, nullptr, {});
 
 		API::gAPIVars.Globals.g_hwWindowHandle = reinterpret_cast<HWND>(Result.As<RValue>().Pointer);
 	}
 
 	// Initialize g_pGlobalInstance
 	{
-		YYRValue Result;
-		bool Success = API::CallBuiltin(Result, "@@GlobalScope@@", nullptr, nullptr, {});
-
-		if (!Success)
-			Utils::Logging::Message(CLR_TANGERINE, "[Warning] API::CallBuiltin(\"@@GlobalScope@@\") failed.");
+		YYRValue Result = {};
+		API::CallBuiltin(Result, "@@GlobalScope@@", nullptr, nullptr, {});
 
 		API::gAPIVars.Globals.g_pGlobalObject = Result;
 	}
 
 	// Initialize g_WindowDevice
 	{
-		YYRValue Result;
-		bool Success = API::CallBuiltin(Result, "window_device", nullptr, nullptr, {});
-
-		if (!Success)
-			Utils::Logging::Message(CLR_TANGERINE, "[Warning] API::CallBuiltin(\"window_device\") failed.");
+		YYRValue Result = {};
+		API::CallBuiltin(Result, "window_device", nullptr, nullptr, {});
 
 		API::gAPIVars.Globals.g_pWindowDevice = Result.As<RValue>().Pointer;
 	}
@@ -115,7 +106,7 @@ YYTKStatus API::Internal::__InitializeConsole__()
 
 	// Set console title scope
 	{
-		std::string sTitleString = std::string("YYToolkit Log (") + YYSDK_VERSION + ")";
+		std::string sTitleString = std::string("YYToolkit Log (v") + YYSDK_VERSION + ")";
 		SetConsoleTitleA(sTitleString.c_str());
 	}
 
@@ -128,9 +119,8 @@ YYTKStatus API::Internal::__InitializeConsole__()
 #if _DEBUG
 	Utils::Logging::Message(CLR_GOLD, "YYToolkit %s (Debug) by Archie#8615", YYSDK_VERSION);
 #else
-	Utils::Logging::Message(CLR_LIGHTBLUE, "YYToolkit %s (Release) by Archie#8615", YYSDK_VERSION);
+	Utils::Logging::Message(CLR_LIGHTBLUE, "YYToolkit by Archie#8615", YYSDK_VERSION);
 #endif
-
 	return YYTK_OK;
 }
 
