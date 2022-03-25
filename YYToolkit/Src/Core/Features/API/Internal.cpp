@@ -20,7 +20,7 @@ YYTKStatus API::Internal::__Initialize__(HMODULE hMainModule)
 			Utils::Logging::Critical(
 				__FILE__,
 				__LINE__, 
-				"[Early Launch] VfGetFunctionPointer(\"window_device\") failed with %s", 
+				"VfGetFunctionPointer(\"window_device\") failed with %s", 
 				Utils::Logging::YYTKStatus_ToString(Status).c_str()
 			);
 
