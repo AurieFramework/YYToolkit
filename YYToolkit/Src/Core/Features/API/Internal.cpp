@@ -20,7 +20,7 @@ YYTKStatus API::Internal::__Initialize__(HMODULE hMainModule)
 			Utils::Logging::Critical(
 				__FILE__,
 				__LINE__, 
-				"[Early Launch] VfGetFunctionPointer(\"window_device\") failed with %s", 
+				"VfGetFunctionPointer(\"window_device\") failed with %s", 
 				Utils::Logging::YYTKStatus_ToString(Status).c_str()
 			);
 
@@ -71,33 +71,24 @@ YYTKStatus API::Internal::__InitializeGlobalVars__()
 
 	// Initialize g_hwWindowHandle
 	{
-		YYRValue Result;
-		bool Success = API::CallBuiltin(Result, "window_handle", nullptr, nullptr, {});
-
-		if (!Success)
-			Utils::Logging::Message(CLR_TANGERINE, "[Warning] API::CallBuiltin(\"window_handle\") failed.");
+		YYRValue Result = {};
+		API::CallBuiltin(Result, "window_handle", nullptr, nullptr, {});
 
 		API::gAPIVars.Globals.g_hwWindowHandle = reinterpret_cast<HWND>(Result.As<RValue>().Pointer);
 	}
 
 	// Initialize g_pGlobalInstance
 	{
-		YYRValue Result;
-		bool Success = API::CallBuiltin(Result, "@@GlobalScope@@", nullptr, nullptr, {});
-
-		if (!Success)
-			Utils::Logging::Message(CLR_TANGERINE, "[Warning] API::CallBuiltin(\"@@GlobalScope@@\") failed.");
+		YYRValue Result = {};
+		API::CallBuiltin(Result, "@@GlobalScope@@", nullptr, nullptr, {});
 
 		API::gAPIVars.Globals.g_pGlobalObject = Result;
 	}
 
 	// Initialize g_WindowDevice
 	{
-		YYRValue Result;
-		bool Success = API::CallBuiltin(Result, "window_device", nullptr, nullptr, {});
-
-		if (!Success)
-			Utils::Logging::Message(CLR_TANGERINE, "[Warning] API::CallBuiltin(\"window_device\") failed.");
+		YYRValue Result = {};
+		API::CallBuiltin(Result, "window_device", nullptr, nullptr, {});
 
 		API::gAPIVars.Globals.g_pWindowDevice = Result.As<RValue>().Pointer;
 	}
@@ -113,7 +104,11 @@ YYTKStatus API::Internal::__InitializeConsole__()
 	freopen_s(&fDummy, "CONOUT$", "w", stderr);
 	freopen_s(&fDummy, "CONOUT$", "w", stdout);
 
-	SetConsoleTitleA("YYToolkit Log");
+	// Set console title scope
+	{
+		std::string sTitleString = std::string("YYToolkit Log (v") + YYSDK_VERSION + ")";
+		SetConsoleTitleA(sTitleString.c_str());
+	}
 
 	// Disable the "left-click to select" autism which pauses the entire tool
 	HANDLE hInput = GetStdHandle(STD_INPUT_HANDLE);
@@ -124,9 +119,8 @@ YYTKStatus API::Internal::__InitializeConsole__()
 #if _DEBUG
 	Utils::Logging::Message(CLR_GOLD, "YYToolkit %s (Debug) by Archie#8615", YYSDK_VERSION);
 #else
-	Utils::Logging::Message(CLR_LIGHTBLUE, "YYToolkit %s (Release) by Archie#8615", YYSDK_VERSION);
+	Utils::Logging::Message(CLR_LIGHTBLUE, "YYToolkit by Archie#8615", YYSDK_VERSION);
 #endif
-
 	return YYTK_OK;
 }
 
