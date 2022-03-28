@@ -5,6 +5,8 @@ namespace Utils
 {
 	namespace Logging
 	{
+		std::string ParseVA(const char* fmt, va_list Args);
+
 		void SetPrintColor(Color color);
 
 		void Message(Color C, const char* fmt, ...);

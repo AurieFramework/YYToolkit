@@ -86,7 +86,13 @@ DllExport YYTKStatus PluginEntry(YYTKPlugin* pPlugin)
     pPlugin->PluginHandler = PluginEventHandler;
     pPlugin->PluginUnload = PluginUnload;
 
-    printf("[Chapter 2 - 2 Hard 4 You] Loaded for version %s\n", YYSDK_VERSION);
+    using FNPrintFunc = void(*)(const char* String, ...);
+    FNPrintFunc PrintMessage = pPlugin->GetCoreExport<FNPrintFunc>("PrintMessage");
+
+    if (!PrintMessage)
+        printf("[Chapter2 Hard Mode] - Loaded for YYTK version %s\n", YYSDK_VERSION);
+    else
+        PrintMessage("[Chapter2 Hard Mode] - Loaded for YYTK version %s", YYSDK_VERSION);
 
     // Tell the core everything went fine.
     return YYTK_OK;
