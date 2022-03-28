@@ -4,22 +4,22 @@
 #include "Logging.hpp"
 #include <Windows.h>
 
-static std::string ParseVA(const char* fmt, va_list Args)
-{
-	const static size_t MaxStringLength = 1024;
-
-	char Buf[MaxStringLength];
-	memset(Buf, 0, MaxStringLength);
-
-	strncpy(Buf, fmt, MaxStringLength);
-
-	vsprintf_s(Buf, fmt, Args);
-
-	return std::string(Buf);
-}
-
 namespace Utils::Logging
 {
+	std::string ParseVA(const char* fmt, va_list Args)
+	{
+		const static size_t MaxStringLength = 1024;
+
+		char Buf[MaxStringLength];
+		memset(Buf, 0, MaxStringLength);
+
+		strncpy(Buf, fmt, MaxStringLength);
+
+		vsprintf_s(Buf, fmt, Args);
+
+		return std::string(Buf);
+	}
+
 	void SetPrintColor(Color color)
 	{
 		static HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);

@@ -136,4 +136,16 @@ namespace API
 		bool AllowMultiselect,
 		std::vector<std::string>& outSelected
 	);
+
+	DllExport void PrintMessage(
+		const char* fmt,
+		...
+	);
+
+	DllExport void PrintError(
+		const char* File,
+		const int& Line,
+		const char* fmt,
+		...
+	);
 }
