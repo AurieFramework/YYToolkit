@@ -48,6 +48,26 @@ void __stdcall Main(HINSTANCE g_hDLL)
 		if (GetAsyncKeyState(VK_F10) & 1)
 			Console::DoCommand();
 
+		YYObjectBase* inst = API::gAPIVars.Globals.g_pGlobalObject;
+
+		if (GetAsyncKeyState(VK_F5) & 1)
+		{
+			int outID = -1;
+			YYTKStatus st = API::Internal::VfGetIdByName(inst, "debug", outID);
+
+			Utils::Logging::Error(__FILE__, __LINE__, "Status %s, outID: %d",
+				Utils::Logging::YYTKStatus_ToString(st).c_str(),
+				outID
+			);
+
+			RValue& rv = inst->InternalGetYYVarRef(outID);
+			
+			Utils::Logging::Error(__FILE__, __LINE__, "Value of 'debug': %d, %d",
+				int(round(rv.Real)),
+				rv.Kind
+			);
+		}
+
 		Sleep(5); 
 	}
 

@@ -43,6 +43,9 @@ bool API::GetGlobalInstance(CInstance*& outInstance)
 	// Call it and save the result.
 	Function(&Result, nullptr, nullptr, 0, nullptr);
 
+	if (!Result.Instance)
+		Utils::Logging::Error(__FILE__, __LINE__, "%s failed - Instance was nullptr!", __FUNCTION__);
+
 	outInstance = Result.Instance;
 	return true;
 }

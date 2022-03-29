@@ -160,17 +160,38 @@ void Console::DoCommand()
 		Utils::Logging::NoNewlineMessage(CLR_GOLD, "%s", Command.c_str());
 		Utils::Logging::NoNewlineMessage(CLR_DEFAULT, " -> ");
 
-		if (Result.Kind == VALUE_REAL)
+		switch (Result.Kind)
+		{
+		case VALUE_REAL:
 			Utils::Logging::Message(CLR_BLUE, "%.2f", Result.Real);
-
-		else if (Result.Kind == VALUE_BOOL)
-			Utils::Logging::Message(CLR_TANGERINE, "%s", (Result.Real > 0.5) ? "true" : "false");
-
-		else if (Result.Kind == VALUE_STRING)
+			break;
+		case VALUE_STRING:
 			Utils::Logging::Message(CLR_YELLOW, "\"%s\"", Result.String->Get());
-
-		else
-			Utils::Logging::Message(CLR_GRAY, "Undefined (type 0x%X)", Result.Kind);
+			break;
+		case VALUE_PTR:
+			Utils::Logging::Message(CLR_BLUE, "Pointer -> 0x%p", Result.Pointer);
+			break;
+		case VALUE_OBJECT:
+			Utils::Logging::Message(CLR_BLUE, "Object at 0x%p", Result.Pointer);
+			break;
+		case VALUE_INT32:
+			Utils::Logging::Message(CLR_BLUE, "%d (0x%X)", Result.I32, Result.I32);
+			break;
+		case VALUE_INT64:
+			Utils::Logging::Message(CLR_BLUE, "%lld (0x%llX)", Result.I64, Result.I64);
+			break;
+		case VALUE_BOOL:
+			Utils::Logging::Message(CLR_TANGERINE, "%s", (Result.Real > 0.5) ? "true" : "false");
+			break;
+		case VALUE_UNDEFINED:
+			Utils::Logging::Message(CLR_GRAY, "<undefined>");
+			break;
+		case VALUE_UNSET:
+			Utils::Logging::Message(CLR_GRAY, "<unset>");
+			break;
+		default:
+			Utils::Logging::Message(CLR_GRAY, "Unknown return type (0x%X)", Result.Kind);
+		}
 
 		delete[] pArgs;
 		return;
