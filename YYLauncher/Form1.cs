@@ -21,19 +21,11 @@ namespace Launcher
 
             ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12; // Fix for Windows 7 downloads
 
-            ContextMenu PluginManagerContextMenu = new ContextMenu();
-            PluginManagerContextMenu.MenuItems.Add("Install plugin", new EventHandler(PluginContextMenu_InstallPlugin));
-            PluginManagerContextMenu.MenuItems.Add("Uninstall plugin", new EventHandler(PluginContextMenu_UninstallPlugin));
-            PluginManagerContextMenu.MenuItems.Add("Enable plugin", new EventHandler(PluginContextMenu_EnablePlugin));
-            PluginManagerContextMenu.MenuItems.Add("Disable plugin", new EventHandler(PluginContextMenu_DisablePlugin));
-            PluginManagerContextMenu.MenuItems.Add("Refresh list", new EventHandler(PluginContextMenu_Refresh));
-
-            listPlugins.ContextMenu = PluginManagerContextMenu;
-
-            ContextMenu btYYTKLaunchContextMenu = new ContextMenu();
-            btYYTKLaunchContextMenu.MenuItems.Add("Launch with custom DLL", new EventHandler(btYYTKLaunchContextMenu_LaunchCustom));
-
-            btYYTKLaunch.ContextMenu = btYYTKLaunchContextMenu;
+            listPlugins.ContextMenuStrip.Items.Add("Install plugin").Click += new EventHandler(PluginContextMenu_InstallPlugin);
+            listPlugins.ContextMenuStrip.Items.Add("Uninstall plugin").Click += new EventHandler(PluginContextMenu_UninstallPlugin);
+            listPlugins.ContextMenuStrip.Items.Add("Enable plugin").Click += new EventHandler(PluginContextMenu_EnablePlugin);
+            listPlugins.ContextMenuStrip.Items.Add("Disable plugin").Click += new EventHandler(PluginContextMenu_DisablePlugin);
+            listPlugins.ContextMenuStrip.Items.Add("Refresh list").Click += new EventHandler(PluginContextMenu_Refresh);
         }
 
         private void btRunnerPick_Click(object sender, EventArgs e)
@@ -58,84 +50,28 @@ namespace Launcher
 
         private void btYYTKLaunch_Click(object sender, EventArgs e)
         {
-            string TempPath = Path.GetTempPath() + "YYToolkit.dll";
-
             if (string.IsNullOrEmpty(sRunnerFileName))
             {
                 MessageBox.Show("Please select the game executable first!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
-            using (var Browser = new WebClient())
+            string YYTKPath = GetYYTKPath(cbUseLatestCommit.Checked);
+
+            if (string.IsNullOrEmpty(YYTKPath))
+                return;
+
+            if (cbUsePreloading.Checked)
             {
-                try
-                {
-                    Browser.DownloadFile("https://github.com/Archie-osu/YYToolkit/releases/latest/download/YYToolkit.dll", TempPath);
-                }
-                catch (System.Exception exception)
-                {
-                    TempPath = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + "\\YYToolkit.dll";
-                    try
-                    {
-                        Browser.DownloadFile("https://github.com/Archie-osu/YYToolkit/releases/latest/download/YYToolkit.dll", TempPath);
-                    }
-                    catch (System.Exception exception2)
-                    {
-                        string Exception1Message = "";
-                        string Exception2Message = "";
-
-                        while (exception != null)
-                        {
-                            Exception1Message += exception.Message + "\n";
-                            exception = exception.InnerException;
-                        }
-
-                        while (exception2 != null)
-                        {
-                            Exception2Message += exception2.Message + "\n";
-                            exception2 = exception2.InnerException;
-                        }
-
-                        MessageBox.Show("Couldn't inject YYToolkit.\nPress OK to launch the game without mods.\n\nFirst method: " + Exception1Message + "\nSecond method: " + Exception2Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    }
-                }
-            }
-            
-            if (!cbUsePreloading.Checked)
-            {
-                Process p;
-
-                if (!string.IsNullOrEmpty(sDataFilePath))
-                    p = Process.Start(sRunnerFilePath, "-game \"" + sDataFilePath + "\"");
-                else
-                    p = Process.Start(sRunnerFilePath);
-
-                while (string.IsNullOrEmpty(p.MainWindowTitle))
-                {
-                    Thread.Sleep(500);
-                    p.Refresh();
-                }
-
-                Utils.Inject(p, TempPath);
-            }
-            else
-            {
-                Utils.StartPreloaded(sRunnerFilePath, sDataFilePath, TempPath);
-            }
-        }
-
-        private void btNoModLaunch_Click(object sender, EventArgs e)
-        {
-            if (string.IsNullOrEmpty(sRunnerFileName))
-            {
-                MessageBox.Show("Please select the game executable first!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                Utils.StartPreloaded(sRunnerFilePath, sDataFilePath, YYTKPath);
                 return;
             }
 
-            if (!string.IsNullOrEmpty(sDataFilePath))
-                Process.Start(sRunnerFilePath, "-game \"" + sDataFilePath + "\"");
-            else
-                Process.Start(sRunnerFilePath);
+            Process p = Process.Start(sRunnerFilePath, string.IsNullOrEmpty(sDataFilePath) ? "" : $"-game \"{sDataFilePath}\"");
+
+            p.WaitForInputIdle();
+
+            Utils.Inject(p, YYTKPath);
         }
 
         private void btResetRunner_Click(object sender, EventArgs e)
@@ -164,30 +100,14 @@ namespace Launcher
 
             using (OpenFileDialog fileDialog = Utils.CreateFileDialog("%systemdrive%", "Find the data.win file", "GameMaker Data Files|*.win", 1))
             {
-                if (fileDialog.ShowDialog() == DialogResult.OK)
-                {
-                    sDataFilePath = fileDialog.FileName;
+                if (fileDialog.ShowDialog() != DialogResult.OK)
+                    return;
 
-                    txtDataFile.ResetText();
-                    txtDataFile.AppendText(sDataFilePath);
-                }
+                sDataFilePath = fileDialog.FileName;
+
+                txtDataFile.ResetText();
+                txtDataFile.AppendText(sDataFilePath);
             }
-        }
-
-        private void btOpenPluginFolder_Click(object sender, EventArgs e)
-        {
-            if (string.IsNullOrEmpty(sRunnerFileName))
-            {
-                MessageBox.Show("Please select the game executable first!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
-            }
-
-            Process.Start("explorer", "\"" + Directory.GetCurrentDirectory());
-        }
-
-        private void btOpenGitHub_Click(object sender, EventArgs e)
-        {
-            Process.Start("explorer.exe", $"\"https://github.com/Archie-osu/YYToolkit/releases\"");
         }
 
         private void PluginContextMenu_InstallPlugin(object sender, EventArgs e)
@@ -200,24 +120,24 @@ namespace Launcher
 
             using (OpenFileDialog fileDialog = Utils.CreateFileDialog("%systemdrive%", "Find the plugin file", "YYToolkit plugins|*.dll", 1))
             {
-                if (fileDialog.ShowDialog() == DialogResult.OK)
+                if (fileDialog.ShowDialog() != DialogResult.OK)
+                    return;
+
+                try
                 {
-                    try
-                    {
-                        if (!Directory.Exists("autoexec"))
-                            Directory.CreateDirectory("autoexec");
+                    if (!Directory.Exists("autoexec"))
+                        Directory.CreateDirectory("autoexec");
 
-                        File.Copy(fileDialog.FileName, Directory.GetCurrentDirectory() + "\\autoexec\\" + fileDialog.SafeFileName);
-                    }
-                    catch (System.Exception Exception)
-                    {
-                        MessageBox.Show(Exception.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    }
-
-                    // Refresh plugins
-                    listPlugins.Items.Clear();
-                    listPlugins.Items.AddRange(Utils.GetPluginsFromGameDirectory(Directory.GetCurrentDirectory()));
+                    File.Copy(fileDialog.FileName, Directory.GetCurrentDirectory() + "\\autoexec\\" + fileDialog.SafeFileName);
                 }
+                catch (System.Exception Exception)
+                {
+                    MessageBox.Show(Exception.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+
+                // Refresh plugins
+                listPlugins.Items.Clear();
+                listPlugins.Items.AddRange(Utils.GetPluginsFromGameDirectory(Directory.GetCurrentDirectory()));
             }
         }
 
@@ -318,7 +238,7 @@ namespace Launcher
                 Process.Start("explorer.exe", $"\"{sDataFilePath}\"");
         }
 
-        private void btYYTKLaunchContextMenu_LaunchCustom(object sender, EventArgs e)
+        private void btLaunchCustomDLL_Click(object sender, EventArgs e)
         {
             if (string.IsNullOrEmpty(sRunnerFileName))
             {
@@ -331,36 +251,20 @@ namespace Launcher
 
             using (OpenFileDialog fileDialog = Utils.CreateFileDialog("%systemdrive%", "Find the custom DLL", "DLL files|*.dll", 1))
             {
-                if (fileDialog.ShowDialog() == DialogResult.OK)
+                if (fileDialog.ShowDialog() != DialogResult.OK)
+                    return;
+
+                if (cbUsePreloading.Checked)
                 {
-                    if (!cbUsePreloading.Checked)
-                    {
-                        Process p;
-
-                        if (!string.IsNullOrEmpty(sDataFilePath))
-                            p = Process.Start(sRunnerFilePath, "-game \"" + sDataFilePath + "\"");
-                        else
-                            p = Process.Start(sRunnerFilePath);
-
-                        while (string.IsNullOrEmpty(p.MainWindowTitle))
-                        {
-                            Thread.Sleep(500);
-                            p.Refresh();
-                        }
-
-                        Utils.Inject(p, fileDialog.FileName);
-                    }
-                    else
-                    {
-                        Utils.StartPreloaded(sRunnerFilePath, sDataFilePath, fileDialog.FileName);
-                    }
+                    Utils.StartPreloaded(sRunnerFilePath, sDataFilePath, fileDialog.FileName);
+                    return;
                 }
-            }
-        }
 
-        private void btOpenUMTGitHub_Click(object sender, EventArgs e)
-        {
-            Process.Start("explorer.exe", $"\"https://github.com/krzys-h/UndertaleModTool/releases\"");
+                Process p = Process.Start(sRunnerFilePath, string.IsNullOrEmpty(sDataFilePath) ? "" : $"-game \"{sDataFilePath}\"");
+                p.WaitForInputIdle();
+
+                Utils.Inject(p, Path.GetFullPath(fileDialog.FileName));
+            }
         }
     }
 }

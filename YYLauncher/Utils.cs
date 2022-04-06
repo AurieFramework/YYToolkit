@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
+using System.IO.Compression;
+using System.Net;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
-using Launcher;
 
 namespace Launcher
 {
@@ -33,10 +34,10 @@ namespace Launcher
 
         public static void StartPreloaded(string sRunnerFilePath, string sDataFilePath, string sPathToDll)
         {
-            WinAPI.PROCESS_INFORMATION pInfo = new WinAPI.PROCESS_INFORMATION();
-            WinAPI.STARTUPINFO sInfo = new WinAPI.STARTUPINFO();
-            WinAPI.SECURITY_ATTRIBUTES pSec = new WinAPI.SECURITY_ATTRIBUTES();
-            WinAPI.SECURITY_ATTRIBUTES tSec = new WinAPI.SECURITY_ATTRIBUTES();
+            WinAPI.PROCESS_INFORMATION pInfo = new();
+            WinAPI.STARTUPINFO sInfo = new();
+            WinAPI.SECURITY_ATTRIBUTES pSec = new();
+            WinAPI.SECURITY_ATTRIBUTES tSec = new();
             pSec.nLength = Marshal.SizeOf(pSec);
             tSec.nLength = Marshal.SizeOf(tSec);
 
@@ -44,26 +45,26 @@ namespace Launcher
             if (String.IsNullOrEmpty(sDataFilePath))
             {
                 Success = WinAPI.CreateProcess(sRunnerFilePath, "", ref pSec, ref tSec, false,
-               4 /* CREATE_SUSPENDED */, IntPtr.Zero, Path.GetDirectoryName(sRunnerFilePath), ref sInfo, out pInfo);
+                4 /* CREATE_SUSPENDED */, IntPtr.Zero, Path.GetDirectoryName(sRunnerFilePath), ref sInfo, out pInfo);
             }
             else
             {
-                Success = WinAPI.CreateProcess(sRunnerFilePath, "-game \"" + sDataFilePath + "\"", ref pSec, ref tSec, false,
-               4 /* CREATE_SUSPENDED */, IntPtr.Zero, Path.GetDirectoryName(sRunnerFilePath), ref sInfo, out pInfo);
+                Success = WinAPI.CreateProcess(sRunnerFilePath, $"-game \"{sDataFilePath}\"", ref pSec, ref tSec, false,
+                4 /* CREATE_SUSPENDED */, IntPtr.Zero, Path.GetDirectoryName(sRunnerFilePath), ref sInfo, out pInfo);
             }
 
             if (!Success)
             {
-                MessageBox.Show("Failed to create a process.\nGetLastError() returned " + Marshal.GetLastWin32Error().ToString(), "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Failed to create a process.\nGetLastError() returned " + Marshal.GetLastPInvokeError().ToString(), "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
 
-            Utils.Inject(pInfo.hProcess, sPathToDll);
+            Inject(pInfo.hProcess, sPathToDll);
         }
 
         public static OpenFileDialog CreateFileDialog(string StartPath, string Title, string Filter, int FilterIndex)
         {
-            OpenFileDialog dialog = new OpenFileDialog
+            OpenFileDialog dialog = new()
             {
                 //InitialDirectory = Environment.ExpandEnvironmentVariables(StartPath),
                 Title = Title,
@@ -78,7 +79,7 @@ namespace Launcher
         public static string[] GetPluginsFromGameDirectory(string GameDirPath)
         {
             if (!Directory.Exists(GameDirPath) || !Directory.Exists(GameDirPath + "\\autoexec"))
-                return new string[0];
+                return Array.Empty<string>();
 
             var EnabledEntries = Directory.GetFiles(GameDirPath + "\\autoexec", "*.dll");
             var DisabledEntries = Directory.GetFiles(GameDirPath + "\\autoexec", "*.dll.disabled");
@@ -104,6 +105,105 @@ namespace Launcher
 
     public partial class MainWindow : Form
     {
+        // Downloads YYTK and returns the path it's at.
+        public static string GetYYTKPath(bool UseArtifactURL)
+        {
+            string DownloadPath = $"{Directory.GetCurrentDirectory()}\\YYToolkit.dll";
+
+#pragma warning disable SYSLIB0014
+            using (var Browser = new WebClient())
+            {
+                string URL = UseArtifactURL ?
+                    "https://nightly.link/Archie-osu/YYToolkit/workflows/msbuild/stable/YYTK-Core.zip" :
+                    "https://github.com/Archie-osu/YYToolkit/releases/latest/download/YYToolkit.dll";
+
+                try
+                {
+                    // Delete the DLL 
+                    if (File.Exists(DownloadPath))
+                        File.Delete(DownloadPath);
+
+                    // Handle downloading the ZIP
+                    if (UseArtifactURL)
+                    {
+                        DownloadPath = DownloadPath.Replace("YYToolkit.dll", "YYToolkit.zip");
+
+                        // Delete the ZIP
+                        if (File.Exists(DownloadPath))
+                            File.Delete(DownloadPath);
+
+                        Browser.DownloadFile(URL, DownloadPath);
+
+                        ZipFile.ExtractToDirectory(DownloadPath, Directory.GetCurrentDirectory());
+                        File.Delete(DownloadPath);
+                    }
+                    else
+                    {
+                        Browser.DownloadFile(URL, DownloadPath);
+                    }
+                }
+                catch (Exception ex1)
+                {
+                    // Failed to download to current dir, try userprofile
+                    try
+                    {
+                        DownloadPath = $"{Environment.GetFolderPath(Environment.SpecialFolder.UserProfile)}\\YYToolkit.dll";
+
+                        // Delete the DLL 
+                        if (File.Exists(DownloadPath))
+                            File.Delete(DownloadPath);
+
+                        // Handle downloading the ZIP
+                        if (UseArtifactURL)
+                        {
+                            DownloadPath = DownloadPath.Replace("YYToolkit.dll", "YYToolkit.zip");
+
+                            // Delete the ZIP
+                            if (File.Exists(DownloadPath))
+                                File.Delete(DownloadPath);
+
+                            Browser.DownloadFile(URL, DownloadPath);
+
+                            ZipFile.ExtractToDirectory(DownloadPath, Environment.GetFolderPath(Environment.SpecialFolder.UserProfile));
+                            File.Delete(DownloadPath);
+                        }
+                        else
+                        {
+                            Browser.DownloadFile(URL, DownloadPath);
+                        }
+                    }
+                    catch (Exception ex2)
+                    {
+                        string Exception1Message = "";
+                        string Exception2Message = "";
+
+                        while (ex1 is not null)
+                        {
+                            Exception1Message += $"{ex1.Message}\n";
+                            ex1 = ex1.InnerException;
+                        }
+
+                        while (ex2 is not null)
+                        {
+                            Exception2Message += $"{ex2.Message}\n";
+                            ex2 = ex2.InnerException;
+                        }
+
+                        MessageBox.Show(
+                            "Injection failed!\n" +
+                            "Please report this occurence to GitHub, as this is really shouldn't happen.\n\n" +
+                            $"First method: {Exception1Message}\n" +
+                            $"Second method: {Exception2Message}",
+                            "Error!", MessageBoxButtons.OK, MessageBoxIcon.Error
+                        );
+
+                        return "";
+                    }
+                }
+            }
+#pragma warning restore SYSLIB0014
+            return DownloadPath.Replace("YYToolkit.zip", "YYToolkit.dll");
+        }
         public static bool IsReadyToManagePlugins(string sRunnerFilename, ListBox listPlugins)
         {
             if (string.IsNullOrEmpty(sRunnerFilename))
