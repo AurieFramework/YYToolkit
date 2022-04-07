@@ -21,6 +21,7 @@ namespace Launcher
             base.Dispose(disposing);
         }
 
+
         #region Windows Form Designer generated code
 
         /// <summary>
@@ -59,12 +60,11 @@ namespace Launcher
             // 
             // btRunnerPick
             // 
-            this.btRunnerPick.Font = new System.Drawing.Font("Segoe UI", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            this.btRunnerPick.Font = new System.Drawing.Font("Segoe UI", 11.25F);
             this.btRunnerPick.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.btRunnerPick.Location = new System.Drawing.Point(506, 32);
-            this.btRunnerPick.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            this.btRunnerPick.Location = new System.Drawing.Point(434, 25);
             this.btRunnerPick.Name = "btRunnerPick";
-            this.btRunnerPick.Size = new System.Drawing.Size(130, 29);
+            this.btRunnerPick.Size = new System.Drawing.Size(111, 28);
             this.btRunnerPick.TabIndex = 0;
             this.btRunnerPick.Text = "Pick runner";
             this.btRunnerPick.UseVisualStyleBackColor = true;
@@ -80,25 +80,22 @@ namespace Launcher
             this.gbSelectFiles.Controls.Add(this.lbRunner);
             this.gbSelectFiles.Controls.Add(this.txtRunner);
             this.gbSelectFiles.Controls.Add(this.btRunnerPick);
-            this.gbSelectFiles.Font = new System.Drawing.Font("Segoe UI Semibold", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            this.gbSelectFiles.Font = new System.Drawing.Font("Segoe UI Semibold", 11.25F);
             this.gbSelectFiles.ForeColor = System.Drawing.Color.White;
-            this.gbSelectFiles.Location = new System.Drawing.Point(14, 14);
-            this.gbSelectFiles.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            this.gbSelectFiles.Location = new System.Drawing.Point(12, 12);
             this.gbSelectFiles.Name = "gbSelectFiles";
-            this.gbSelectFiles.Padding = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.gbSelectFiles.Size = new System.Drawing.Size(741, 108);
+            this.gbSelectFiles.Size = new System.Drawing.Size(635, 94);
             this.gbSelectFiles.TabIndex = 1;
             this.gbSelectFiles.TabStop = false;
             this.gbSelectFiles.Text = "Game Files";
             // 
             // btResetData
             // 
-            this.btResetData.Font = new System.Drawing.Font("Segoe UI", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            this.btResetData.Font = new System.Drawing.Font("Segoe UI", 11.25F);
             this.btResetData.ForeColor = System.Drawing.Color.Black;
-            this.btResetData.Location = new System.Drawing.Point(644, 63);
-            this.btResetData.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            this.btResetData.Location = new System.Drawing.Point(554, 55);
             this.btResetData.Name = "btResetData";
-            this.btResetData.Size = new System.Drawing.Size(88, 28);
+            this.btResetData.Size = new System.Drawing.Size(75, 29);
             this.btResetData.TabIndex = 7;
             this.btResetData.Text = "Reset";
             this.btResetData.UseVisualStyleBackColor = true;
@@ -106,12 +103,11 @@ namespace Launcher
             // 
             // btDataPick
             // 
-            this.btDataPick.Font = new System.Drawing.Font("Segoe UI", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            this.btDataPick.Font = new System.Drawing.Font("Segoe UI", 11.25F);
             this.btDataPick.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.btDataPick.Location = new System.Drawing.Point(506, 63);
-            this.btDataPick.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            this.btDataPick.Location = new System.Drawing.Point(434, 55);
             this.btDataPick.Name = "btDataPick";
-            this.btDataPick.Size = new System.Drawing.Size(130, 29);
+            this.btDataPick.Size = new System.Drawing.Size(111, 29);
             this.btDataPick.TabIndex = 6;
             this.btDataPick.Text = "Pick data.win";
             this.btDataPick.UseVisualStyleBackColor = true;
@@ -119,12 +115,11 @@ namespace Launcher
             // 
             // btResetRunner
             // 
-            this.btResetRunner.Font = new System.Drawing.Font("Segoe UI", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            this.btResetRunner.Font = new System.Drawing.Font("Segoe UI", 11.25F);
             this.btResetRunner.ForeColor = System.Drawing.Color.Black;
-            this.btResetRunner.Location = new System.Drawing.Point(644, 32);
-            this.btResetRunner.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            this.btResetRunner.Location = new System.Drawing.Point(554, 25);
             this.btResetRunner.Name = "btResetRunner";
-            this.btResetRunner.Size = new System.Drawing.Size(88, 29);
+            this.btResetRunner.Size = new System.Drawing.Size(75, 29);
             this.btResetRunner.TabIndex = 5;
             this.btResetRunner.Text = "Reset";
             this.btResetRunner.UseVisualStyleBackColor = true;
@@ -133,22 +128,20 @@ namespace Launcher
             // txtDataFile
             // 
             this.txtDataFile.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(6)))), ((int)(((byte)(22)))), ((int)(((byte)(45)))));
-            this.txtDataFile.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            this.txtDataFile.Font = new System.Drawing.Font("Segoe UI", 12F);
             this.txtDataFile.ForeColor = System.Drawing.Color.Silver;
-            this.txtDataFile.Location = new System.Drawing.Point(106, 63);
-            this.txtDataFile.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            this.txtDataFile.Location = new System.Drawing.Point(91, 55);
             this.txtDataFile.Name = "txtDataFile";
             this.txtDataFile.ReadOnly = true;
-            this.txtDataFile.Size = new System.Drawing.Size(392, 29);
+            this.txtDataFile.Size = new System.Drawing.Size(337, 29);
             this.txtDataFile.TabIndex = 4;
             this.txtDataFile.Text = "<use default>";
             // 
             // lbDataFile
             // 
             this.lbDataFile.AutoSize = true;
-            this.lbDataFile.Font = new System.Drawing.Font("Segoe UI", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.lbDataFile.Location = new System.Drawing.Point(7, 68);
-            this.lbDataFile.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.lbDataFile.Font = new System.Drawing.Font("Segoe UI", 11.25F);
+            this.lbDataFile.Location = new System.Drawing.Point(6, 59);
             this.lbDataFile.Name = "lbDataFile";
             this.lbDataFile.Size = new System.Drawing.Size(66, 20);
             this.lbDataFile.TabIndex = 3;
@@ -157,9 +150,8 @@ namespace Launcher
             // lbRunner
             // 
             this.lbRunner.AutoSize = true;
-            this.lbRunner.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.lbRunner.Location = new System.Drawing.Point(7, 32);
-            this.lbRunner.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.lbRunner.Font = new System.Drawing.Font("Segoe UI", 12F);
+            this.lbRunner.Location = new System.Drawing.Point(6, 28);
             this.lbRunner.Name = "lbRunner";
             this.lbRunner.Size = new System.Drawing.Size(61, 21);
             this.lbRunner.TabIndex = 2;
@@ -168,24 +160,22 @@ namespace Launcher
             // txtRunner
             // 
             this.txtRunner.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(6)))), ((int)(((byte)(22)))), ((int)(((byte)(45)))));
-            this.txtRunner.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            this.txtRunner.Font = new System.Drawing.Font("Segoe UI", 12F);
             this.txtRunner.ForeColor = System.Drawing.Color.Silver;
-            this.txtRunner.Location = new System.Drawing.Point(106, 29);
-            this.txtRunner.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            this.txtRunner.Location = new System.Drawing.Point(91, 25);
             this.txtRunner.Name = "txtRunner";
             this.txtRunner.ReadOnly = true;
-            this.txtRunner.Size = new System.Drawing.Size(392, 29);
+            this.txtRunner.Size = new System.Drawing.Size(337, 29);
             this.txtRunner.TabIndex = 1;
             this.txtRunner.Text = "<none selected>";
             // 
             // btYYTKLaunch
             // 
-            this.btYYTKLaunch.Font = new System.Drawing.Font("Segoe UI", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            this.btYYTKLaunch.Font = new System.Drawing.Font("Segoe UI", 11.25F);
             this.btYYTKLaunch.ForeColor = System.Drawing.Color.Black;
-            this.btYYTKLaunch.Location = new System.Drawing.Point(10, 28);
-            this.btYYTKLaunch.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            this.btYYTKLaunch.Location = new System.Drawing.Point(9, 24);
             this.btYYTKLaunch.Name = "btYYTKLaunch";
-            this.btYYTKLaunch.Size = new System.Drawing.Size(316, 32);
+            this.btYYTKLaunch.Size = new System.Drawing.Size(271, 28);
             this.btYYTKLaunch.TabIndex = 3;
             this.btYYTKLaunch.Text = "Launch with YYToolkit";
             this.btYYTKLaunch.UseVisualStyleBackColor = true;
@@ -196,25 +186,22 @@ namespace Launcher
             this.gbInject.Controls.Add(this.btLaunchCustomDLL);
             this.gbInject.Controls.Add(this.btOpenData);
             this.gbInject.Controls.Add(this.btYYTKLaunch);
-            this.gbInject.Font = new System.Drawing.Font("Segoe UI Semibold", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            this.gbInject.Font = new System.Drawing.Font("Segoe UI Semibold", 12F);
             this.gbInject.ForeColor = System.Drawing.Color.White;
-            this.gbInject.Location = new System.Drawing.Point(421, 234);
-            this.gbInject.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            this.gbInject.Location = new System.Drawing.Point(361, 203);
             this.gbInject.Name = "gbInject";
-            this.gbInject.Padding = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.gbInject.Size = new System.Drawing.Size(334, 145);
+            this.gbInject.Size = new System.Drawing.Size(286, 126);
             this.gbInject.TabIndex = 4;
             this.gbInject.TabStop = false;
             this.gbInject.Text = "Launch options";
             // 
             // btLaunchCustomDLL
             // 
-            this.btLaunchCustomDLL.Font = new System.Drawing.Font("Segoe UI", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            this.btLaunchCustomDLL.Font = new System.Drawing.Font("Segoe UI", 11.25F);
             this.btLaunchCustomDLL.ForeColor = System.Drawing.Color.Black;
-            this.btLaunchCustomDLL.Location = new System.Drawing.Point(10, 66);
-            this.btLaunchCustomDLL.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            this.btLaunchCustomDLL.Location = new System.Drawing.Point(9, 57);
             this.btLaunchCustomDLL.Name = "btLaunchCustomDLL";
-            this.btLaunchCustomDLL.Size = new System.Drawing.Size(316, 32);
+            this.btLaunchCustomDLL.Size = new System.Drawing.Size(271, 28);
             this.btLaunchCustomDLL.TabIndex = 7;
             this.btLaunchCustomDLL.Text = "Launch with custom DLL";
             this.btLaunchCustomDLL.UseVisualStyleBackColor = true;
@@ -222,12 +209,11 @@ namespace Launcher
             // 
             // btOpenData
             // 
-            this.btOpenData.Font = new System.Drawing.Font("Segoe UI", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            this.btOpenData.Font = new System.Drawing.Font("Segoe UI", 11.25F);
             this.btOpenData.ForeColor = System.Drawing.Color.Black;
-            this.btOpenData.Location = new System.Drawing.Point(10, 104);
-            this.btOpenData.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            this.btOpenData.Location = new System.Drawing.Point(9, 90);
             this.btOpenData.Name = "btOpenData";
-            this.btOpenData.Size = new System.Drawing.Size(316, 32);
+            this.btOpenData.Size = new System.Drawing.Size(271, 28);
             this.btOpenData.TabIndex = 6;
             this.btOpenData.Text = "Open with UndertaleModTool";
             this.btOpenData.UseVisualStyleBackColor = true;
@@ -236,13 +222,11 @@ namespace Launcher
             // gbPlugins
             // 
             this.gbPlugins.Controls.Add(this.listPlugins);
-            this.gbPlugins.Font = new System.Drawing.Font("Segoe UI Semibold", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            this.gbPlugins.Font = new System.Drawing.Font("Segoe UI Semibold", 12F);
             this.gbPlugins.ForeColor = System.Drawing.Color.White;
-            this.gbPlugins.Location = new System.Drawing.Point(14, 129);
-            this.gbPlugins.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            this.gbPlugins.Location = new System.Drawing.Point(12, 112);
             this.gbPlugins.Name = "gbPlugins";
-            this.gbPlugins.Padding = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.gbPlugins.Size = new System.Drawing.Size(399, 250);
+            this.gbPlugins.Size = new System.Drawing.Size(342, 217);
             this.gbPlugins.TabIndex = 5;
             this.gbPlugins.TabStop = false;
             this.gbPlugins.Text = "Plugin Manager";
@@ -251,14 +235,13 @@ namespace Launcher
             // 
             this.listPlugins.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(6)))), ((int)(((byte)(22)))), ((int)(((byte)(45)))));
             this.listPlugins.ContextMenuStrip = this.ctxStrip1;
-            this.listPlugins.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            this.listPlugins.Font = new System.Drawing.Font("Segoe UI", 12F);
             this.listPlugins.ForeColor = System.Drawing.Color.White;
             this.listPlugins.FormattingEnabled = true;
             this.listPlugins.ItemHeight = 21;
-            this.listPlugins.Location = new System.Drawing.Point(12, 36);
-            this.listPlugins.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            this.listPlugins.Location = new System.Drawing.Point(10, 31);
             this.listPlugins.Name = "listPlugins";
-            this.listPlugins.Size = new System.Drawing.Size(374, 193);
+            this.listPlugins.Size = new System.Drawing.Size(321, 172);
             this.listPlugins.TabIndex = 0;
             // 
             // ctxStrip1
@@ -270,13 +253,11 @@ namespace Launcher
             // 
             this.groupBox1.Controls.Add(this.cbUseLatestCommit);
             this.groupBox1.Controls.Add(this.cbUsePreloading);
-            this.groupBox1.Font = new System.Drawing.Font("Segoe UI Semibold", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            this.groupBox1.Font = new System.Drawing.Font("Segoe UI Semibold", 12F);
             this.groupBox1.ForeColor = System.Drawing.Color.White;
-            this.groupBox1.Location = new System.Drawing.Point(421, 129);
-            this.groupBox1.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            this.groupBox1.Location = new System.Drawing.Point(361, 112);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Padding = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.groupBox1.Size = new System.Drawing.Size(334, 97);
+            this.groupBox1.Size = new System.Drawing.Size(286, 84);
             this.groupBox1.TabIndex = 6;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Advanced Settings";
@@ -285,9 +266,8 @@ namespace Launcher
             // 
             this.cbUseLatestCommit.AutoSize = true;
             this.cbUseLatestCommit.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(3)))), ((int)(((byte)(11)))), ((int)(((byte)(30)))));
-            this.cbUseLatestCommit.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.cbUseLatestCommit.Location = new System.Drawing.Point(10, 32);
-            this.cbUseLatestCommit.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            this.cbUseLatestCommit.Font = new System.Drawing.Font("Segoe UI", 12F);
+            this.cbUseLatestCommit.Location = new System.Drawing.Point(9, 28);
             this.cbUseLatestCommit.Name = "cbUseLatestCommit";
             this.cbUseLatestCommit.Size = new System.Drawing.Size(153, 25);
             this.cbUseLatestCommit.TabIndex = 1;
@@ -299,9 +279,8 @@ namespace Launcher
             // 
             this.cbUsePreloading.AutoSize = true;
             this.cbUsePreloading.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(3)))), ((int)(((byte)(11)))), ((int)(((byte)(30)))));
-            this.cbUsePreloading.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.cbUsePreloading.Location = new System.Drawing.Point(10, 63);
-            this.cbUsePreloading.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            this.cbUsePreloading.Font = new System.Drawing.Font("Segoe UI", 12F);
+            this.cbUsePreloading.Location = new System.Drawing.Point(9, 55);
             this.cbUsePreloading.Name = "cbUsePreloading";
             this.cbUsePreloading.Size = new System.Drawing.Size(156, 25);
             this.cbUsePreloading.TabIndex = 0;
@@ -313,17 +292,16 @@ namespace Launcher
             // 
             // MainWindow
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(3)))), ((int)(((byte)(11)))), ((int)(((byte)(30)))));
-            this.ClientSize = new System.Drawing.Size(767, 392);
+            this.ClientSize = new System.Drawing.Size(657, 340);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.gbPlugins);
             this.Controls.Add(this.gbInject);
             this.Controls.Add(this.gbSelectFiles);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
-            this.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.Name = "MainWindow";
@@ -362,4 +340,3 @@ namespace Launcher
         private System.Windows.Forms.ContextMenuStrip ctxStrip1;
     }
 }
-
