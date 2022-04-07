@@ -67,6 +67,27 @@ namespace Launcher
                 return;
             }
 
+            
+            Process[] ExistingProcesses = Process.GetProcessesByName(Path.GetFileNameWithoutExtension(sRunnerFilePath));
+            if (ExistingProcesses.Length > 0)
+            {
+                // There might be several apps named the same, running from a different path?
+                foreach (Process process in ExistingProcesses)
+                {
+                    if (!process.MainModule.FileName.Equals(sRunnerFilePath))
+                        continue;
+
+                    DialogResult dialog = MessageBox.Show($"A runner process with PID {process.Id} already exists.\nInject into it?\n", "Runner process exists", MessageBoxButtons.YesNo, MessageBoxIcon.Information);
+                    if (dialog != DialogResult.Yes)
+                        break;
+
+                    // TODO: Check if YYTK's already injected
+                    process.WaitForInputIdle();
+                    Utils.Inject(process, YYTKPath);
+                    return;
+                }
+            }
+
             Process p = Process.Start(sRunnerFilePath, string.IsNullOrEmpty(sDataFilePath) ? "" : $"-game \"{sDataFilePath}\"");
 
             p.WaitForInputIdle();

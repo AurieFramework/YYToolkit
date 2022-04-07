@@ -267,7 +267,7 @@ namespace Launcher
             this.cbUseLatestCommit.AutoSize = true;
             this.cbUseLatestCommit.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(3)))), ((int)(((byte)(11)))), ((int)(((byte)(30)))));
             this.cbUseLatestCommit.Font = new System.Drawing.Font("Segoe UI", 12F);
-            this.cbUseLatestCommit.Location = new System.Drawing.Point(9, 28);
+            this.cbUseLatestCommit.Location = new System.Drawing.Point(9, 24);
             this.cbUseLatestCommit.Name = "cbUseLatestCommit";
             this.cbUseLatestCommit.Size = new System.Drawing.Size(153, 25);
             this.cbUseLatestCommit.TabIndex = 1;
@@ -280,7 +280,7 @@ namespace Launcher
             this.cbUsePreloading.AutoSize = true;
             this.cbUsePreloading.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(3)))), ((int)(((byte)(11)))), ((int)(((byte)(30)))));
             this.cbUsePreloading.Font = new System.Drawing.Font("Segoe UI", 12F);
-            this.cbUsePreloading.Location = new System.Drawing.Point(9, 55);
+            this.cbUsePreloading.Location = new System.Drawing.Point(9, 53);
             this.cbUsePreloading.Name = "cbUsePreloading";
             this.cbUsePreloading.Size = new System.Drawing.Size(156, 25);
             this.cbUsePreloading.TabIndex = 0;
