@@ -145,9 +145,9 @@ namespace Launcher
             this.lbDataFile.Font = new System.Drawing.Font("Segoe UI", 11.25F);
             this.lbDataFile.Location = new System.Drawing.Point(6, 59);
             this.lbDataFile.Name = "lbDataFile";
-            this.lbDataFile.Size = new System.Drawing.Size(66, 20);
+            this.lbDataFile.Size = new System.Drawing.Size(68, 20);
             this.lbDataFile.TabIndex = 3;
-            this.lbDataFile.Text = "Data file";
+            this.lbDataFile.Text = "Data File";
             // 
             // lbRunner
             // 
@@ -245,6 +245,7 @@ namespace Launcher
             this.listPlugins.Name = "listPlugins";
             this.listPlugins.Size = new System.Drawing.Size(332, 172);
             this.listPlugins.TabIndex = 0;
+            this.toolTip1.SetToolTip(this.listPlugins, "A list of plugins installed for the current game.\r\nRight click for options.");
             // 
             // ctxStrip1
             // 
