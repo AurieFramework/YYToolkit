@@ -327,7 +327,7 @@ namespace Launcher
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(3)))), ((int)(((byte)(11)))), ((int)(((byte)(30)))));
-            this.ClientSize = new System.Drawing.Size(706, 342);
+            this.ClientSize = new System.Drawing.Size(704, 341);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.gbPlugins);
             this.Controls.Add(this.gbInject);
@@ -335,10 +335,12 @@ namespace Launcher
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximizeBox = false;
+            this.MaximumSize = new System.Drawing.Size(720, 380);
             this.MinimizeBox = false;
+            this.MinimumSize = new System.Drawing.Size(720, 380);
             this.Name = "MainWindow";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "YYToolkit Launcher (v1.4.0)";
+            this.Text = "YYToolkit Launcher (v1.4.1)";
             this.gbSelectFiles.ResumeLayout(false);
             this.gbSelectFiles.PerformLayout();
             this.gbInject.ResumeLayout(false);
