@@ -106,9 +106,9 @@ namespace Launcher
     public partial class MainWindow : Form
     {
         // Downloads YYTK and returns the path it's at.
-        public static string GetYYTKPath(bool UseArtifactURL)
+        public static string GetYYTKPath(bool UseArtifactURL, string DLLName)
         {
-            string DownloadPath = $"{Directory.GetCurrentDirectory()}\\YYToolkit.dll";
+            string DownloadPath = $"{Directory.GetCurrentDirectory()}\\{DLLName}.dll";
 
 #pragma warning disable SYSLIB0014
             using (var Browser = new WebClient())
@@ -126,16 +126,23 @@ namespace Launcher
                     // Handle downloading the ZIP
                     if (UseArtifactURL)
                     {
-                        DownloadPath = DownloadPath.Replace("YYToolkit.dll", "YYToolkit.zip");
+                        DownloadPath = DownloadPath.Replace($"{DLLName}.dll", $"{DLLName}.zip");
 
-                        // Delete the ZIP
+                        // Delete the ZIP if it exists prior to downloading
                         if (File.Exists(DownloadPath))
                             File.Delete(DownloadPath);
 
+                        // Download a new ZIP
                         Browser.DownloadFile(URL, DownloadPath);
 
-                        ZipFile.ExtractToDirectory(DownloadPath, Directory.GetCurrentDirectory());
+                        // Extract it
+                        ZipFile.ExtractToDirectory(DownloadPath, Path.GetDirectoryName(DownloadPath));
+
+                        // Delete the zip file, the DLL is now extracted with the name "YYToolkit.dll"
                         File.Delete(DownloadPath);
+
+                        // Rename it to the random DLL file to avoid potential detection
+                        File.Move($"{Path.GetDirectoryName(DownloadPath)}\\YYToolkit.dll", $"{Path.GetDirectoryName(DownloadPath)}\\{DLLName}.dll");
                     }
                     else
                     {
@@ -147,7 +154,7 @@ namespace Launcher
                     // Failed to download to current dir, try userprofile
                     try
                     {
-                        DownloadPath = $"{Environment.GetFolderPath(Environment.SpecialFolder.UserProfile)}\\YYToolkit.dll";
+                        DownloadPath = $"{Environment.GetFolderPath(Environment.SpecialFolder.UserProfile)}\\{DLLName}.dll";
 
                         // Delete the DLL 
                         if (File.Exists(DownloadPath))
@@ -156,16 +163,23 @@ namespace Launcher
                         // Handle downloading the ZIP
                         if (UseArtifactURL)
                         {
-                            DownloadPath = DownloadPath.Replace("YYToolkit.dll", "YYToolkit.zip");
+                            DownloadPath = DownloadPath.Replace($"{DLLName}.dll", $"{DLLName}.zip");
 
-                            // Delete the ZIP
+                            // Delete the ZIP if it exists prior to downloading
                             if (File.Exists(DownloadPath))
                                 File.Delete(DownloadPath);
 
+                            // Download a new ZIP
                             Browser.DownloadFile(URL, DownloadPath);
 
-                            ZipFile.ExtractToDirectory(DownloadPath, Environment.GetFolderPath(Environment.SpecialFolder.UserProfile));
+                            // Extract it
+                            ZipFile.ExtractToDirectory(DownloadPath, Path.GetDirectoryName(DownloadPath));
+
+                            // Delete the zip file, the DLL is now extracted with the name "YYToolkit.dll"
                             File.Delete(DownloadPath);
+
+                            // Rename it to the random DLL file to avoid potential detection
+                            File.Move($"{Path.GetDirectoryName(DownloadPath)}\\YYToolkit.dll", $"{Path.GetDirectoryName(DownloadPath)}\\{DLLName}.dll");
                         }
                         else
                         {
@@ -201,7 +215,7 @@ namespace Launcher
                     }
                 }
             }
-            return DownloadPath.Replace("YYToolkit.zip", "YYToolkit.dll");
+            return DownloadPath.Replace($"{DLLName}.zip", $"{DLLName}.dll");
         }
         public static bool IsReadyToManagePlugins(string sRunnerFilename, ListBox listPlugins)
         {

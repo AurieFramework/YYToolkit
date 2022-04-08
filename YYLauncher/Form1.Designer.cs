@@ -49,6 +49,8 @@ namespace Launcher
             this.listPlugins = new System.Windows.Forms.ListBox();
             this.ctxStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.cbAutoCleanup = new System.Windows.Forms.CheckBox();
+            this.cbUseRandomFilename = new System.Windows.Forms.CheckBox();
             this.cbUseLatestCommit = new System.Windows.Forms.CheckBox();
             this.cbUsePreloading = new System.Windows.Forms.CheckBox();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
@@ -62,7 +64,7 @@ namespace Launcher
             // 
             this.btRunnerPick.Font = new System.Drawing.Font("Segoe UI", 11.25F);
             this.btRunnerPick.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.btRunnerPick.Location = new System.Drawing.Point(434, 25);
+            this.btRunnerPick.Location = new System.Drawing.Point(484, 25);
             this.btRunnerPick.Name = "btRunnerPick";
             this.btRunnerPick.Size = new System.Drawing.Size(111, 28);
             this.btRunnerPick.TabIndex = 0;
@@ -84,7 +86,7 @@ namespace Launcher
             this.gbSelectFiles.ForeColor = System.Drawing.Color.White;
             this.gbSelectFiles.Location = new System.Drawing.Point(12, 12);
             this.gbSelectFiles.Name = "gbSelectFiles";
-            this.gbSelectFiles.Size = new System.Drawing.Size(635, 94);
+            this.gbSelectFiles.Size = new System.Drawing.Size(682, 94);
             this.gbSelectFiles.TabIndex = 1;
             this.gbSelectFiles.TabStop = false;
             this.gbSelectFiles.Text = "Game Files";
@@ -93,7 +95,7 @@ namespace Launcher
             // 
             this.btResetData.Font = new System.Drawing.Font("Segoe UI", 11.25F);
             this.btResetData.ForeColor = System.Drawing.Color.Black;
-            this.btResetData.Location = new System.Drawing.Point(554, 55);
+            this.btResetData.Location = new System.Drawing.Point(601, 55);
             this.btResetData.Name = "btResetData";
             this.btResetData.Size = new System.Drawing.Size(75, 29);
             this.btResetData.TabIndex = 7;
@@ -105,7 +107,7 @@ namespace Launcher
             // 
             this.btDataPick.Font = new System.Drawing.Font("Segoe UI", 11.25F);
             this.btDataPick.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.btDataPick.Location = new System.Drawing.Point(434, 55);
+            this.btDataPick.Location = new System.Drawing.Point(484, 55);
             this.btDataPick.Name = "btDataPick";
             this.btDataPick.Size = new System.Drawing.Size(111, 29);
             this.btDataPick.TabIndex = 6;
@@ -117,7 +119,7 @@ namespace Launcher
             // 
             this.btResetRunner.Font = new System.Drawing.Font("Segoe UI", 11.25F);
             this.btResetRunner.ForeColor = System.Drawing.Color.Black;
-            this.btResetRunner.Location = new System.Drawing.Point(554, 25);
+            this.btResetRunner.Location = new System.Drawing.Point(601, 25);
             this.btResetRunner.Name = "btResetRunner";
             this.btResetRunner.Size = new System.Drawing.Size(75, 29);
             this.btResetRunner.TabIndex = 5;
@@ -133,7 +135,7 @@ namespace Launcher
             this.txtDataFile.Location = new System.Drawing.Point(91, 55);
             this.txtDataFile.Name = "txtDataFile";
             this.txtDataFile.ReadOnly = true;
-            this.txtDataFile.Size = new System.Drawing.Size(337, 29);
+            this.txtDataFile.Size = new System.Drawing.Size(387, 29);
             this.txtDataFile.TabIndex = 4;
             this.txtDataFile.Text = "<use default>";
             // 
@@ -165,7 +167,7 @@ namespace Launcher
             this.txtRunner.Location = new System.Drawing.Point(91, 25);
             this.txtRunner.Name = "txtRunner";
             this.txtRunner.ReadOnly = true;
-            this.txtRunner.Size = new System.Drawing.Size(337, 29);
+            this.txtRunner.Size = new System.Drawing.Size(387, 29);
             this.txtRunner.TabIndex = 1;
             this.txtRunner.Text = "<none selected>";
             // 
@@ -173,9 +175,9 @@ namespace Launcher
             // 
             this.btYYTKLaunch.Font = new System.Drawing.Font("Segoe UI", 11.25F);
             this.btYYTKLaunch.ForeColor = System.Drawing.Color.Black;
-            this.btYYTKLaunch.Location = new System.Drawing.Point(9, 24);
+            this.btYYTKLaunch.Location = new System.Drawing.Point(9, 28);
             this.btYYTKLaunch.Name = "btYYTKLaunch";
-            this.btYYTKLaunch.Size = new System.Drawing.Size(271, 28);
+            this.btYYTKLaunch.Size = new System.Drawing.Size(309, 28);
             this.btYYTKLaunch.TabIndex = 3;
             this.btYYTKLaunch.Text = "Launch with YYToolkit";
             this.btYYTKLaunch.UseVisualStyleBackColor = true;
@@ -188,9 +190,9 @@ namespace Launcher
             this.gbInject.Controls.Add(this.btYYTKLaunch);
             this.gbInject.Font = new System.Drawing.Font("Segoe UI Semibold", 12F);
             this.gbInject.ForeColor = System.Drawing.Color.White;
-            this.gbInject.Location = new System.Drawing.Point(361, 203);
+            this.gbInject.Location = new System.Drawing.Point(370, 198);
             this.gbInject.Name = "gbInject";
-            this.gbInject.Size = new System.Drawing.Size(286, 126);
+            this.gbInject.Size = new System.Drawing.Size(324, 134);
             this.gbInject.TabIndex = 4;
             this.gbInject.TabStop = false;
             this.gbInject.Text = "Launch options";
@@ -199,9 +201,9 @@ namespace Launcher
             // 
             this.btLaunchCustomDLL.Font = new System.Drawing.Font("Segoe UI", 11.25F);
             this.btLaunchCustomDLL.ForeColor = System.Drawing.Color.Black;
-            this.btLaunchCustomDLL.Location = new System.Drawing.Point(9, 57);
+            this.btLaunchCustomDLL.Location = new System.Drawing.Point(9, 62);
             this.btLaunchCustomDLL.Name = "btLaunchCustomDLL";
-            this.btLaunchCustomDLL.Size = new System.Drawing.Size(271, 28);
+            this.btLaunchCustomDLL.Size = new System.Drawing.Size(309, 28);
             this.btLaunchCustomDLL.TabIndex = 7;
             this.btLaunchCustomDLL.Text = "Launch with custom DLL";
             this.btLaunchCustomDLL.UseVisualStyleBackColor = true;
@@ -211,11 +213,11 @@ namespace Launcher
             // 
             this.btOpenData.Font = new System.Drawing.Font("Segoe UI", 11.25F);
             this.btOpenData.ForeColor = System.Drawing.Color.Black;
-            this.btOpenData.Location = new System.Drawing.Point(9, 90);
+            this.btOpenData.Location = new System.Drawing.Point(9, 96);
             this.btOpenData.Name = "btOpenData";
-            this.btOpenData.Size = new System.Drawing.Size(271, 28);
+            this.btOpenData.Size = new System.Drawing.Size(309, 28);
             this.btOpenData.TabIndex = 6;
-            this.btOpenData.Text = "Open with UndertaleModTool";
+            this.btOpenData.Text = "Open game data with UndertaleModTool";
             this.btOpenData.UseVisualStyleBackColor = true;
             this.btOpenData.Click += new System.EventHandler(this.btOpenData_Click);
             // 
@@ -226,7 +228,7 @@ namespace Launcher
             this.gbPlugins.ForeColor = System.Drawing.Color.White;
             this.gbPlugins.Location = new System.Drawing.Point(12, 112);
             this.gbPlugins.Name = "gbPlugins";
-            this.gbPlugins.Size = new System.Drawing.Size(342, 217);
+            this.gbPlugins.Size = new System.Drawing.Size(352, 220);
             this.gbPlugins.TabIndex = 5;
             this.gbPlugins.TabStop = false;
             this.gbPlugins.Text = "Plugin Manager";
@@ -241,7 +243,7 @@ namespace Launcher
             this.listPlugins.ItemHeight = 21;
             this.listPlugins.Location = new System.Drawing.Point(10, 31);
             this.listPlugins.Name = "listPlugins";
-            this.listPlugins.Size = new System.Drawing.Size(321, 172);
+            this.listPlugins.Size = new System.Drawing.Size(332, 172);
             this.listPlugins.TabIndex = 0;
             // 
             // ctxStrip1
@@ -251,27 +253,56 @@ namespace Launcher
             // 
             // groupBox1
             // 
+            this.groupBox1.Controls.Add(this.cbAutoCleanup);
+            this.groupBox1.Controls.Add(this.cbUseRandomFilename);
             this.groupBox1.Controls.Add(this.cbUseLatestCommit);
             this.groupBox1.Controls.Add(this.cbUsePreloading);
             this.groupBox1.Font = new System.Drawing.Font("Segoe UI Semibold", 12F);
             this.groupBox1.ForeColor = System.Drawing.Color.White;
-            this.groupBox1.Location = new System.Drawing.Point(361, 112);
+            this.groupBox1.Location = new System.Drawing.Point(370, 112);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(286, 84);
+            this.groupBox1.Size = new System.Drawing.Size(324, 88);
             this.groupBox1.TabIndex = 6;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Advanced Settings";
+            // 
+            // cbAutoCleanup
+            // 
+            this.cbAutoCleanup.AutoSize = true;
+            this.cbAutoCleanup.Checked = true;
+            this.cbAutoCleanup.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.cbAutoCleanup.Font = new System.Drawing.Font("Segoe UI", 12F);
+            this.cbAutoCleanup.Location = new System.Drawing.Point(153, 55);
+            this.cbAutoCleanup.Name = "cbAutoCleanup";
+            this.cbAutoCleanup.Size = new System.Drawing.Size(122, 25);
+            this.cbAutoCleanup.TabIndex = 3;
+            this.cbAutoCleanup.Text = "Auto-cleanup";
+            this.toolTip1.SetToolTip(this.cbAutoCleanup, resources.GetString("cbAutoCleanup.ToolTip"));
+            this.cbAutoCleanup.UseVisualStyleBackColor = true;
+            // 
+            // cbUseRandomFilename
+            // 
+            this.cbUseRandomFilename.AutoSize = true;
+            this.cbUseRandomFilename.Font = new System.Drawing.Font("Segoe UI", 12F);
+            this.cbUseRandomFilename.Location = new System.Drawing.Point(153, 28);
+            this.cbUseRandomFilename.Name = "cbUseRandomFilename";
+            this.cbUseRandomFilename.Size = new System.Drawing.Size(165, 25);
+            this.cbUseRandomFilename.TabIndex = 2;
+            this.cbUseRandomFilename.Text = "Random DLL Name";
+            this.toolTip1.SetToolTip(this.cbUseRandomFilename, "Uses a random filename for the YYToolkit DLL to avoid potential detection by game" +
+        "s.");
+            this.cbUseRandomFilename.UseVisualStyleBackColor = true;
             // 
             // cbUseLatestCommit
             // 
             this.cbUseLatestCommit.AutoSize = true;
             this.cbUseLatestCommit.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(3)))), ((int)(((byte)(11)))), ((int)(((byte)(30)))));
             this.cbUseLatestCommit.Font = new System.Drawing.Font("Segoe UI", 12F);
-            this.cbUseLatestCommit.Location = new System.Drawing.Point(9, 24);
+            this.cbUseLatestCommit.Location = new System.Drawing.Point(9, 28);
             this.cbUseLatestCommit.Name = "cbUseLatestCommit";
-            this.cbUseLatestCommit.Size = new System.Drawing.Size(153, 25);
+            this.cbUseLatestCommit.Size = new System.Drawing.Size(130, 25);
             this.cbUseLatestCommit.TabIndex = 1;
-            this.cbUseLatestCommit.Text = "Use latest commit";
+            this.cbUseLatestCommit.Text = "Latest Commit";
             this.toolTip1.SetToolTip(this.cbUseLatestCommit, "Uses the most up-to-date version of YYToolkit, available from the latest build.");
             this.cbUseLatestCommit.UseVisualStyleBackColor = false;
             // 
@@ -280,11 +311,11 @@ namespace Launcher
             this.cbUsePreloading.AutoSize = true;
             this.cbUsePreloading.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(3)))), ((int)(((byte)(11)))), ((int)(((byte)(30)))));
             this.cbUsePreloading.Font = new System.Drawing.Font("Segoe UI", 12F);
-            this.cbUsePreloading.Location = new System.Drawing.Point(9, 53);
+            this.cbUsePreloading.Location = new System.Drawing.Point(9, 55);
             this.cbUsePreloading.Name = "cbUsePreloading";
-            this.cbUsePreloading.Size = new System.Drawing.Size(156, 25);
+            this.cbUsePreloading.Size = new System.Drawing.Size(126, 25);
             this.cbUsePreloading.TabIndex = 0;
-            this.cbUsePreloading.Text = "Use early injection";
+            this.cbUsePreloading.Text = "Early Injection";
             this.toolTip1.SetToolTip(this.cbUsePreloading, "Enables YYToolkit and plugins to run code before the game starts.\r\n\r\nIt is recomm" +
         "ended to leave this disabled, unless a plugin you\'re using\r\nspecifically require" +
         "s it to be enabled.");
@@ -295,7 +326,7 @@ namespace Launcher
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(3)))), ((int)(((byte)(11)))), ((int)(((byte)(30)))));
-            this.ClientSize = new System.Drawing.Size(657, 340);
+            this.ClientSize = new System.Drawing.Size(706, 342);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.gbPlugins);
             this.Controls.Add(this.gbInject);
@@ -338,5 +369,7 @@ namespace Launcher
         private System.Windows.Forms.CheckBox cbUseLatestCommit;
         private System.Windows.Forms.Button btLaunchCustomDLL;
         private System.Windows.Forms.ContextMenuStrip ctxStrip1;
+        private System.Windows.Forms.CheckBox cbUseRandomFilename;
+        private System.Windows.Forms.CheckBox cbAutoCleanup;
     }
 }

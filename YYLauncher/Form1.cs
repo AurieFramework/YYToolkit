@@ -56,7 +56,7 @@ namespace Launcher
                 return;
             }
 
-            string YYTKPath = GetYYTKPath(cbUseLatestCommit.Checked);
+            string YYTKPath = GetYYTKPath(cbUseLatestCommit.Checked, cbUseRandomFilename.Checked ? Path.GetRandomFileName().Replace(".", "").Substring(0, 6) : "YYToolkit");
 
             if (string.IsNullOrEmpty(YYTKPath))
                 return;
@@ -84,6 +84,15 @@ namespace Launcher
                     // TODO: Check if YYTK's already injected
                     process.WaitForInputIdle();
                     Utils.Inject(process, YYTKPath);
+
+                    if (cbAutoCleanup.Checked)
+                    {
+                        this.Hide();
+                        process.WaitForExit();
+                        File.Delete(YYTKPath);
+                        this.Show();
+                    }
+
                     return;
                 }
             }
@@ -93,6 +102,14 @@ namespace Launcher
             p.WaitForInputIdle();
 
             Utils.Inject(p, YYTKPath);
+
+            if (cbAutoCleanup.Checked)
+            {
+                this.Hide();
+                p.WaitForExit();
+                File.Delete(YYTKPath);
+                this.Show();
+            }
         }
 
         private void btResetRunner_Click(object sender, EventArgs e)

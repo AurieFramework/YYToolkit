@@ -123,6 +123,13 @@
   <metadata name="toolTip1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>116, 17</value>
   </metadata>
+  <data name="cbAutoCleanup.ToolTip" xml:space="preserve">
+    <value>Minimizes the launcher once the game is launched, restores it when the game exits.
+This allows for DLL cleanup once the game exists.
+
+If you disable this option, the YYTK DLL will be left in your user directory / profile directory.
+It is thus recommended to leave this enabled.</value>
+  </data>
   <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
   <data name="$this.Icon" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
