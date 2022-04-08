@@ -82,7 +82,8 @@ namespace Launcher
                         break;
 
                     // TODO: Check if YYTK's already injected
-                    process.WaitForInputIdle();
+                    Utils.WaitUntilWindow(process);
+
                     Utils.Inject(process, YYTKPath);
 
                     if (cbAutoCleanup.Checked)
@@ -99,7 +100,7 @@ namespace Launcher
 
             Process p = Process.Start(sRunnerFilePath, string.IsNullOrEmpty(sDataFilePath) ? "" : $"-game \"{sDataFilePath}\"");
 
-            p.WaitForInputIdle();
+            Utils.WaitUntilWindow(p);
 
             Utils.Inject(p, YYTKPath);
 
@@ -299,7 +300,8 @@ namespace Launcher
                 }
 
                 Process p = Process.Start(sRunnerFilePath, string.IsNullOrEmpty(sDataFilePath) ? "" : $"-game \"{sDataFilePath}\"");
-                p.WaitForInputIdle();
+
+                Utils.WaitUntilWindow(p);
 
                 Utils.Inject(p, Path.GetFullPath(fileDialog.FileName));
             }

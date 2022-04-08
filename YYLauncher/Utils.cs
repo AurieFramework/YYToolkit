@@ -76,6 +76,26 @@ namespace Launcher
             return dialog;
         }
 
+        public static void WaitUntilWindow(Process process)
+        {
+            process.WaitForInputIdle();
+
+            while (!process.HasExited)
+            {
+                try
+                {
+                    if (process.MainWindowHandle != IntPtr.Zero)
+                        break;
+                }
+                catch (InvalidOperationException)
+                {
+                    if (!process.HasExited)
+                        throw;
+                }
+            }
+
+            process.WaitForInputIdle();
+        }
         public static string[] GetPluginsFromGameDirectory(string GameDirPath)
         {
             if (!Directory.Exists(GameDirPath) || !Directory.Exists(GameDirPath + "\\autoexec"))
