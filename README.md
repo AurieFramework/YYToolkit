@@ -26,3 +26,7 @@ Currently, only Windows is supported.
   - Chapter2_HardMode - Source code for the Hard Mode plugin
 - YYLauncher - Source code for the launcher
 - YYToolkit - Source code for the DLL
+
+## Contributors
+- [MousieDev](https://github.com/MousieDev) for creating makefiles (which I'm not sure even work at this point)
+- [Miepee](https://github.com/Miepee) for the awesome icon!
