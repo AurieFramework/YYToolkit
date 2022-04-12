@@ -18,7 +18,7 @@ struct RefString
 
 	int Size() const;
 
-	static RefString* Alloc(const char* _Thing, const int& _Size);
+	static RefString* Alloc(const char* _Thing, const int& _Size, bool _NoAutoFree);
 
 	static RefString* Assign(RefString* _Other);
 

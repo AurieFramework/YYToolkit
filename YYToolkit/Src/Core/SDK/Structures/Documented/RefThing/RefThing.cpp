@@ -50,9 +50,9 @@ int RefString::Size() const
 	return m_Size;
 }
 
-RefString* RefString::Alloc(const char* _Thing, const int& _Size)
+RefString* RefString::Alloc(const char* _Thing, const int& _Size, bool _NoAutoFree)
 {
-	return new RefString(_Thing, _Size, true);
+	return new RefString(_Thing, _Size, _NoAutoFree);
 }
 
 RefString* RefString::Assign(RefString* _Other)

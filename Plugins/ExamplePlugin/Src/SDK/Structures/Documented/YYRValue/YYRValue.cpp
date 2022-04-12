@@ -43,14 +43,14 @@ YYRValue::YYRValue(const char* Value) noexcept(true)
 {
 	this->Kind = VALUE_STRING;
 	this->Flags = 0;
-	this->String = RefString::Alloc(Value, strlen(Value) + 1);
+	this->String = RefString::Alloc(Value, strlen(Value) + 1, true);
 }
 
 YYRValue::YYRValue(const std::string& Value) noexcept(true)
 {
 	this->Kind = VALUE_STRING;
 	this->Flags = 0;
-	this->String = RefString::Alloc(Value.c_str(), Value.length() + 1);
+	this->String = RefString::Alloc(Value.c_str(), Value.length() + 1, true);
 }
 
 YYRValue::YYRValue(const YYRValue& Value) noexcept(true)
