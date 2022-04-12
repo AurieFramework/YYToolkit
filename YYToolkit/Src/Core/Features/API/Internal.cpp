@@ -56,7 +56,7 @@ YYTKStatus API::Internal::__InitializeGlobalVars__()
 		YYTKStatus Status = API::Internal::MmFindCodeFunction(reinterpret_cast<DWORD&>(gAPIVars.Functions.Code_Function_GET_the_function));
 
 		if (Status)
-			Utils::Logging::Message(CLR_TANGERINE, "[Warning] API::Internal::MmFindCodeFunction() failed. Error: %s",
+			Utils::Logging::Error(__FILE__, __LINE__, "API::Internal::MmFindCodeFunction() failed with %s",
 				Utils::Logging::YYTKStatus_ToString(Status).c_str());
 	}
 
@@ -65,7 +65,7 @@ YYTKStatus API::Internal::__InitializeGlobalVars__()
 		YYTKStatus Status = API::Internal::MmFindCodeExecute(reinterpret_cast<DWORD&>(gAPIVars.Functions.Code_Execute));
 
 		if (Status)
-			Utils::Logging::Message(CLR_TANGERINE, "[Warning] API::Internal::MmFindCodeExecute() failed. Error: %s",
+			Utils::Logging::Error(__FILE__, __LINE__, "API::Internal::MmFindCodeExecute() failed with %s",
 				Utils::Logging::YYTKStatus_ToString(Status).c_str());
 	}
 
@@ -121,6 +121,7 @@ YYTKStatus API::Internal::__InitializeConsole__()
 #else
 	Utils::Logging::Message(CLR_LIGHTBLUE, "YYToolkit by Archie#8615", YYSDK_VERSION);
 #endif
+
 	return YYTK_OK;
 }
 
@@ -373,6 +374,50 @@ YYTKStatus API::Internal::VfLookupFunction(const char* szFunctionName, TRoutine&
 	}
 
 	return YYTK_NOT_FOUND;
+}
+
+YYTKStatus API::Internal::VfGetIdByName(YYObjectBase* pObject, const char* szName, int& outId)
+{
+#ifndef _DEBUG
+	return YYTK_UNAVAILABLE;
+#endif
+
+	DWORD dwGlobalGet = 0;
+	DWORD dwCallAddress = 0;
+
+	// Find function scope
+	{
+		YYTKStatus Status = VfGetFunctionPointer("variable_global_get", EFPType::FPType_DirectPointer, dwGlobalGet);
+
+		if (Status)
+			return Status;
+		else if (dwGlobalGet == 0)
+			return YYTK_INVALIDRESULT;
+	}
+
+	// Find byte array scope
+	{
+		YYTKStatus Status = MmFindByteArray("\xE8\x00\x00\x00\x00\x6A\x00\x6A\x00", UINT_MAX, dwGlobalGet, 0xFF, "x????xxxx", false, dwCallAddress);
+
+		if (Status)
+			return Status;
+		else if (dwCallAddress == 0)
+			return YYTK_INVALIDRESULT;
+	}
+
+	unsigned long Relative = *reinterpret_cast<unsigned long*>(dwCallAddress + 1);
+	Relative += (dwCallAddress + 5); // eip = instruction base + 5 + relative offset
+
+	if (Relative == 0)
+		return YYTK_INVALIDRESULT;
+
+	using FNCodeVariableFindSlot = int(*)(YYObjectBase* _pObj, const char* _name);
+
+	FNCodeVariableFindSlot fn = reinterpret_cast<FNCodeVariableFindSlot>(Relative);
+
+	outId = fn(pObject, szName);
+
+	return YYTK_OK;
 }
 
 YYTKStatus API::Internal::MmGetScriptArrayPtr(CDynamicArray<CScript*>*& outArray, const int& nMaxInstructions)

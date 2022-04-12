@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
+using System.IO.Compression;
+using System.Net;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
-using Launcher;
 
 namespace Launcher
 {
@@ -44,12 +45,12 @@ namespace Launcher
             if (String.IsNullOrEmpty(sDataFilePath))
             {
                 Success = WinAPI.CreateProcess(sRunnerFilePath, "", ref pSec, ref tSec, false,
-               4 /* CREATE_SUSPENDED */, IntPtr.Zero, Path.GetDirectoryName(sRunnerFilePath), ref sInfo, out pInfo);
+                4 /* CREATE_SUSPENDED */, IntPtr.Zero, Path.GetDirectoryName(sRunnerFilePath), ref sInfo, out pInfo);
             }
             else
             {
-                Success = WinAPI.CreateProcess(sRunnerFilePath, "-game \"" + sDataFilePath + "\"", ref pSec, ref tSec, false,
-               4 /* CREATE_SUSPENDED */, IntPtr.Zero, Path.GetDirectoryName(sRunnerFilePath), ref sInfo, out pInfo);
+                Success = WinAPI.CreateProcess(sRunnerFilePath, $"-game \"{sDataFilePath}\"", ref pSec, ref tSec, false,
+                4 /* CREATE_SUSPENDED */, IntPtr.Zero, Path.GetDirectoryName(sRunnerFilePath), ref sInfo, out pInfo);
             }
 
             if (!Success)
@@ -58,12 +59,12 @@ namespace Launcher
                 return;
             }
 
-            Utils.Inject(pInfo.hProcess, sPathToDll);
+            Inject(pInfo.hProcess, sPathToDll);
         }
 
         public static OpenFileDialog CreateFileDialog(string StartPath, string Title, string Filter, int FilterIndex)
         {
-            OpenFileDialog dialog = new OpenFileDialog
+            OpenFileDialog dialog = new OpenFileDialog()
             {
                 //InitialDirectory = Environment.ExpandEnvironmentVariables(StartPath),
                 Title = Title,
@@ -75,10 +76,30 @@ namespace Launcher
             return dialog;
         }
 
+        public static void WaitUntilWindow(Process process)
+        {
+            process.WaitForInputIdle();
+
+            while (!process.HasExited)
+            {
+                try
+                {
+                    if (process.MainWindowHandle != IntPtr.Zero)
+                        break;
+                }
+                catch (InvalidOperationException)
+                {
+                    if (!process.HasExited)
+                        throw;
+                }
+            }
+
+            process.WaitForInputIdle();
+        }
         public static string[] GetPluginsFromGameDirectory(string GameDirPath)
         {
             if (!Directory.Exists(GameDirPath) || !Directory.Exists(GameDirPath + "\\autoexec"))
-                return new string[0];
+                return Array.Empty<string>();
 
             var EnabledEntries = Directory.GetFiles(GameDirPath + "\\autoexec", "*.dll");
             var DisabledEntries = Directory.GetFiles(GameDirPath + "\\autoexec", "*.dll.disabled");
@@ -104,6 +125,118 @@ namespace Launcher
 
     public partial class MainWindow : Form
     {
+        // Downloads YYTK and returns the path it's at.
+        public static string GetYYTKPath(bool UseArtifactURL, string DLLName)
+        {
+            string DownloadPath = $"{Directory.GetCurrentDirectory()}\\{DLLName}.dll";
+
+#pragma warning disable SYSLIB0014
+            using (var Browser = new WebClient())
+            {
+                string URL = UseArtifactURL ?
+                    "https://nightly.link/Archie-osu/YYToolkit/workflows/msbuild/stable/YYTK-Core.zip" :
+                    "https://github.com/Archie-osu/YYToolkit/releases/latest/download/YYToolkit.dll";
+
+                try
+                {
+                    // Delete the DLL 
+                    if (File.Exists(DownloadPath))
+                        File.Delete(DownloadPath);
+
+                    // Handle downloading the ZIP
+                    if (UseArtifactURL)
+                    {
+                        DownloadPath = DownloadPath.Replace($"{DLLName}.dll", $"{DLLName}.zip");
+
+                        // Delete the ZIP if it exists prior to downloading
+                        if (File.Exists(DownloadPath))
+                            File.Delete(DownloadPath);
+
+                        // Download a new ZIP
+                        Browser.DownloadFile(URL, DownloadPath);
+
+                        // Extract it
+                        ZipFile.ExtractToDirectory(DownloadPath, Path.GetDirectoryName(DownloadPath));
+
+                        // Delete the zip file, the DLL is now extracted with the name "YYToolkit.dll"
+                        File.Delete(DownloadPath);
+
+                        // Rename it to the random DLL file to avoid potential detection
+                        File.Move($"{Path.GetDirectoryName(DownloadPath)}\\YYToolkit.dll", $"{Path.GetDirectoryName(DownloadPath)}\\{DLLName}.dll");
+                    }
+                    else
+                    {
+                        Browser.DownloadFile(URL, DownloadPath);
+                    }
+                }
+                catch (Exception ex1)
+                {
+                    // Failed to download to current dir, try userprofile
+                    try
+                    {
+                        DownloadPath = $"{Environment.GetFolderPath(Environment.SpecialFolder.UserProfile)}\\{DLLName}.dll";
+
+                        // Delete the DLL 
+                        if (File.Exists(DownloadPath))
+                            File.Delete(DownloadPath);
+
+                        // Handle downloading the ZIP
+                        if (UseArtifactURL)
+                        {
+                            DownloadPath = DownloadPath.Replace($"{DLLName}.dll", $"{DLLName}.zip");
+
+                            // Delete the ZIP if it exists prior to downloading
+                            if (File.Exists(DownloadPath))
+                                File.Delete(DownloadPath);
+
+                            // Download a new ZIP
+                            Browser.DownloadFile(URL, DownloadPath);
+
+                            // Extract it
+                            ZipFile.ExtractToDirectory(DownloadPath, Path.GetDirectoryName(DownloadPath));
+
+                            // Delete the zip file, the DLL is now extracted with the name "YYToolkit.dll"
+                            File.Delete(DownloadPath);
+
+                            // Rename it to the random DLL file to avoid potential detection
+                            File.Move($"{Path.GetDirectoryName(DownloadPath)}\\YYToolkit.dll", $"{Path.GetDirectoryName(DownloadPath)}\\{DLLName}.dll");
+                        }
+                        else
+                        {
+                            Browser.DownloadFile(URL, DownloadPath);
+                        }
+                    }
+                    catch (Exception ex2)
+                    {
+                        string Exception1Message = "";
+                        string Exception2Message = "";
+
+                        while (ex1 != null)
+                        {
+                            Exception1Message += $"{ex1.Message}\n";
+                            ex1 = ex1.InnerException;
+                        }
+
+                        while (ex2 != null)
+                        {
+                            Exception2Message += $"{ex2.Message}\n";
+                            ex2 = ex2.InnerException;
+                        }
+
+                        MessageBox.Show(
+                            "Injection failed!\n" +
+                            "Please report this occurence to GitHub, as this is really shouldn't happen.\n\n" +
+                            $"First method: {Exception1Message}\n" +
+                            $"Second method: {Exception2Message}",
+                            "Error!", MessageBoxButtons.OK, MessageBoxIcon.Error
+                        );
+
+                        return "";
+                    }
+                }
+            }
+            return DownloadPath.Replace($"{DLLName}.zip", $"{DLLName}.dll");
+        }
         public static bool IsReadyToManagePlugins(string sRunnerFilename, ListBox listPlugins)
         {
             if (string.IsNullOrEmpty(sRunnerFilename))

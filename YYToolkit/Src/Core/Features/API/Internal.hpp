@@ -78,6 +78,11 @@ namespace API
 			DWORD& dwOutBuffer
 		);
 
+		DllExport YYTKStatus MmGetScriptArrayPtr(
+			CDynamicArray<CScript*>*& outArray,
+			const int& nMaxInstructions
+		);
+
 		// VARIABLE FUNCTIONS
 		DllExport YYTKStatus VfGetFunctionPointer(
 			const char* szFunctionName,
@@ -126,9 +131,10 @@ namespace API
 			int* pOptOutIndex
 		);
 
-		DllExport YYTKStatus MmGetScriptArrayPtr(
-			CDynamicArray<CScript*>*& outArray,
-			const int& nMaxInstructions
+		DllExport YYTKStatus VfGetIdByName(
+			YYObjectBase* pObject,
+			const char* szName,
+			int& outId
 		);
 	}
 }
