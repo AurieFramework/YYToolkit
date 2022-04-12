@@ -69,15 +69,6 @@
     <ClInclude Include="Src\Core\Hooks\MessageBoxW\MessageBoxW.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Src\Core\Hooks\Drawing\GR_Draw_Text\GR_Draw_Text.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Src\Core\Hooks\Drawing\GR_Draw_Text_Color\GR_Draw_Text_Color.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Src\Core\Hooks\Drawing\GR_Draw_Text_Transformed\GR_Draw_Text_Transformed.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Src\Core\Utils\Hashing\MurMurHash.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -171,6 +162,9 @@
     <ClInclude Include="Src\Core\Utils\PortableFileDialog\PFD.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Src\Core\Features\PluginManager\Structures\PmStructures.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Src\MainEntry.cpp">
@@ -218,22 +212,7 @@
     <ClCompile Include="Src\Core\Utils\Logging\Logging.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Src\Core\Hooks\Drawing\GR_Draw_Text\GR_Draw_Text.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Src\Core\Hooks\Drawing\GR_Draw_Text_Color\GR_Draw_Text_Color.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Src\Core\Hooks\Drawing\GR_Draw_Text_Transformed\GR_Draw_Text_Transformed.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Src\Core\Hooks\Drawing\GR_Draw_Text_TC\GR_Draw_Text_TC_header.hpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Src\Core\Utils\Hashing\MurMurHash.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Src\Core\Hooks\Drawing\GR_Draw_Text_TC\GR_Draw_Text_TC.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Src\Core\SDK\Structures\Documented\CDynamicArray\CDynamicArray.cpp">

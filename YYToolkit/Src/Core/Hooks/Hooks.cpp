@@ -8,10 +8,6 @@
 #include "ResizeBuffers/ResizeBuffers.hpp"
 #include "WindowProc/WindowProc.hpp"
 #include "YYError/YYError.hpp"
-#include "Drawing/GR_Draw_Text/GR_Draw_Text.hpp"
-#include "Drawing/GR_Draw_Text_Color/GR_Draw_Text_Color.hpp"
-#include "Drawing/GR_Draw_Text_Transformed/GR_Draw_Text_Transformed.hpp"
-#include "Drawing/GR_Draw_Text_TC/GR_Draw_Text_TC_header.hpp"
 #include "../Features/API/API.hpp"
 #include "Hooks.hpp"
 #include <array>
@@ -79,39 +75,6 @@ namespace Hooks
 				"YYError"
 			);
 			
-			Hook
-			(
-				ReCa<void*>(&Hooks::GR_Draw_Text::Function), 
-				ReCa<void*>(&Hooks::GR_Draw_Text::GetTargetAddress), 
-				ReCa<void**>(&Hooks::GR_Draw_Text::pfnOriginal),
-				"GR_Draw_Text"
-			);
-
-			Hook
-			(
-				ReCa<void*>(&Hooks::GR_Draw_Text_Color::Function),	
-				ReCa<void*>(&Hooks::GR_Draw_Text_Color::GetTargetAddress),	
-				ReCa<void**>(&Hooks::GR_Draw_Text_Color::pfnOriginal),
-				"GR_Draw_Text_Color"
-			);
-			
-			Hook
-			(
-				ReCa<void*>(&Hooks::GR_Draw_Text_Transformed::Function),	
-				ReCa<void*>(&Hooks::GR_Draw_Text_Transformed::GetTargetAddress),	
-				ReCa<void**>(&Hooks::GR_Draw_Text_Transformed::pfnOriginal),
-				"GR_Draw_Text_Transformed"
-			);
-			
-			Hook
-			(
-				ReCa<void*>(&Hooks::GR_Draw_Text_TC::Function), 
-				ReCa<void*>(&Hooks::GR_Draw_Text_TC::GetTargetAddress),	
-				ReCa<void**>(&Hooks::GR_Draw_Text_TC::pfnOriginal), 
-				"GR_Draw_Text_TC"
-			);
-			
-
 			Hook
 			(
 				ReCa<void*>(&Hooks::MessageBoxW::Function),

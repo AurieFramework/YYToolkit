@@ -48,15 +48,17 @@ enum YYTKStatus : int
 
 enum EventType : int
 {
-	EVT_CODE_EXECUTE = 0,	// The event represents a Code_Execute() call.
-	EVT_YYERROR = 1,		// The event represents a YYError() call.
-	EVT_ENDSCENE = 2,		// The event represents an LPDIRECT3DDEVICE9::EndScene() call.
-	EVT_MESSAGEBOX = 3,		// The event represents a MessageBoxW() call.
-	EVT_PRESENT = 4,		// The event represents an IDXGISwapChain::Present() call.
-	EVT_RESIZEBUFFERS = 5,	// The event represents an IDXGISwapChain::ResizeBuffers() call.
-	EVT_WNDPROC = 6,		// The event represents a window procedure call.
-	EVT_DOCALLSCRIPT = 7,	// The event represents a DoCallScript() call.
-	EVT_CUSTOM = 1337,		// The event represents a custom function call, raised by plugins.
+	EVT_CODE_EXECUTE = 1,					// The event represents a Code_Execute() call.
+	EVT_YYERROR = 2,						// The event represents a YYError() call.
+	EVT_ENDSCENE = 4,						// The event represents an LPDIRECT3DDEVICE9::EndScene() call.
+	EVT_PRESENT = 8,						// The event represents an IDXGISwapChain::Present() call.
+	EVT_RESIZEBUFFERS = 16,					// The event represents an IDXGISwapChain::ResizeBuffers() call.
+	EVT_WNDPROC = 32,						// The event represents a window procedure call.
+	EVT_DOCALLSCRIPT = 64,					// The event represents a DoCallScript() call.
+	EVT_GR_DRAW_TEXT = 128,					// The event represents a GR_Draw_Text() call.
+	EVT_GR_DRAW_TEXT_C = 256,					// The event represents a GR_Draw_Text_Colored() call.
+	EVT_GR_DRAW_TEXT_T = 512,				// The event represents a GR_Draw_Text_Transformed() call.
+	EVT_GR_DRAW_TEXT_TC = 1024,				// The event represents a GR_Draw_Text_Transformed_Colored() call.
 };
 
 enum Color : int

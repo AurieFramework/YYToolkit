@@ -1,7 +1,6 @@
 #pragma once
 #include "../../../FwdDecls/FwdDecls.hpp"
 #include "../../../Plugins/Plugins.hpp"
-#include <map>
 #include <d3d11.h>
 
 #pragma pack(push, 1)
@@ -16,7 +15,6 @@ struct CGlobals
 	
 	CDynamicArray<CScript*>*						g_pScriptsArray		= nullptr;
 	void*											g_pWindowDevice		= nullptr;
-	std::map<unsigned long, YYTKPlugin>				g_PluginStorage;
 	HWND											g_hwWindowHandle	= nullptr;
 	HMODULE											g_hMainModule		= nullptr;
 	ID3D11RenderTargetView*							g_pRenderView		= nullptr;

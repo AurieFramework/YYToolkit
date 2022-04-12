@@ -164,11 +164,10 @@
     <ClInclude Include="Src\Core\Features\Console\Console.hpp" />
     <ClInclude Include="Src\Core\Features\API\API.hpp" />
     <ClInclude Include="Src\Core\Features\PluginManager\PluginManager.hpp" />
+    <ClInclude Include="Src\Core\Features\PluginManager\Structures\PmStructures.hpp" />
     <ClInclude Include="Src\Core\Features\UnitTests\UnitTests.hpp" />
     <ClInclude Include="Src\Core\Hooks\Code_Execute\Code_Execute.hpp" />
     <ClInclude Include="Src\Core\Hooks\DoCallScript\DoCallScript.hpp" />
-    <ClInclude Include="Src\Core\Hooks\Drawing\GR_Draw_Text_Color\GR_Draw_Text_Color.hpp" />
-    <ClInclude Include="Src\Core\Hooks\Drawing\GR_Draw_Text_Transformed\GR_Draw_Text_Transformed.hpp" />
     <ClInclude Include="Src\Core\Hooks\EndScene\EndScene.hpp" />
     <ClInclude Include="Src\Core\Hooks\Hooks.hpp" />
     <ClInclude Include="Src\Core\Hooks\MessageBoxW\MessageBoxW.hpp" />
@@ -176,7 +175,6 @@
     <ClInclude Include="Src\Core\Hooks\ResizeBuffers\ResizeBuffers.hpp" />
     <ClInclude Include="Src\Core\Hooks\WindowProc\WindowProc.hpp" />
     <ClInclude Include="Src\Core\Hooks\YYError\YYError.hpp" />
-    <ClInclude Include="Src\Core\Hooks\Drawing\GR_Draw_Text\GR_Draw_Text.hpp" />
     <ClInclude Include="Src\Core\SDK\Enums\Enums.hpp" />
     <ClInclude Include="Src\Core\SDK\FwdDecls\FwdDecls.hpp" />
     <ClInclude Include="Src\Core\SDK\Plugins\Plugins.hpp" />
@@ -221,10 +219,6 @@
     <ClCompile Include="Src\Core\Features\UnitTests\UnitTests.cpp" />
     <ClCompile Include="Src\Core\Hooks\Code_Execute\Code_Execute.cpp" />
     <ClCompile Include="Src\Core\Hooks\DoCallScript\DoCallScript.cpp" />
-    <ClCompile Include="Src\Core\Hooks\Drawing\GR_Draw_Text_Color\GR_Draw_Text_Color.cpp" />
-    <ClCompile Include="Src\Core\Hooks\Drawing\GR_Draw_Text_TC\GR_Draw_Text_TC.cpp" />
-    <ClCompile Include="Src\Core\Hooks\Drawing\GR_Draw_Text_Transformed\GR_Draw_Text_Transformed.cpp" />
-    <ClCompile Include="Src\Core\Hooks\Drawing\GR_Draw_Text_TC\GR_Draw_Text_TC_header.hpp" />
     <ClCompile Include="Src\Core\Hooks\EndScene\EndScene.cpp" />
     <ClCompile Include="Src\Core\Hooks\Hooks.cpp" />
     <ClCompile Include="Src\Core\Hooks\MessageBoxW\MessageBoxW.cpp" />
@@ -232,7 +226,6 @@
     <ClCompile Include="Src\Core\Hooks\ResizeBuffers\ResizeBuffers.cpp" />
     <ClCompile Include="Src\Core\Hooks\WindowProc\WindowProc.cpp" />
     <ClCompile Include="Src\Core\Hooks\YYError\YYError.cpp" />
-    <ClCompile Include="Src\Core\Hooks\Drawing\GR_Draw_Text\GR_Draw_Text.cpp" />
     <ClCompile Include="Src\Core\SDK\Plugins\Plugins.cpp" />
     <ClCompile Include="Src\Core\SDK\Structures\Documented\CDynamicArray\CDynamicArray.cpp" />
     <ClCompile Include="Src\Core\SDK\Structures\Documented\RefThing\RefThing.cpp" />
