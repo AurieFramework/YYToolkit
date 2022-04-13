@@ -62,13 +62,15 @@ void PrintError(
 	...
 );
 
-PluginAttributes_t* PmGetPluginAttributes(
-	YYTKPlugin* pObject
+YYTKStatus PmGetPluginAttributes(
+	YYTKPlugin* pObject,
+	PluginAttributes_t*& outAttributes
 );
 
-CallbackAttributes_t* PmCreateCallback(
+YYTKStatus PmCreateCallback(
 	PluginAttributes_t* pObjectAttributes, 
-	FNEventHandler pfnCallback, 
+	CallbackAttributes_t*& outAttributes, 
+	FNEventHandler pfnCallback,
 	EventType Flags, 
 	void* OptionalArgument
 );
@@ -77,4 +79,4 @@ YYTKStatus PmRemoveCallback(
 	CallbackAttributes_t* CallbackAttributes
 );
 
-#endif 
+#endif

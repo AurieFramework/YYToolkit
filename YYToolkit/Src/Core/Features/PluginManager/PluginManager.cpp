@@ -175,27 +175,30 @@ void API::PluginManager::Uninitialize()
 	g_PluginStorage.clear(); // Just in case.
 }
 
-PluginAttributes_t* API::PluginManager::PmGetPluginAttributes(YYTKPlugin* pObject)
+YYTKStatus API::PluginManager::PmGetPluginAttributes(YYTKPlugin* pObject, PluginAttributes_t*& outAttributes)
 {
 	if (!pObject)
-		return nullptr;
+		return YYTK_INVALIDARG;
 
 	for (auto& Attributes : g_PluginStorage)
 	{
 		if (Attributes == *pObject)
-			return &Attributes;
+		{
+			outAttributes = &Attributes;
+			return YYTK_OK;
+		}
 	}
 
-	return nullptr;
+	return YYTK_NOT_FOUND;
 }
 
-CallbackAttributes_t* API::PluginManager::PmCreateCallback(PluginAttributes_t* pObjectAttributes, FNEventHandler pfnCallback, EventType Flags, void* OptionalArgument)
+YYTKStatus API::PluginManager::PmCreateCallback(PluginAttributes_t* pObjectAttributes, CallbackAttributes_t*& outAttributes, FNEventHandler pfnCallback, EventType Flags, void* OptionalArgument)
 {
 	if (!pObjectAttributes)
-		return nullptr;
+		return YYTK_INVALIDARG;
 
 	if (!pfnCallback)
-		return nullptr;
+		return YYTK_INVALIDARG;
 
 	CallbackAttributes_t Attributes;
 	Attributes.Callback = pfnCallback;
@@ -203,11 +206,15 @@ CallbackAttributes_t* API::PluginManager::PmCreateCallback(PluginAttributes_t* p
 	Attributes.Argument = OptionalArgument;
 	pObjectAttributes->RegisteredCallbacks.push_back(Attributes);
 
-	return &pObjectAttributes->RegisteredCallbacks.back();
+	outAttributes = &pObjectAttributes->RegisteredCallbacks.back();
+	return YYTK_OK;
 }
 
-DllExport YYTKStatus API::PluginManager::PmRemoveCallback(CallbackAttributes_t* CallbackAttributes)
+YYTKStatus API::PluginManager::PmRemoveCallback(CallbackAttributes_t* CallbackAttributes)
 {
+	if (!CallbackAttributes)
+		return YYTK_INVALIDARG;
+
 	for (auto& PluginAttributes : g_PluginStorage)
 	{
 		for (auto& RegisteredCallback : PluginAttributes.RegisteredCallbacks)

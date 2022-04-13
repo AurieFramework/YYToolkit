@@ -28,11 +28,30 @@ DllExport YYTKStatus PluginEntry(YYTKPlugin* PluginObject)
 	// Print a message to the console
 	PrintMessage("[Example Plugin] - Hello from PluginEntry!");
 
-	// Register a callback for object events, save the attributes to the global variable (evil :P)
-	g_pCallbackAttributes = PmCreateCallback(PmGetPluginAttributes(PluginObject), FrameCallback, static_cast<EventType>(EVT_PRESENT | EVT_ENDSCENE), nullptr);
+	PluginAttributes_t* PluginAttributes = nullptr;
 
-	if (!g_pCallbackAttributes)
-		PrintError(__FILE__, __LINE__, "[Example Plugin] - Failed to create a callback!");
+	// Get the attributes for the plugin - this is an opaque structure, as it may change without any warning.
+	// If Status == YYTK_OK (0), then PluginAttributes is guaranteed to be valid (non-null).
+	if (YYTKStatus Status = PmGetPluginAttributes(PluginObject, PluginAttributes))
+	{
+		PrintError(__FILE__, __LINE__, "[Example Plugin] - PmGetPluginAttributes failed with 0x%x", Status);
+		return YYTK_FAIL;
+	}
+
+	// Register a callback for object events
+	YYTKStatus Status = PmCreateCallback(
+		PluginAttributes,					// Plugin Attributes
+		g_pCallbackAttributes,				// (out) Callback Attributes
+		FrameCallback,						// The function to register as a callback
+		static_cast<EventType>(EVT_PRESENT | EVT_ENDSCENE), // Which events trigger this callback
+		nullptr								// The optional argument to pass to the function
+	);
+
+	if (Status)
+	{
+		PrintError(__FILE__, __LINE__, "[Example Plugin] - PmCreateCallback failed with 0x%x", Status);
+		return YYTK_FAIL;
+	}
 
 	// Off it goes to the core.
 	return YYTK_OK;
@@ -47,7 +66,7 @@ YYTKStatus PluginUnload()
 	// If we didn't succeed in removing the callback.
 	if (Removal != YYTK_OK)
 	{
-		PrintError(__FILE__, __LINE__, "PmRemoveCallbacks failed with 0x%x", Removal);
+		PrintError(__FILE__, __LINE__, "[Example Plugin] PmRemoveCallbacks failed with 0x%x", Removal);
 	}
 
 	PrintMessage("[Example Plugin] - Goodbye!");

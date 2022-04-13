@@ -1,6 +1,5 @@
 #include "APIDefs.hpp"
 #include <TlHelp32.h>
-#ifdef YYSDK_PLUGIN
 
 HMODULE GetYYTKModule()
 {
@@ -147,22 +146,22 @@ void PrintError(const char* File, const int& Line, const char* fmt, ...)
 	return Func(File, Line, Buf);
 }
 
-PluginAttributes_t* PmGetPluginAttributes(YYTKPlugin* pObject)
+YYTKStatus PmGetPluginAttributes(YYTKPlugin* pObject, PluginAttributes_t*& outAttributes)
 {
 	HMODULE YYTKModule = GetYYTKModule();
 
 	decltype(&PmGetPluginAttributes) Func = reinterpret_cast<decltype(&PmGetPluginAttributes)>(GetProcAddress(YYTKModule, __FUNCTION__));
 
-	return Func(pObject);
+	return Func(pObject, outAttributes);
 }
 
-CallbackAttributes_t* PmCreateCallback(PluginAttributes_t* pObjectAttributes, FNEventHandler pfnCallback, EventType Flags, void* OptionalArgument)
+YYTKStatus PmCreateCallback(PluginAttributes_t* pObjectAttributes, CallbackAttributes_t*& outAttributes, FNEventHandler pfnCallback, EventType Flags, void* OptionalArgument)
 {
 	HMODULE YYTKModule = GetYYTKModule();
 
 	decltype(&PmCreateCallback) Func = reinterpret_cast<decltype(&PmCreateCallback)>(GetProcAddress(YYTKModule, __FUNCTION__));
 
-	return Func(pObjectAttributes, pfnCallback, Flags, OptionalArgument);
+	return Func(pObjectAttributes, outAttributes, pfnCallback, Flags, OptionalArgument);
 }
 
 YYTKStatus PmRemoveCallback(CallbackAttributes_t* CallbackAttributes)
@@ -173,4 +172,3 @@ YYTKStatus PmRemoveCallback(CallbackAttributes_t* CallbackAttributes)
 
 	return Func(CallbackAttributes);
 }
-#endif
