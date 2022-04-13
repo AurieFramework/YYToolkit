@@ -1,28 +1,27 @@
 #pragma once
 #include "../../SDK/FwdDecls/FwdDecls.hpp"
-#include "../../SDK/Plugins/Plugins.hpp"
+#include "Structures/PmStructures.hpp"
 
 namespace API 
 {
 	namespace PluginManager 
 	{
-		DllExport YYTKPlugin* LoadPlugin(const char* Path);
+		inline std::list<PluginAttributes_t> g_PluginStorage;
 
-		DllExport bool UnloadPlugin(YYTKPlugin* pPlugin, bool Notify);
+		YYTKPlugin* LoadPlugin(const char* Path);
+		bool UnloadPlugin(YYTKPlugin& pPlugin, bool Notify);
 
-		DllExport void* GetPluginRoutine(const char* Name);
+		bool IsPluginCompatible(HMODULE Plugin);
 
-		DllExport void RunHooks(YYTKEventBase* pEvent);
-
-		DllExport void RunPluginMains();
-
-		DllExport void RunPluginPreloads();
-
-		// This doesn't run hooks, this actually runs a callback
-		DllExport void CallTextCallbacks(float& x, float& y, const char*& str, int& linesep, int& linewidth);
+		void RunHooks(YYTKEventBase* pEvent);
+		void RunPluginMains();
+		void RunPluginPreloads();
 
 		void Initialize();
-
 		void Uninitialize();
+
+		DllExport YYTKStatus PmGetPluginAttributes(YYTKPlugin* pObject, PluginAttributes_t*& outAttributes);
+		DllExport YYTKStatus PmCreateCallback(PluginAttributes_t* pObjectAttributes, CallbackAttributes_t*& outAttributes, FNEventHandler pfnCallback, EventType Flags, void* OptionalArgument);
+		DllExport YYTKStatus PmRemoveCallback(CallbackAttributes_t* CallbackAttributes);
 	}
 }

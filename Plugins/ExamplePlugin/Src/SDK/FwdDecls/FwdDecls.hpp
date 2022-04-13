@@ -62,6 +62,11 @@ struct VMExec;
 
 #pragma endregion
 
+#pragma region Opaque
+struct PluginAttributes_t;
+struct CallbackAttributes_t;
+#pragma endregion
+
 // Typedefs
 using TRoutine = void(__cdecl*)(RValue* _result, CInstance* _self, CInstance* _other, int _argc, RValue* _args);
 using PFUNC_YYGML = void(__cdecl*)(CInstance* _self, CInstance* _other);
@@ -73,7 +78,7 @@ typedef bool (*FNCodeExecute)(YYObjectBase* Self, YYObjectBase* Other, CCode* co
 #define WIN32_LEAN_AND_MEAN 1
 #define YYTK_MAGIC 'TFSI'
 
-static const char* YYSDK_VERSION = "1.4.0";
+static const char* YYSDK_VERSION = "2.0.0";
 
 // Macros, but complicated
 #ifdef _MSC_VER

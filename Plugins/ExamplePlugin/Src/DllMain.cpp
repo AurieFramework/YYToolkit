@@ -1,138 +1,86 @@
-#define YYSDK_PLUGIN    // This is needed so the SDK knows not to include core-specific headers. Always define it before including the SDK!
-#include "SDK/SDK.hpp"  // Include the SDK.
+#include "DllMain.hpp"	// Include our header
 #include <Windows.h>    // Include Windows's mess.
 #include <vector>       // Include the STL vector.
 
-YYRValue EasyGMLCall(YYTKPlugin* pPlugin, const std::string& Name, const std::vector<YYRValue>& rvRef)
+// We save the CodeCallbackHandler attributes here, so we can unregister the callback in the unload routine.
+static CallbackAttributes_t* g_pCallbackAttributes = nullptr;
+static uint32_t FrameNumber = 0;
+
+// This callback is registered on EVT_PRESENT and EVT_ENDSCENE, so it gets called every frame on DX9 / DX11 games.
+YYTKStatus FrameCallback(YYTKEventBase* pEvent, void* OptionalArgument)
 {
-    // Get the callbuiltin function from the core API
-    auto CallBuiltin = pPlugin->GetCoreExport<bool(*)(YYRValue& Result,
-        const std::string& Name,
-        CInstance* Self,
-        CInstance* Other,
-        const std::vector<YYRValue>& Args)>("CallBuiltin");
+	FrameNumber++;
 
-    // Call it like normal
-    YYRValue Result;
-    CallBuiltin(Result, Name, nullptr, nullptr, rvRef);
+	if (FrameNumber % 30 == 0)
+		PrintMessage("[Example Plugin] - 30 frames have passed! Current framecount: %lu", FrameNumber);
 
-    return Result;
+	// Tell the core the handler was successful.
+	return YYTK_OK;
 }
 
-// I have to do this because there's some misalignment between older and newer DR versions
-CCode* GetCodeFromScript(CScript* pScript)
+// Create an entry routine - it must be named exactly this, and must accept these exact arguments.
+// It must also be declared DllExport (notice how the other functions are not).
+DllExport YYTKStatus PluginEntry(YYTKPlugin* PluginObject)
 {
-    // If the script is invalid
-    if (!pScript)
-        return nullptr;
+	// Set the unload routine
+	PluginObject->PluginUnload = PluginUnload;
 
-    // Old runner versions (pre DR 1.10 / DR 1.09)
-    if (pScript->s_code)
-        return pScript->s_code;
+	// Print a message to the console
+	PrintMessage("[Example Plugin] - Hello from PluginEntry!");
 
-    // New runners have objects shifted up by 1 (due to the s_text member missing) so cast it to CCode and call it a day.
-    if (pScript->s_text)
-        return (CCode*)pScript->s_text;
+	PluginAttributes_t* PluginAttributes = nullptr;
 
-    return nullptr;
-}
-// Handles all events that happen inside the game.
-// Previously, callbacks served this purpose, however in 0.0.3, an object-oriented design was implemented.
-// If you want to modify a code entry, you're gonna need this function.
-YYTKStatus PluginEventHandler(YYTKPlugin* pPlugin, YYTKEventBase* pEvent)
-{
-    // Check if the event currently raised is a rendering event (EndScene for DX9, Present for DX11)
-    if (pEvent->GetEventType() == EventType::EVT_DOCALLSCRIPT)
-    {
-        // Convert the base event to the actual event object based on it's type.
-        // Tip: Use dynamic_cast to catch issues with exceptions!
-        YYTKScriptEvent* pCodeEvent = dynamic_cast<YYTKScriptEvent*>(pEvent);
+	// Get the attributes for the plugin - this is an opaque structure, as it may change without any warning.
+	// If Status == YYTK_OK (0), then PluginAttributes is guaranteed to be valid (non-null).
+	if (YYTKStatus Status = PmGetPluginAttributes(PluginObject, PluginAttributes))
+	{
+		PrintError(__FILE__, __LINE__, "[Example Plugin] - PmGetPluginAttributes failed with 0x%x", Status);
+		return YYTK_FAIL;
+	}
 
-        // Extract arguments from the tuple into individual objects. C++ rules apply.
-        auto& [Script, v2, v3, v4, v5, v6] = pCodeEvent->Arguments();
+	// Register a callback for object events
+	YYTKStatus Status = PmCreateCallback(
+		PluginAttributes,					// Plugin Attributes
+		g_pCallbackAttributes,				// (out) Callback Attributes
+		FrameCallback,						// The function to register as a callback
+		static_cast<EventType>(EVT_PRESENT | EVT_ENDSCENE), // Which events trigger this callback
+		nullptr								// The optional argument to pass to the function
+	);
 
-        // Check if values are valid
-        if (Script)
-        {
-            if (CCode* pCode = GetCodeFromScript(Script))
-            {
-                if (strcmp(pCode->i_pName, "gml_Script_scr_debug") == 0 ||
-                    strcmp(pCode->i_pName, "gml_Script_scr_debug_ch1") == 0)
-                {
+	if (Status)
+	{
+		PrintError(__FILE__, __LINE__, "[Example Plugin] - PmCreateCallback failed with 0x%x", Status);
+		return YYTK_FAIL;
+	}
 
-                    // By doing it this way, we avoid the crash with the cutscenes
-                    // which is something that UMT's Ch2 Debug.csx is currently suffering from.
-                    pCode->i_pVM = nullptr;
-                    YYRValue* pReturn = (YYRValue*)pCodeEvent->Call(Script, v2, v3, v4, v5, v6);
-                    *pReturn = 1.0;
-                }
-                else if (strcmp(pCode->i_pName, "gml_Script_scr_dogcheck") == 0 ||
-                    strcmp(pCode->i_pName, "gml_Script_scr_dogcheck_ch1") == 0)
-                {
-                    // Just say we called it LOL
-                    pCode->i_pVM = nullptr;
-                    YYRValue* pReturn = (YYRValue*)pCodeEvent->Call(Script, v2, v3, v4, v5, v6);
-                    *pReturn = 0.0;
-                }
-            }
-        }
-    }
-
-    // Go To Room port
-    if (GetAsyncKeyState(VK_F3) & 1)
-    {
-        YYRValue CurrentRoom = 30.0;
-
-        YYRValue Result = EasyGMLCall(pPlugin, "get_integer", { "Go to room (ported by Archie from UMT to YYToolkit).\nEnter the room ID you wish to teleport to.", CurrentRoom });
-
-        EasyGMLCall(pPlugin, "room_goto", { Result });
-    }
-    return YYTK_OK;
+	// Off it goes to the core.
+	return YYTK_OK;
 }
 
-DllExport YYTKStatus PluginUnload(YYTKPlugin* pPlugin)
+// The routine that gets called on plugin unload.
+// Registered in PluginEntry - you should use this to release resources.
+YYTKStatus PluginUnload()
 {
-    EasyGMLCall(pPlugin, "variable_global_set", { "debug", 0.0 });
+	YYTKStatus Removal = PmRemoveCallback(g_pCallbackAttributes);
 
-    return YYTK_OK;
-}
+	// If we didn't succeed in removing the callback.
+	if (Removal != YYTK_OK)
+	{
+		PrintError(__FILE__, __LINE__, "[Example Plugin] PmRemoveCallbacks failed with 0x%x", Removal);
+	}
 
-// Create an entry routine - it has to be named exactly this, and has to accept these arguments.
-// It also has to be declared DllExport (notice how the other functions are not).
-DllExport YYTKStatus PluginEntry(YYTKPlugin* pPlugin)
-{
-    // Set 'PluginEventHandler' as the function to call when we a game event happens.
-    // This is not required if you don't need to modify code entries / draw with D3D / anything else that requires precise timing.
-    pPlugin->PluginHandler = PluginEventHandler;
-    pPlugin->PluginUnload = PluginUnload;
-    
-    // Try to use the API way
-    using FNPrintFunc = void(*)(const char* String, ...);
-    FNPrintFunc PrintMessage = pPlugin->GetCoreExport<FNPrintFunc>("PrintMessage");
+	PrintMessage("[Example Plugin] - Goodbye!");
 
-    // If for some reason the lookup fails, fall back to printf.
-    if (!PrintMessage)
-    {
-        printf("[Chapter2++] - Plugin loaded for YYTK version %s\n", YYSDK_VERSION);
-        printf("[Chapter2++] - Please report any bugs you encounter on GitHub or the Underminers Discord.\n");
-    }
-    else
-    {
-        PrintMessage("[Chapter2++] - Plugin loaded for YYTK version %s", YYSDK_VERSION);
-        PrintMessage("[Chapter2++] - Please report any bugs you encounter on GitHub or the Underminers Discord.");
-    }
-   
-    // Tell the core everything went fine.
-    return YYTK_OK;
+	return YYTK_OK;
 }
 
 // Boilerplate setup for a Windows DLL, can just return TRUE.
 // This has to be here or else you get linker errors (unless you disable the main method)
 BOOL APIENTRY DllMain(
-    HMODULE hModule,
-    DWORD  ul_reason_for_call,
-    LPVOID lpReserved
+	HMODULE hModule,
+	DWORD  ul_reason_for_call,
+	LPVOID lpReserved
 )
 {
-    return 1;
+	return 1;
 }

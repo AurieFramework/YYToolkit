@@ -30,6 +30,9 @@
     <ClCompile Include="Src\SDK\Plugins\Plugins.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Src\SDK\Plugins\API Definitions\APIDefs.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Src\SDK\Enums\Enums.hpp">
@@ -90,6 +93,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Src\SDK\SDK.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\DllMain.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\SDK\Plugins\API Definitions\APIDefs.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

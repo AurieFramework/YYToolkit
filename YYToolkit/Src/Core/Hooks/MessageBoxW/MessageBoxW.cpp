@@ -10,12 +10,6 @@ namespace Hooks
 	{
 		int __stdcall Function(HWND Hwnd, LPCWSTR lpwText, LPCWSTR lpwCaption, UINT Type)
 		{
-			YYTKMessageBoxEvent Event = YYTKMessageBoxEvent(pfnOriginal, Hwnd, lpwText, lpwCaption, Type);
-			API::PluginManager::RunHooks(&Event);
-
-			if (Event.CalledOriginal())
-				return Event.GetReturn();
-
 			if (std::wstring(lpwText)._Starts_with(L"Win32 function failed"))
 				return 0;
 
