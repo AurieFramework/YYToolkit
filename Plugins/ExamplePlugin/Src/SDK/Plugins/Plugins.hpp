@@ -12,7 +12,7 @@ struct CCode;
 struct YYTKPlugin;
 class YYTKEventBase;
 
-using FNEventHandler = YYTKStatus(*)(YYTKEventBase* pEvent);
+using FNEventHandler = YYTKStatus(*)(YYTKEventBase* pEvent, void* Argument);
 using FNPluginEntry = YYTKStatus(*)(YYTKPlugin* pPluginObject);
 using FNPluginUnload = YYTKStatus(*)();
 using FNPluginPreloadEntry = YYTKStatus(*)(YYTKPlugin* pPluginObject);
@@ -34,11 +34,5 @@ struct YYTKPlugin
 #ifdef YYSDK_PLUGIN
 
 DllExport inline const char* __PluginGetSDKVersion();
-
-template <typename T>
-inline T GetCoreAPIAddress(YYTKPlugin* pPlugin, const char* Function)
-{
-	return reinterpret_cast<T>(GetProcAddress(reinterpret_cast<HMODULE>(pPlugin->CoreStart), Function));
-}
 
 #endif

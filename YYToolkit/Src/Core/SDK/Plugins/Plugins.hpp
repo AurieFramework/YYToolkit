@@ -35,10 +35,4 @@ struct YYTKPlugin
 
 DllExport inline const char* __PluginGetSDKVersion();
 
-template <typename T>
-inline T GetCoreAPIAddress(YYTKPlugin* pPlugin, const char* Function)
-{
-	return reinterpret_cast<T>(GetProcAddress(reinterpret_cast<HMODULE>(pPlugin->CoreStart), Function));
-}
-
 #endif

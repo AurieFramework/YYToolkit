@@ -20,8 +20,8 @@ namespace API
 		void Initialize();
 		void Uninitialize();
 
-		DllExport PluginAttributes_t* PmGetObjectAttributes(YYTKPlugin* pObject);
-		DllExport CallbackAttributes_t* PmCreateCallback(PluginAttributes_t* pObjectAttributes, FNEventHandler pfnCallback, EventType Flags, void* Argument1);
+		DllExport PluginAttributes_t* PmGetPluginAttributes(YYTKPlugin* pObject);
+		DllExport CallbackAttributes_t* PmCreateCallback(PluginAttributes_t* pObjectAttributes, FNEventHandler pfnCallback, EventType Flags, void* OptionalArgument);
 		DllExport YYTKStatus PmRemoveCallback(CallbackAttributes_t* CallbackAttributes);
 	}
 }

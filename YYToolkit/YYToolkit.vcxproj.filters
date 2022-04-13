@@ -165,6 +165,9 @@
     <ClInclude Include="Src\Core\Features\PluginManager\Structures\PmStructures.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Src\Core\SDK\Plugins\API Definitions\APIDefs.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Src\MainEntry.cpp">
@@ -252,6 +255,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Src\Core\SDK\Plugins\Plugins.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Core\SDK\Plugins\API Definitions\APIDefs.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

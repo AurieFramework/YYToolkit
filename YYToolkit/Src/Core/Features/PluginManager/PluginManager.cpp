@@ -175,7 +175,7 @@ void API::PluginManager::Uninitialize()
 	g_PluginStorage.clear(); // Just in case.
 }
 
-PluginAttributes_t* API::PluginManager::PmGetObjectAttributes(YYTKPlugin* pObject)
+PluginAttributes_t* API::PluginManager::PmGetPluginAttributes(YYTKPlugin* pObject)
 {
 	if (!pObject)
 		return nullptr;
@@ -189,7 +189,7 @@ PluginAttributes_t* API::PluginManager::PmGetObjectAttributes(YYTKPlugin* pObjec
 	return nullptr;
 }
 
-CallbackAttributes_t* API::PluginManager::PmCreateCallback(PluginAttributes_t* pObjectAttributes, FNEventHandler pfnCallback, EventType Flags, void* Argument1)
+CallbackAttributes_t* API::PluginManager::PmCreateCallback(PluginAttributes_t* pObjectAttributes, FNEventHandler pfnCallback, EventType Flags, void* OptionalArgument)
 {
 	if (!pObjectAttributes)
 		return nullptr;
@@ -200,7 +200,7 @@ CallbackAttributes_t* API::PluginManager::PmCreateCallback(PluginAttributes_t* p
 	CallbackAttributes_t Attributes;
 	Attributes.Callback = pfnCallback;
 	Attributes.CallbackType = Flags;
-	Attributes.Argument = Argument1;
+	Attributes.Argument = OptionalArgument;
 	pObjectAttributes->RegisteredCallbacks.push_back(Attributes);
 
 	return &pObjectAttributes->RegisteredCallbacks.back();
