@@ -1,6 +1,7 @@
 #include "UnitTests.hpp"
 #include "../API/Internal.hpp"
 #include "../../Utils/Logging/Logging.hpp"
+#include "../../SDK/Structures/Documented/YYRValue/YYRValue.hpp"
 
 bool Tests::RunUnitTests()
 {
@@ -73,6 +74,32 @@ bool Tests::RunUnitTests()
 		}
 	}
 	
+
+	// Global Instance
+	{
+		DWORD dwGlobalInstFunction = 0;
+		YYTKStatus stFoundFunc = API::Internal::VfGetFunctionPointer("@@GlobalScope@@", EFPType::FPType_DirectPointer, dwGlobalInstFunction);
+
+		if (stFoundFunc || dwGlobalInstFunction == 0)
+		{
+			Utils::Logging::Error(__FILE__, __LINE__, "Unit Test \"Global Instance (Function Lookup)\" failed");
+			bPassedTests = false;
+		}
+		else
+		{
+			TRoutine Routine = (TRoutine)dwGlobalInstFunction;
+			
+			YYRValue Value = YYRValue();
+			Routine(&Value.As<RValue>(), nullptr, nullptr, 0, nullptr);
+
+			if (Value.As<CInstanceBase*>() == nullptr)
+			{
+				Utils::Logging::Error(__FILE__, __LINE__, "Unit Test \"Global Instance (Result Check)\" failed");
+				bPassedTests = false;
+			}
+		}
+	}
+
 	Utils::Logging::Message(CLR_LIGHTBLUE, "Unit Test Status: %s", bPassedTests ? "Passed" : "Failed");
 
 	if (!bPassedTests)
