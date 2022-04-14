@@ -11,6 +11,7 @@ namespace API
 		YYTKPlugin* LoadPlugin(const char* Path);
 		bool UnloadPlugin(YYTKPlugin& pPlugin, bool Notify);
 
+		std::string GetPluginVersionString(HMODULE Plugin);
 		bool IsPluginCompatible(HMODULE Plugin);
 
 		void RunHooks(YYTKEventBase* pEvent);

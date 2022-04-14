@@ -46,8 +46,8 @@ YYTKPlugin* API::PluginManager::LoadPlugin(const char* Path)
 		std::string FileName(Buffer);
 		std::string AlertMessage(
 			"The plugin \"" + FileName.substr(FileName.find_last_of("/\\") + 1) + "\" was made for\n"
-			"an older YYToolkit version than is currently loaded.\n"
-			"Loading this plugin may introduce instability / outright crash the game.\n"
+			"YYTK version " + GetPluginVersionString(PluginModule) + ", but you are running " + YYSDK_VERSION + ".\n"
+			"Loading this plugin may crash the game.\n"
 			"Try updating the plugin if a newer version is available.\n\n"
 			"Load anyway?");
 
@@ -101,15 +101,20 @@ void API::PluginManager::RunHooks(YYTKEventBase* pEvent)
 	}
 }
 
-bool API::PluginManager::IsPluginCompatible(HMODULE Plugin)
+std::string API::PluginManager::GetPluginVersionString(HMODULE Plugin)
 {
 	using FNGetSDKVersion = const char* (*)();
 	auto __PluginGetSDKVersion = reinterpret_cast<FNGetSDKVersion>(GetProcAddress(Plugin, "__PluginGetSDKVersion"));
 
 	if (!__PluginGetSDKVersion)
-		return false;
+		return "";
 
-	std::string PluginSDKVersion(__PluginGetSDKVersion());
+	return __PluginGetSDKVersion();
+}
+
+bool API::PluginManager::IsPluginCompatible(HMODULE Plugin)
+{
+	std::string PluginSDKVersion(GetPluginVersionString(Plugin));
 	std::string CoreSDKVersion(YYSDK_VERSION);
 
 	std::string PluginMajorVersion = PluginSDKVersion.substr(0, PluginSDKVersion.find_first_of('.'));
