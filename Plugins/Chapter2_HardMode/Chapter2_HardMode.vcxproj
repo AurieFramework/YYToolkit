@@ -148,6 +148,7 @@
   <ItemGroup>
     <ClCompile Include="Src\DllMain.cpp" />
     <ClCompile Include="Src\Features\Features.cpp" />
+    <ClCompile Include="Src\SDK\Plugins\API Definitions\APIDefs.cpp" />
     <ClCompile Include="Src\SDK\Plugins\Plugins.cpp" />
     <ClCompile Include="Src\SDK\Structures\Documented\CDynamicArray\CDynamicArray.cpp" />
     <ClCompile Include="Src\SDK\Structures\Documented\RefThing\RefThing.cpp" />
@@ -157,6 +158,7 @@
     <ClInclude Include="Src\Features\Features.hpp" />
     <ClInclude Include="Src\SDK\Enums\Enums.hpp" />
     <ClInclude Include="Src\SDK\FwdDecls\FwdDecls.hpp" />
+    <ClInclude Include="Src\SDK\Plugins\API Definitions\APIDefs.hpp" />
     <ClInclude Include="Src\SDK\Plugins\Plugins.hpp" />
     <ClInclude Include="Src\SDK\Plugins\YYTKEvent\YYTKEvent.hpp" />
     <ClInclude Include="Src\SDK\SDK.hpp" />

@@ -1,6 +1,8 @@
 #pragma once
 #include "../../../SDK/Plugins/Plugins.hpp"
 #include <list>
+#include <set>
+#include <string>
 
 struct CallbackAttributes_t
 {
@@ -14,12 +16,30 @@ struct CallbackAttributes_t
 	}
 };
 
+struct ExportedRoutine_t
+{
+	void* pfnRoutine;
+	std::string sRoutineName;
+
+	// needed for std::set
+	bool operator==(const ExportedRoutine_t& other) const
+	{
+		return other.pfnRoutine == this->pfnRoutine;
+	}
+
+	bool operator<(const ExportedRoutine_t& other) const
+	{
+		return (uintptr_t)(other.pfnRoutine) < (uintptr_t)(this->pfnRoutine);
+	}
+};
+
 struct PluginAttributes_t
 {
 private:
 	YYTKPlugin PluginObject;
 public:
 	std::list<CallbackAttributes_t> RegisteredCallbacks;
+	std::set<ExportedRoutine_t> Exports;
 
 	YYTKPlugin& GetPluginObject()
 	{

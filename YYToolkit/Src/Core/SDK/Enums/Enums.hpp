@@ -46,15 +46,15 @@ enum YYTKStatus : int
 	YYTK_NOT_FOUND = 6,			// The value wasn't found.
 };
 
-enum EventType : int
+enum EventType : unsigned __int64
 {
-	EVT_CODE_EXECUTE = 1,					// The event represents a Code_Execute() call.
-	EVT_YYERROR = 2,						// The event represents a YYError() call.
-	EVT_ENDSCENE = 4,						// The event represents an LPDIRECT3DDEVICE9::EndScene() call.
-	EVT_PRESENT = 8,						// The event represents an IDXGISwapChain::Present() call.
-	EVT_RESIZEBUFFERS = 16,					// The event represents an IDXGISwapChain::ResizeBuffers() call.
-	EVT_WNDPROC = 32,						// The event represents a window procedure call.
-	EVT_DOCALLSCRIPT = 64,					// The event represents a DoCallScript() call.
+	EVT_CODE_EXECUTE = (1 << 0),					// The event represents a Code_Execute() call.
+	EVT_YYERROR = (1 << 1),							// The event represents a YYError() call.
+	EVT_ENDSCENE = (1 << 2),						// The event represents an LPDIRECT3DDEVICE9::EndScene() call.
+	EVT_PRESENT = (1 << 3),							// The event represents an IDXGISwapChain::Present() call.
+	EVT_RESIZEBUFFERS = (1 << 4),					// The event represents an IDXGISwapChain::ResizeBuffers() call.
+	EVT_WNDPROC = (1 << 5),							// The event represents a window procedure call.
+	EVT_DOCALLSCRIPT = (1 << 6),					// The event represents a DoCallScript() call.
 };
 
 enum Color : int

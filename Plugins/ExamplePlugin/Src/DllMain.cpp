@@ -38,7 +38,7 @@ DllExport YYTKStatus PluginEntry(YYTKPlugin* PluginObject)
 		return YYTK_FAIL;
 	}
 
-	// Register a callback for object events
+	// Register a callback for frame events
 	YYTKStatus Status = PmCreateCallback(
 		PluginAttributes,					// Plugin Attributes
 		g_pCallbackAttributes,				// (out) Callback Attributes
@@ -66,7 +66,7 @@ YYTKStatus PluginUnload()
 	// If we didn't succeed in removing the callback.
 	if (Removal != YYTK_OK)
 	{
-		PrintError(__FILE__, __LINE__, "[Example Plugin] PmRemoveCallbacks failed with 0x%x", Removal);
+		PrintError(__FILE__, __LINE__, "[Example Plugin] PmRemoveCallback failed with 0x%x", Removal);
 	}
 
 	PrintMessage("[Example Plugin] - Goodbye!");

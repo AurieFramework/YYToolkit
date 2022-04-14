@@ -172,3 +172,21 @@ YYTKStatus PmRemoveCallback(CallbackAttributes_t* CallbackAttributes)
 
 	return Func(CallbackAttributes);
 }
+
+YYTKStatus PmSetExported(PluginAttributes_t* pObjectAttributes, const char* szRoutineName, void* pfnRoutine)
+{
+	HMODULE YYTKModule = GetYYTKModule();
+
+	decltype(&PmSetExported) Func = reinterpret_cast<decltype(&PmSetExported)>(GetProcAddress(YYTKModule, __FUNCTION__));
+
+	return Func(pObjectAttributes, szRoutineName, pfnRoutine);
+}
+
+YYTKStatus PmGetExported(const char* szRoutineName, void*& pfnOutRoutine)
+{
+	HMODULE YYTKModule = GetYYTKModule();
+
+	decltype(&PmGetExported) Func = reinterpret_cast<decltype(&PmGetExported)>(GetProcAddress(YYTKModule, __FUNCTION__));
+
+	return Func(szRoutineName, pfnOutRoutine);
+}

@@ -1,18 +1,15 @@
 #include "Features.hpp"
 
-YYRValue Features::CallBuiltinWrapper(YYTKPlugin* pPlugin, CInstance* Instance, const char* Name, const std::vector<YYRValue>& rvArgs)
+YYRValue Features::CallBuiltinWrapper(CInstance* Instance, const char* Name, const std::vector<YYRValue>& rvArgs)
 {
-    auto InstCallFn = pPlugin->GetCoreExport<bool(*)(YYRValue&, const std::string&, CInstance*, CInstance*, const std::vector<YYRValue>&)>("CallBuiltin");
-
     YYRValue Result;
-    InstCallFn(Result, Name, Instance, Instance, rvArgs);
-
+    CallBuiltin(Result, Name, Instance, Instance, rvArgs);
     return Result;
 }
 
-void Features::RemoveSavePoints(YYTKPlugin* Plugin, CInstance* Self)
+void Features::RemoveSavePoints(CInstance* Self)
 {
-    YYRValue global_CurrentRoom = CallBuiltinWrapper(Plugin, Self, "variable_global_get", { "currentroom" });
+    YYRValue global_CurrentRoom = CallBuiltinWrapper(Self, "variable_global_get", { "currentroom" });
 
     // Whitelisted save points
     switch (static_cast<int>(global_CurrentRoom))
@@ -23,19 +20,19 @@ void Features::RemoveSavePoints(YYTKPlugin* Plugin, CInstance* Self)
     case 167: // dw_mansion_entrace (DR 1.10)
         break;
     default: // Destroy the savepoint.
-        YYRValue rvSavePointID = CallBuiltinWrapper(Plugin, nullptr, "asset_get_index", { "obj_savepoint" });
-        CallBuiltinWrapper(Plugin, Self, "instance_deactivate_object", { rvSavePointID });
+        YYRValue rvSavePointID = CallBuiltinWrapper(nullptr, "asset_get_index", { "obj_savepoint" });
+        CallBuiltinWrapper(Self, "instance_deactivate_object", { rvSavePointID });
         break;
     }
 }
 
-void Features::ChangeEnemyStats(YYTKPlugin* Plugin, CInstance* Self, double KromerMul, double HPMul, double ATKMul)
+void Features::ChangeEnemyStats(CInstance* Self, double KromerMul, double HPMul, double ATKMul)
 {
-    YYRValue Monster = CallBuiltinWrapper(Plugin, nullptr, "variable_global_get", { "monster" });
-    YYRValue MonsterHP = CallBuiltinWrapper(Plugin, nullptr, "variable_global_get", { "monsterhp" });
-    YYRValue MonsterMaxHP = CallBuiltinWrapper(Plugin, nullptr, "variable_global_get", { "monstermaxhp" });
-    YYRValue MonsterKromer = CallBuiltinWrapper(Plugin, nullptr, "variable_global_get", { "monstergold" });
-    YYRValue MonsterATK = CallBuiltinWrapper(Plugin, nullptr, "variable_global_get", { "monsterat" });
+    YYRValue Monster = CallBuiltinWrapper(nullptr, "variable_global_get", { "monster" });
+    YYRValue MonsterHP = CallBuiltinWrapper(nullptr, "variable_global_get", { "monsterhp" });
+    YYRValue MonsterMaxHP = CallBuiltinWrapper(nullptr, "variable_global_get", { "monstermaxhp" });
+    YYRValue MonsterKromer = CallBuiltinWrapper(nullptr, "variable_global_get", { "monstergold" });
+    YYRValue MonsterATK = CallBuiltinWrapper(nullptr, "variable_global_get", { "monsterat" });
 
     if (Monster.As<RValue>().Kind != VALUE_ARRAY)
         return;
@@ -67,9 +64,9 @@ void Features::ChangeEnemyStats(YYTKPlugin* Plugin, CInstance* Self, double Krom
     }
 }
 
-int Features::IsSnowGraveRoute(YYTKPlugin* Plugin)
+int Features::GetSnowGraveProgression()
 {
-    YYRValue Flags = CallBuiltinWrapper(Plugin, nullptr, "variable_global_get", { "flag" });
+    YYRValue Flags = CallBuiltinWrapper(nullptr, "variable_global_get", { "flag" });
     
     RValue& rvFlag = Flags.As<RValue>();
 

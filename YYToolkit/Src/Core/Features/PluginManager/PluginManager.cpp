@@ -230,3 +230,43 @@ YYTKStatus API::PluginManager::PmRemoveCallback(CallbackAttributes_t* CallbackAt
 
 	return YYTK_NOT_FOUND;
 }
+
+YYTKStatus API::PluginManager::PmSetExported(PluginAttributes_t* pObjectAttributes, const char* szRoutineName, void* pfnRoutine)
+{
+	if (!pObjectAttributes)
+		return YYTK_INVALIDARG;
+
+	if (!pfnRoutine)
+		return YYTK_INVALIDARG;
+
+	if (!szRoutineName || *szRoutineName == '\0')
+		return YYTK_INVALIDARG;
+
+	ExportedRoutine_t newExport;
+	newExport.pfnRoutine = pfnRoutine;
+	newExport.sRoutineName = szRoutineName;
+
+	pObjectAttributes->Exports.insert(newExport);
+
+	return YYTK_OK;
+}
+
+DllExport YYTKStatus API::PluginManager::PmGetExported(const char* szRoutineName, void*& pfnOutRoutine)
+{
+	if (!szRoutineName || *szRoutineName == '\0')
+		return YYTK_INVALIDARG;
+
+	for (auto& PluginAttributes : g_PluginStorage)
+	{
+		for (auto& Export : PluginAttributes.Exports)
+		{
+			if (Export.sRoutineName == szRoutineName)
+			{
+				pfnOutRoutine = Export.pfnRoutine;
+				return YYTK_OK;
+			}
+		}
+	}
+
+	return YYTK_NOT_FOUND;
+}

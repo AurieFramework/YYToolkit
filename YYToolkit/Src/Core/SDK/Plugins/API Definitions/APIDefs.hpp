@@ -79,4 +79,15 @@ YYTKStatus PmRemoveCallback(
 	CallbackAttributes_t* CallbackAttributes
 );
 
+YYTKStatus PmSetExported(
+	PluginAttributes_t* pObjectAttributes, 
+	const char* szRoutineName, 
+	void* pfnRoutine
+);
+
+YYTKStatus PmGetExported(
+	const char* szRoutineName, 
+	void*& pfnOutRoutine
+);
+
 #endif
