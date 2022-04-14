@@ -13,7 +13,7 @@ YYTKStatus API::Internal::__Initialize__(HMODULE hMainModule)
 {
 	if (gAPIVars.Globals.g_bWasPreloaded)
 	{
-		DWORD dwGetDevice = 0;
+		uintptr_t dwGetDevice = 0;
 		YYTKStatus Status = VfGetFunctionPointer("window_device", EFPType::FPType_AssemblyReference, dwGetDevice);
 
 		if (Status || !dwGetDevice)
@@ -53,7 +53,7 @@ YYTKStatus API::Internal::__InitializeGlobalVars__()
 {
 	// Initialize Code_Function_GET_the_function
 	{
-		YYTKStatus Status = API::Internal::MmFindCodeFunction(reinterpret_cast<DWORD&>(gAPIVars.Functions.Code_Function_GET_the_function));
+		YYTKStatus Status = API::Internal::MmFindCodeFunction(reinterpret_cast<uintptr_t&>(gAPIVars.Functions.Code_Function_GET_the_function));
 
 		if (Status)
 			Utils::Logging::Error(__FILE__, __LINE__, "API::Internal::MmFindCodeFunction() failed with %s",
@@ -62,7 +62,7 @@ YYTKStatus API::Internal::__InitializeGlobalVars__()
 
 	// Initialize Code_Execute
 	{
-		YYTKStatus Status = API::Internal::MmFindCodeExecute(reinterpret_cast<DWORD&>(gAPIVars.Functions.Code_Execute));
+		YYTKStatus Status = API::Internal::MmFindCodeExecute(reinterpret_cast<uintptr_t&>(gAPIVars.Functions.Code_Execute));
 
 		if (Status)
 			Utils::Logging::Error(__FILE__, __LINE__, "API::Internal::MmFindCodeExecute() failed with %s",
@@ -154,7 +154,7 @@ DllExport YYTKStatus API::Internal::MmGetModuleInformation(const char* szModuleN
 	return YYTK_OK;
 }
 
-YYTKStatus API::Internal::MmFindByteArray(const unsigned char* pbArray, unsigned int uArraySize, unsigned long ulSearchRegionBase, unsigned int ulSearchRegionSize, const char* szMask, bool bStringSearch, DWORD& dwOutBuffer)
+YYTKStatus API::Internal::MmFindByteArray(const unsigned char* pbArray, size_t uArraySize, uintptr_t ulSearchRegionBase, uintptr_t ulSearchRegionSize, const char* szMask, bool bStringSearch, uintptr_t& dwOutBuffer)
 {
 	dwOutBuffer = 0x00;
 
@@ -190,17 +190,19 @@ YYTKStatus API::Internal::MmFindByteArray(const unsigned char* pbArray, unsigned
 	}
 
 	return YYTK_NOMATCH;
-	
 }
 
-YYTKStatus API::Internal::MmFindByteArray(const char* pszArray, unsigned int uArraySize, unsigned long ulSearchRegionBase, unsigned int ulSearchRegionSize, const char* szMask, bool bStringSearch, DWORD& dwOutBuffer)
+YYTKStatus API::Internal::MmFindByteArray(const char* pszArray, size_t uArraySize, uintptr_t ulSearchRegionBase, uintptr_t ulSearchRegionSize, const char* szMask, bool bStringSearch, uintptr_t& dwOutBuffer)
 {
 	return MmFindByteArray(reinterpret_cast<unsigned char*>(const_cast<char*>(pszArray)), uArraySize, ulSearchRegionBase, ulSearchRegionSize, szMask, bStringSearch, dwOutBuffer);
 }
 
-YYTKStatus API::Internal::MmFindCodeExecute(DWORD& dwOutBuffer)
+YYTKStatus API::Internal::MmFindCodeExecute(uintptr_t& dwOutBuffer)
 {
-	unsigned long dwPattern = 0;
+#if _WIN64
+	return YYTK_UNAVAILABLE;
+#else
+	uintptr_t dwPattern = 0;
 	
 	if (YYTKStatus _Status = MmFindByteArray(
 		"\x8A\xD8\x83\xC4\x14\x80\xFB\x01\x74",
@@ -222,14 +224,19 @@ YYTKStatus API::Internal::MmFindCodeExecute(DWORD& dwOutBuffer)
 	dwOutBuffer = dwPattern;
 
 	return YYTK_OK;
+#endif
 }
 
-YYTKStatus API::Internal::MmFindCodeFunction(DWORD& dwOutBuffer)
+YYTKStatus API::Internal::MmFindCodeFunction(uintptr_t& dwOutBuffer)
 {
+#if _WIN64
+	return MmFindByteArray("\x3B\x0D\x00\x00\x00\x00\x7F\x3A", UINT_MAX, 0, 0, "xx????xx", false, dwOutBuffer);
+#else
 	return MmFindByteArray("\x8B\x44\x24\x04\x3B\x05\x00\x00\x00\x00\x7F", UINT_MAX, 0, 0, "xxxxxx????x", false, dwOutBuffer);
+#endif
 }
 
-YYTKStatus API::Internal::VfGetFunctionPointer(const char* szFunctionName, EFPType ePointerType, DWORD& dwOutBuffer)
+YYTKStatus API::Internal::VfGetFunctionPointer(const char* szFunctionName, EFPType ePointerType, uintptr_t& dwOutBuffer)
 {
 	if (!szFunctionName)
 		return YYTK_INVALIDARG;
@@ -238,7 +245,10 @@ YYTKStatus API::Internal::VfGetFunctionPointer(const char* szFunctionName, EFPTy
 
 	if (bShouldFindAssemblyReference)
 	{
-		DWORD dwStringReference = 0;
+#if _WIN64
+		return YYTK_UNAVAILABLE;
+#else
+		uintptr_t dwStringReference = 0;
 
 		std::string Mask(strlen(szFunctionName) + 1, 'x');
 
@@ -286,6 +296,7 @@ YYTKStatus API::Internal::VfGetFunctionPointer(const char* szFunctionName, EFPTy
 
 		delete[] pbNewPattern;
 		return YYTK_OK;
+#endif
 	}
 	
 	else
@@ -299,7 +310,7 @@ YYTKStatus API::Internal::VfGetFunctionPointer(const char* szFunctionName, EFPTy
 		if (!pRoutine)
 			return YYTK_INVALIDRESULT;
 
-		dwOutBuffer = reinterpret_cast<DWORD>(pRoutine);
+		dwOutBuffer = reinterpret_cast<uintptr_t>(pRoutine);
 	}
 
 	return YYTK_OK;
@@ -382,8 +393,8 @@ YYTKStatus API::Internal::VfGetIdByName(YYObjectBase* pObject, const char* szNam
 	return YYTK_UNAVAILABLE;
 #endif
 
-	DWORD dwGlobalGet = 0;
-	DWORD dwCallAddress = 0;
+	uintptr_t dwGlobalGet = 0;
+	uintptr_t dwCallAddress = 0;
 
 	// Find function scope
 	{
@@ -405,7 +416,7 @@ YYTKStatus API::Internal::VfGetIdByName(YYObjectBase* pObject, const char* szNam
 			return YYTK_INVALIDRESULT;
 	}
 
-	unsigned long Relative = *reinterpret_cast<unsigned long*>(dwCallAddress + 1);
+	uintptr_t Relative = *reinterpret_cast<uintptr_t*>(dwCallAddress + 1);
 	Relative += (dwCallAddress + 5); // eip = instruction base + 5 + relative offset
 
 	if (Relative == 0)
@@ -422,7 +433,10 @@ YYTKStatus API::Internal::VfGetIdByName(YYObjectBase* pObject, const char* szNam
 
 YYTKStatus API::Internal::MmGetScriptArrayPtr(CDynamicArray<CScript*>*& outArray, const int& nMaxInstructions)
 {
-	DWORD dwScriptExists = 0;
+#if _WIN64
+	return YYTK_UNAVAILABLE;
+#else
+	uintptr_t dwScriptExists = 0;
 
 	if (YYTKStatus Status = VfGetFunctionPointer("script_exists", EFPType::FPType_DirectPointer, dwScriptExists))
 		return Status;
@@ -433,7 +447,7 @@ YYTKStatus API::Internal::MmGetScriptArrayPtr(CDynamicArray<CScript*>*& outArray
 	// call script_exists
 	// xor ecx, ecx
 	// add esp, 0Ch
-	unsigned long pPattern = 0;
+	uintptr_t pPattern = 0;
 	YYTKStatus Status = MmFindByteArray("\xE8\x00\x00\x00\x00\x00\xC9\x83\xC4\x0C", UINT_MAX, dwScriptExists, 0xFF, "x?????xxxx", false, pPattern);
 
 	if (Status)
@@ -443,10 +457,10 @@ YYTKStatus API::Internal::MmGetScriptArrayPtr(CDynamicArray<CScript*>*& outArray
 		return YYTK_NOMATCH;
 
 	// Get 4 bytes from the JMP opcode (the relative offset)
-	DWORD pJmpOffset = *reinterpret_cast<DWORD*>(pPattern + 1);
+	uintptr_t pJmpOffset = *reinterpret_cast<uintptr_t*>(pPattern + 1);
 
 	// Calculate the jumped-to address, it's relative from the end of the jmp instruction, the size of which is 5 bytes.
-	DWORD pFunction = (pPattern + 5) + pJmpOffset;
+	uintptr_t pFunction = (pPattern + 5) + pJmpOffset;
 
 	hde32s hsInstruction;
 	memset(&hsInstruction, 0, sizeof(hde32s));
@@ -471,4 +485,5 @@ YYTKStatus API::Internal::MmGetScriptArrayPtr(CDynamicArray<CScript*>*& outArray
 	}
 
 	return YYTK_NOT_FOUND;
+#endif
 }

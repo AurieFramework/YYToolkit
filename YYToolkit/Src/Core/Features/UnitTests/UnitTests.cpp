@@ -11,7 +11,7 @@ bool Tests::RunUnitTests()
 
 	// Code_Execute
 	{
-		DWORD dwCodeExecute = 0;
+		uintptr_t dwCodeExecute = 0;
 		YYTKStatus stFoundCodeExecute = API::Internal::MmFindCodeExecute(dwCodeExecute);
 
 		if (stFoundCodeExecute || dwCodeExecute == 0)
@@ -23,7 +23,7 @@ bool Tests::RunUnitTests()
 
 	// Code_Function_GET_the_function
 	{
-		DWORD dwCodeFunction = 0;
+		uintptr_t dwCodeFunction = 0;
 		YYTKStatus stFoundCodeFunction = API::Internal::MmFindCodeFunction(dwCodeFunction);
 
 		if (stFoundCodeFunction || dwCodeFunction == 0)
@@ -47,8 +47,8 @@ bool Tests::RunUnitTests()
 
 	// Function Lookup Test
 	{
-		DWORD dwDirectPointer = 0;
-		DWORD dwAsmRefPointer = 0;
+		uintptr_t dwDirectPointer = 0;
+		uintptr_t dwAsmRefPointer = 0;
 
 		YYTKStatus stDirectCall = API::Internal::VfGetFunctionPointer("instance_destroy", FPType_DirectPointer, dwDirectPointer);
 		YYTKStatus stAsmRefCall = API::Internal::VfGetFunctionPointer("instance_destroy", FPType_AssemblyReference, dwAsmRefPointer);
@@ -77,7 +77,7 @@ bool Tests::RunUnitTests()
 
 	// Global Instance
 	{
-		DWORD dwGlobalInstFunction = 0;
+		uintptr_t dwGlobalInstFunction = 0;
 		YYTKStatus stFoundFunc = API::Internal::VfGetFunctionPointer("@@GlobalScope@@", EFPType::FPType_DirectPointer, dwGlobalInstFunction);
 
 		if (stFoundFunc || dwGlobalInstFunction == 0)

@@ -105,7 +105,7 @@ bool Utils::WinAPI::IsPreloaded()
 		API::Internal::MmGetModuleInformation(nullptr, GameModule);
 
 		// Get the PID of the current process entry
-		DWORD pSPI_PID = reinterpret_cast<DWORD>(pSPI->ProcessId);
+		uintptr_t pSPI_PID = reinterpret_cast<uintptr_t>(pSPI->ProcessId);
 
 		// Check if it's the game process, if not, go to the next one
 		if (pSPI_PID != GetCurrentProcessId())
@@ -114,7 +114,7 @@ bool Utils::WinAPI::IsPreloaded()
 		for (int i = 0; i < pSPI->NumberOfThreads; i++)
 		{
 			// Open the current thread
-			HANDLE hThread = OpenThread(THREAD_ALL_ACCESS, FALSE, reinterpret_cast<DWORD>(pSPI->Threads[i].ClientId.UniqueThread));
+			HANDLE hThread = OpenThread(THREAD_ALL_ACCESS, FALSE, reinterpret_cast<uintptr_t>(pSPI->Threads[i].ClientId.UniqueThread));
 
 			// Get its start address
 			unsigned long dwThreadStartAddress = 0;
@@ -164,7 +164,7 @@ void Utils::WinAPI::ResumeGameProcess()
 			return;
 
 		// Get the PID of the current process entry
-		DWORD pSPI_PID = reinterpret_cast<DWORD>(pSPI->ProcessId);
+		uintptr_t pSPI_PID = reinterpret_cast<uintptr_t>(pSPI->ProcessId);
 
 		// Check if it's the game process, if not, go to the next one
 		if (pSPI_PID != GetCurrentProcessId())
@@ -173,7 +173,7 @@ void Utils::WinAPI::ResumeGameProcess()
 		for (int i = 0; i < pSPI->NumberOfThreads; i++)
 		{
 			// Open the current thread
-			HANDLE hThread = OpenThread(THREAD_ALL_ACCESS, FALSE, reinterpret_cast<DWORD>(pSPI->Threads[i].ClientId.UniqueThread));
+			HANDLE hThread = OpenThread(THREAD_ALL_ACCESS, FALSE, reinterpret_cast<uintptr_t>(pSPI->Threads[i].ClientId.UniqueThread));
 
 			// Get its start address
 			unsigned long dwThreadStartAddress = 0;

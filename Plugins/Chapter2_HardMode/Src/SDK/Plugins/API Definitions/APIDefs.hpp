@@ -51,6 +51,7 @@ void PopFileOpenDialog(
 );
 
 void PrintMessage(
+	Color color,
 	const char* fmt,
 	...
 );

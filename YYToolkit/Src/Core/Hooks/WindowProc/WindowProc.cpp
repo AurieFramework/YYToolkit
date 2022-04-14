@@ -24,7 +24,7 @@ namespace Hooks
 
 		void _SetWindowsHook()
 		{
-			pfnOriginal = reinterpret_cast<WNDPROC>(SetWindowLong(reinterpret_cast<HWND>(API::gAPIVars.Globals.g_hwWindowHandle), GWL_WNDPROC, reinterpret_cast<LONG>(Function)));
+			pfnOriginal = reinterpret_cast<WNDPROC>(SetWindowLongPtr(reinterpret_cast<HWND>(API::gAPIVars.Globals.g_hwWindowHandle), GWLP_WNDPROC, reinterpret_cast<uintptr_t>(Function)));
 		}
 	}
 }

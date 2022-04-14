@@ -100,7 +100,7 @@ void PopFileOpenDialog(const std::string& WindowTitle, const std::string& Initia
 	return Func(WindowTitle, InitialPath, Filters, AllowMultiselect, outSelected);
 }
 
-void PrintMessage(const char* fmt, ...)
+void PrintMessage(Color color, const char* fmt, ...)
 {
 	constexpr size_t MaxStringLength = 1024;
 
@@ -120,7 +120,7 @@ void PrintMessage(const char* fmt, ...)
 
 	decltype(&PrintMessage) Func = reinterpret_cast<decltype(&PrintMessage)>(GetProcAddress(YYTKModule, __FUNCTION__));
 
-	return Func(Buf);
+	return Func(color, Buf);
 }
 
 void PrintError(const char* File, const int& Line, const char* fmt, ...)

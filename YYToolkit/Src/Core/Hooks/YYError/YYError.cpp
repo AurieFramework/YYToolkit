@@ -26,9 +26,9 @@ namespace Hooks
 				va_start(vaArgs, pFormat);
 
 				char Message[2048] = { 0 };
-				strncpy(Message, pFormat, 2048);
+				strncpy_s(Message, pFormat, 2048);
 
-				vsprintf(Message, pFormat, vaArgs);
+				vsprintf_s(Message, pFormat, vaArgs);
 
 				va_end(vaArgs);
 
@@ -38,6 +38,9 @@ namespace Hooks
 
 		void* GetTargetAddress()
 		{
+#ifdef _WIN64
+			return nullptr;
+#else
 			TRoutine Routine;
 
 			if (!API::GetFunctionByName("camera_create", Routine))
@@ -51,7 +54,7 @@ namespace Hooks
 				return nullptr;
 			}
 
-			unsigned long Pattern = API::FindPattern("\x68\x00\x00\x00\x00\xE8\x00\x00\x00\x00\x83\xC4", "x????x????xx", reinterpret_cast<unsigned long>(Routine), 64u);
+			uintptr_t Pattern = API::FindPattern("\x68\x00\x00\x00\x00\xE8\x00\x00\x00\x00\x83\xC4", "x????x????xx", reinterpret_cast<uintptr_t>(Routine), 64u);
 
 			if (!Pattern)
 				return nullptr;
@@ -60,6 +63,7 @@ namespace Hooks
 			Relative = (Pattern + 10) + Relative; // eip = instruction base + 5 + relative offset
 
 			return reinterpret_cast<void*>(Relative);
+#endif
 		}
 	}
 }

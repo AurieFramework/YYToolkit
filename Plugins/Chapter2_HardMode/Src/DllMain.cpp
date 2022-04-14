@@ -74,7 +74,7 @@ DllExport YYTKStatus PluginEntry(YYTKPlugin* pPlugin)
 	Features::CallBuiltinWrapper(nullptr, "gc_enable", { 0.0 });
 	pPlugin->PluginUnload = PluginUnload;
 
-	PrintMessage("[Chapter 2 Hard Mode] Loaded for YYTK %s!", YYSDK_VERSION);
+	PrintMessage(CLR_DEFAULT, "[Chapter 2 Hard Mode] Loaded for YYTK %s!", YYSDK_VERSION);
 
 	PluginAttributes_t* MyAttributes = nullptr;
 	PmGetPluginAttributes(pPlugin, MyAttributes);

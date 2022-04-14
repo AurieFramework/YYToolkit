@@ -12,7 +12,7 @@ YYTKStatus FrameCallback(YYTKEventBase* pEvent, void* OptionalArgument)
 	FrameNumber++;
 
 	if (FrameNumber % 30 == 0)
-		PrintMessage("[Example Plugin] - 30 frames have passed! Current framecount: %lu", FrameNumber);
+		PrintMessage(CLR_DEFAULT, "[Example Plugin] - 30 frames have passed! Current framecount: %lu", FrameNumber);
 
 	// Tell the core the handler was successful.
 	return YYTK_OK;
@@ -26,7 +26,7 @@ DllExport YYTKStatus PluginEntry(YYTKPlugin* PluginObject)
 	PluginObject->PluginUnload = PluginUnload;
 
 	// Print a message to the console
-	PrintMessage("[Example Plugin] - Hello from PluginEntry!");
+	PrintMessage(CLR_DEFAULT, "[Example Plugin] - Hello from PluginEntry!");
 
 	PluginAttributes_t* PluginAttributes = nullptr;
 
@@ -69,7 +69,7 @@ YYTKStatus PluginUnload()
 		PrintError(__FILE__, __LINE__, "[Example Plugin] PmRemoveCallback failed with 0x%x", Removal);
 	}
 
-	PrintMessage("[Example Plugin] - Goodbye!");
+	PrintMessage(CLR_DEFAULT, "[Example Plugin] - Goodbye!");
 
 	return YYTK_OK;
 }

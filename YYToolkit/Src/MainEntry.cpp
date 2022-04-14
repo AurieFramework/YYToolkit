@@ -6,7 +6,7 @@
 #include "Core/Hooks/Hooks.hpp"
 
 #if _WIN64
-#error Don't compile in x64!
+//#error Don't compile in x64! // What if I do anyway
 #endif
 
 void __stdcall Main(HINSTANCE g_hDLL)

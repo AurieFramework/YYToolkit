@@ -5,9 +5,9 @@
 
 struct CModule
 {
-	DWORD Base;
-	DWORD Size;
-	DWORD EntryPoint;
+	uintptr_t Base;
+	uintptr_t Size;
+	uintptr_t EntryPoint;
 };
 
 // Function pointer types
@@ -51,31 +51,31 @@ namespace API
 
 		DllExport YYTKStatus MmFindByteArray(
 			const unsigned char* pbArray,
-			unsigned int uArraySize,
-			unsigned long ulSearchRegionBase,
-			unsigned int ulSearchRegionSize,
+			size_t uArraySize,
+			uintptr_t ulSearchRegionBase,
+			uintptr_t ulSearchRegionSize,
 			const char* szMask,
 			bool bStringSearch,
-			DWORD& dwOutBuffer
+			uintptr_t& dwOutBuffer
 		);
 
 		// Overloaded just so clang doesn't complain.
 		YYTKStatus MmFindByteArray(
 			const char* pszArray,
-			unsigned int uArraySize,
-			unsigned long ulSearchRegionBase,
-			unsigned int ulSearchRegionSize,
+			size_t uArraySize,
+			uintptr_t ulSearchRegionBase,
+			uintptr_t ulSearchRegionSize,
 			const char* szMask,
 			bool bStringSearch,
-			DWORD& dwOutBuffer
+			uintptr_t& dwOutBuffer
 		);
 
 		DllExport YYTKStatus MmFindCodeExecute(
-			DWORD& dwOutBuffer
+			uintptr_t& dwOutBuffer
 		);
 
 		DllExport YYTKStatus MmFindCodeFunction(
-			DWORD& dwOutBuffer
+			uintptr_t& dwOutBuffer
 		);
 
 		DllExport YYTKStatus MmGetScriptArrayPtr(
@@ -87,7 +87,7 @@ namespace API
 		DllExport YYTKStatus VfGetFunctionPointer(
 			const char* szFunctionName,
 			EFPType ePointerType,
-			DWORD& pOutBuffer
+			uintptr_t& pOutBuffer
 		);
 
 		/// <summary>

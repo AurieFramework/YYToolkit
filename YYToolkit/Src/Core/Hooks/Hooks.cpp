@@ -126,7 +126,7 @@ namespace Hooks
 		Sleep(100);
 		MH_Uninitialize();
 
-		SetWindowLong(API::gAPIVars.Globals.g_hwWindowHandle, GWL_WNDPROC, reinterpret_cast<LONG>(Hooks::WindowProc::pfnOriginal));
+		SetWindowLongPtr(API::gAPIVars.Globals.g_hwWindowHandle, GWLP_WNDPROC, reinterpret_cast<LONG>(Hooks::WindowProc::pfnOriginal));
 
 		if (API::gAPIVars.Globals.g_pRenderView)
 			API::gAPIVars.Globals.g_pRenderView->Release();

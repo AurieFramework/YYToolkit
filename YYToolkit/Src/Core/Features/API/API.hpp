@@ -138,6 +138,7 @@ namespace API
 	);
 
 	DllExport void PrintMessage(
+		Color color,
 		const char* fmt,
 		...
 	);

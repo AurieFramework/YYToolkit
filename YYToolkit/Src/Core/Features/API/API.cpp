@@ -128,7 +128,7 @@ bool API::CallBuiltin(YYRValue& Result, const std::string& Name, CInstance* Self
 
 unsigned long API::FindPattern(const char* Pattern, const char* Mask, unsigned long Base, unsigned long Size)
 {
-	DWORD dwReturn = 0;
+	uintptr_t dwReturn = 0;
 
 	if (auto Status = Internal::MmFindByteArray(Pattern, UINT_MAX, Base, Size, Mask, false, dwReturn))
 	{
@@ -156,14 +156,14 @@ void API::PopFileOpenDialog(const std::string& WindowTitle, const std::string& I
 	outSelected = pfd::open_file(WindowTitle, InitialPath, Filters, (AllowMultiselect ? pfd::opt::multiselect : pfd::opt::none)).result();
 }
 
-void API::PrintMessage(const char* fmt, ...)
+void API::PrintMessage(Color color, const char* fmt, ...)
 {
 	va_list vaArgs;
 	va_start(vaArgs, fmt);
 	std::string Message = Utils::Logging::ParseVA(fmt, vaArgs);
 	va_end(vaArgs);
 
-	return Utils::Logging::Message(static_cast<Color>(7) /*CLR_DEFAULT*/, Message.c_str());
+	return Utils::Logging::Message(color, Message.c_str());
 }
 
 void API::PrintError(const char* File, const int& Line, const char* fmt, ...)
