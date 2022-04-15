@@ -23,6 +23,7 @@ Currently, only Windows is supported.
 - MakeConfig - a directory for ``make`` files - currently unused, I don't even know how it works tbh.
 - Plugins - Contains source code of all the plugins
   - ExamplePlugin - Source code for the Example plugin
+  - Chapter2_EnableDebug - Source code for the Chapter 2 Debug plugin
   - Chapter2_HardMode - Source code for the Hard Mode plugin
 - YYLauncher - Source code for the launcher
 - YYToolkit - Source code for the DLL
