@@ -137,7 +137,7 @@ YYTKStatus API::Internal::__Unload__()
 	return YYTK_OK;
 }
 
-DllExport YYTKStatus API::Internal::MmGetModuleInformation(const char* szModuleName, CModule& outModule)
+YYTKStatus API::Internal::MmGetModuleInformation(const char* szModuleName, CModule& outModule)
 {
 	using Fn = int(__stdcall*)(HANDLE, HMODULE, CModule*, DWORD);
 
