@@ -37,8 +37,6 @@ YYTKStatus ScriptCallback(YYTKScriptEvent* pEvent, void*)
 
 	if (!_stricmp(pCode->i_pName, "gml_Script_scr_debug") || !_stricmp(pCode->i_pName, "gml_Script_scr_debug_ch1"))
 	{
-		PrintMessage(CLR_GRAY, "Script Name: %s", pCode->i_pName);
-
 		pCode->i_pVM = nullptr;
 		YYRValue* pReturnValue = reinterpret_cast<YYRValue*>(pEvent->Call(Script, v2, v3, v4, v5, v6));
 
@@ -72,6 +70,14 @@ YYTKStatus ScriptCallback(YYTKScriptEvent* pEvent, void*)
 	return YYTK_OK;
 }
 
+YYTKStatus PluginUnload()
+{
+	// oops forgot to remove this
+	PmRemoveCallback(pRegisteredCallback);
+
+	return YYTK_OK;
+}
+
 DllExport YYTKStatus PluginEntry(
 	YYTKPlugin* PluginObject
 )
@@ -87,6 +93,8 @@ DllExport YYTKStatus PluginEntry(
 		PrintError(__FILE__, __LINE__, "[Chapter 2 Debug] Creation of callback failed with 0x%X!", CallbackStatus);
 		return YYTK_FAIL;
 	}
+
+	PrintMessage(CLR_DEFAULT, "[Chapter 2 Debug] Loaded for YYTK version %s", YYSDK_VERSION);
 
 	return YYTK_OK;
 }
