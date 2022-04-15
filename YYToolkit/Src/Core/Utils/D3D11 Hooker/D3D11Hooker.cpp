@@ -47,30 +47,6 @@ static HRESULT GetDummySwapChain_ReferenceMethod(PFN_D3D11_CREATE_DEVICE_AND_SWA
 	return pFn(nullptr, D3D_DRIVER_TYPE_REFERENCE, NULL, 0, featureLevelArray, 3, D3D11_SDK_VERSION, &Descriptor, &outSwapChain, nullptr, &outLevel, nullptr);
 }
 
-static bool SetGameWindowed()
-{
-	YYRValue IsFullScreen;
-	API::CallBuiltin(IsFullScreen, "window_get_fullscreen", nullptr, nullptr, {});
-
-	if (!IsFullScreen.operator bool())
-		return false;
-
-	YYRValue Result;
-	API::CallBuiltin(Result, "window_set_fullscreen", nullptr, nullptr, { false });
-
-	QUERY_USER_NOTIFICATION_STATE State = QUNS_BUSY;
-	SHQueryUserNotificationState(&State);
-
-	while (State == QUNS_BUSY || State == QUNS_RUNNING_D3D_FULL_SCREEN || State == QUNS_PRESENTATION_MODE)
-	{
-		SHQueryUserNotificationState(&State);
-	}
-
-	Sleep(100);
-
-	return true;
-}
-
 IDXGISwapChain* Utils::D3D11::GetSwapChain()
 {
 	using Fn = PFN_D3D11_CREATE_DEVICE_AND_SWAP_CHAIN;
@@ -93,7 +69,6 @@ IDXGISwapChain* Utils::D3D11::GetSwapChain()
 		return nullptr;
 	}
 
-	bool bWasWindowed = SetGameWindowed();
 	ResultBuffer = GetDummySwapChain_NullMethod(pFn, SupportedLevel, pSwapChain);
 
 	if (FAILED(ResultBuffer))
@@ -124,13 +99,6 @@ IDXGISwapChain* Utils::D3D11::GetSwapChain()
 			}
 		}
 	}
-
-	if (bWasWindowed)
-	{
-		YYRValue Result;
-		API::CallBuiltin(Result, "window_set_fullscreen", nullptr, nullptr, { true });
-	}
-
 	return pSwapChain;
 }
 

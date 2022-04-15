@@ -51,6 +51,18 @@ namespace Hooks
 				}
 			};
 
+			YYRValue IsFullscreen;
+			API::CallBuiltin(IsFullscreen, "window_get_fullscreen", nullptr, nullptr, {});
+
+			if (IsFullscreen.operator bool())
+			{
+				Utils::Logging::Message(CLR_YELLOW, "Window is fullscreen - let's hope this dirty hack doesn't crash.");
+
+				API::CallBuiltin(IsFullscreen, "window_set_fullscreen", nullptr, nullptr, { 0.0 });
+
+				ShowWindow(API::gAPIVars.Globals.g_hwWindowHandle, SW_SHOWNORMAL);
+			}
+
 			Hook
 			(
 				ReCa<void*>(&Hooks::Code_Execute::Function), 
@@ -115,7 +127,7 @@ namespace Hooks
 
 			WindowProc::_SetWindowsHook();
 
-			ShowWindow(API::gAPIVars.Globals.g_hwWindowHandle, SW_SHOW);
+			ShowWindow(API::gAPIVars.Globals.g_hwWindowHandle, SW_SHOWNORMAL);
 			SetForegroundWindow(API::gAPIVars.Globals.g_hwWindowHandle);
 		}
 	}
