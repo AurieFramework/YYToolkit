@@ -73,7 +73,7 @@ bool CallBuiltin(YYRValue& Result, const std::string& Name, CInstance* Self, CIn
 	return Func(Result, Name, Self, Other, Args);
 }
 
-unsigned long FindPattern(const char* Pattern, const char* Mask, unsigned long Base, unsigned long Size)
+uintptr_t FindPattern(const char* Pattern, const char* Mask, uintptr_t Base, uintptr_t Size)
 {
 	HMODULE YYTKModule = GetYYTKModule();
 

@@ -16,18 +16,7 @@ static void SetupDescriptor(DXGI_SWAP_CHAIN_DESC* pDesc)
 	pDesc->SampleDesc.Count = 1;
 	pDesc->SampleDesc.Quality = 0;
 	pDesc->SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
-
-	YYRValue Result = false;
-	if (!API::CallBuiltin(Result, "window_get_fullscreen", nullptr, nullptr, {}))
-	{
-		Utils::Logging::Error(
-			__FILE__,
-			__LINE__,
-			"The window_get_fullscreen function couldn't be found"
-		);
-	}
-
-	pDesc->Windowed = !(static_cast<bool>(Result));
+	pDesc->Windowed = TRUE;
 }
 
 static HRESULT GetDummySwapChain_NullMethod(PFN_D3D11_CREATE_DEVICE_AND_SWAP_CHAIN pFn, D3D_FEATURE_LEVEL& outLevel, IDXGISwapChain*& outSwapChain)
@@ -44,6 +33,7 @@ static HRESULT GetDummySwapChain_HardwareMethod(PFN_D3D11_CREATE_DEVICE_AND_SWAP
 
 	SetupDescriptor(&Descriptor);
 	const D3D_FEATURE_LEVEL featureLevelArray[3] = { D3D_FEATURE_LEVEL_11_0, D3D_FEATURE_LEVEL_10_0, D3D_FEATURE_LEVEL_10_1 };
+
 	return pFn(nullptr, D3D_DRIVER_TYPE_HARDWARE, NULL, 0, featureLevelArray, 3, D3D11_SDK_VERSION, &Descriptor, &outSwapChain, nullptr, &outLevel, nullptr);
 }
 
@@ -53,7 +43,32 @@ static HRESULT GetDummySwapChain_ReferenceMethod(PFN_D3D11_CREATE_DEVICE_AND_SWA
 
 	SetupDescriptor(&Descriptor);
 	const D3D_FEATURE_LEVEL featureLevelArray[3] = { D3D_FEATURE_LEVEL_11_0, D3D_FEATURE_LEVEL_10_0, D3D_FEATURE_LEVEL_10_1 };
+
 	return pFn(nullptr, D3D_DRIVER_TYPE_REFERENCE, NULL, 0, featureLevelArray, 3, D3D11_SDK_VERSION, &Descriptor, &outSwapChain, nullptr, &outLevel, nullptr);
+}
+
+static bool SetGameWindowed()
+{
+	YYRValue IsFullScreen;
+	API::CallBuiltin(IsFullScreen, "window_get_fullscreen", nullptr, nullptr, {});
+
+	if (!IsFullScreen.operator bool())
+		return false;
+
+	YYRValue Result;
+	API::CallBuiltin(Result, "window_set_fullscreen", nullptr, nullptr, { false });
+
+	QUERY_USER_NOTIFICATION_STATE State = QUNS_BUSY;
+	SHQueryUserNotificationState(&State);
+
+	while (State == QUNS_BUSY || State == QUNS_RUNNING_D3D_FULL_SCREEN || State == QUNS_PRESENTATION_MODE)
+	{
+		SHQueryUserNotificationState(&State);
+	}
+
+	Sleep(100);
+
+	return true;
 }
 
 IDXGISwapChain* Utils::D3D11::GetSwapChain()
@@ -78,6 +93,7 @@ IDXGISwapChain* Utils::D3D11::GetSwapChain()
 		return nullptr;
 	}
 
+	bool bWasWindowed = SetGameWindowed();
 	ResultBuffer = GetDummySwapChain_NullMethod(pFn, SupportedLevel, pSwapChain);
 
 	if (FAILED(ResultBuffer))
@@ -98,7 +114,7 @@ IDXGISwapChain* Utils::D3D11::GetSwapChain()
 
 			if (FAILED(ResultBuffer))
 			{
-				Utils::Logging::Message(CLR_RED, "Dummy swapchain (NULL Method) failed.");
+				Utils::Logging::Message(CLR_RED, "Dummy swapchain (Reference Method) failed.");
 				Utils::Logging::Message(CLR_RED, "  - Returned: 0x%X", ResultBuffer);
 				Utils::Logging::Message(CLR_RED, "  - Supported level: 0x%X", SupportedLevel);
 
@@ -107,6 +123,12 @@ IDXGISwapChain* Utils::D3D11::GetSwapChain()
 				return nullptr;
 			}
 		}
+	}
+
+	if (bWasWindowed)
+	{
+		YYRValue Result;
+		API::CallBuiltin(Result, "window_set_fullscreen", nullptr, nullptr, { true });
 	}
 
 	return pSwapChain;

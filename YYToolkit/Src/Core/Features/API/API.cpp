@@ -126,7 +126,7 @@ bool API::CallBuiltin(YYRValue& Result, const std::string& Name, CInstance* Self
 	return true;
 }
 
-unsigned long API::FindPattern(const char* Pattern, const char* Mask, unsigned long Base, unsigned long Size)
+uintptr_t API::FindPattern(const char* Pattern, const char* Mask, uintptr_t Base, uintptr_t Size)
 {
 	uintptr_t dwReturn = 0;
 

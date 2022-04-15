@@ -116,11 +116,11 @@ namespace API
 	/// <returns>
 	/// Returns the base address of the array of bytes (if found), 0 otherwise.
 	/// </returns>
-	DllExport unsigned long FindPattern(
+	DllExport uintptr_t FindPattern(
 		const char* Pattern,
 		const char* Mask,
-		unsigned long Base,
-		unsigned long Size
+		uintptr_t Base,
+		uintptr_t Size
 	);
 
 	DllExport void PopToastNotification(

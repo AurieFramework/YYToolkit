@@ -82,7 +82,7 @@ namespace Utils::Logging
 
 		MessageBoxA(0, sFinalText.c_str(), "YYToolkit - Fatal Error", MB_OK | MB_ICONERROR | MB_SETFOREGROUND | MB_TOPMOST);
 
-		abort();
+		exit(0);
 	}
 
 	void Message(Color C, const char* fmt, ...)

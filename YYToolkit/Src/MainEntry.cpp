@@ -4,14 +4,27 @@
 #include "Core/Utils/Logging/Logging.hpp"
 #include "Core/Utils/WinAPI/WinAPI.hpp"
 #include "Core/Hooks/Hooks.hpp"
-
+#include <Dbghelp.h>
 #if _WIN64
 //#error Don't compile in x64! // What if I do anyway
 #endif
 
+LONG WINAPI WhenIMakeAFuckyWucky(struct _EXCEPTION_POINTERS* apExceptionInfo)
+{
+	Utils::Logging::Critical(__FILE__, __LINE__,
+		"Exception 0x%X occured at %p",
+		apExceptionInfo->ExceptionRecord->ExceptionCode,
+		apExceptionInfo->ExceptionRecord->ExceptionAddress
+	);
+
+	return EXCEPTION_CONTINUE_SEARCH;
+}
+
 void __stdcall Main(HINSTANCE g_hDLL)
 {
 	using namespace API;
+
+	SetUnhandledExceptionFilter(WhenIMakeAFuckyWucky);
 
 	// Tell the API which module we are in memory
 	gAPIVars.Globals.g_hMainModule = g_hDLL;
@@ -56,6 +69,8 @@ void __stdcall Main(HINSTANCE g_hDLL)
 
 	// Unload all plugins
 	Internal::__Unload__();
+
+	SetUnhandledExceptionFilter(NULL);
 
 	// Actually unload the library
 	FreeLibraryAndExitThread(g_hDLL, 0);

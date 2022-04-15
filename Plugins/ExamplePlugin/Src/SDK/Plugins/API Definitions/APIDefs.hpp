@@ -29,11 +29,11 @@ bool CallBuiltin(
 	const std::vector<YYRValue>& Args
 );
 
-unsigned long FindPattern(
+uintptr_t FindPattern(
 	const char* Pattern,
 	const char* Mask,
-	unsigned long Base,
-	unsigned long Size
+	uintptr_t Base,
+	uintptr_t Size
 );
 
 void PopToastNotification(
