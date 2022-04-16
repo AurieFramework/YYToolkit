@@ -35,6 +35,7 @@ bool Tests::RunUnitTests()
 
 	// Script Array
 	{
+#ifndef _WIN64
 		CDynamicArray<CScript*>* pScriptArray = nullptr;
 		YYTKStatus stFoundScriptArray = API::Internal::MmGetScriptArrayPtr(pScriptArray, 32);
 
@@ -43,6 +44,7 @@ bool Tests::RunUnitTests()
 			Utils::Logging::Error(__FILE__, __LINE__, "Unit Test \"Script Array\" failed");
 			bPassedTests = false;
 		}
+#endif
 	}
 
 	// Function Lookup Test

@@ -107,6 +107,10 @@ YYTKStatus API::Internal::__InitializeConsole__()
 	// Set console title scope
 	{
 		std::string sTitleString = std::string("YYToolkit Log (v") + YYSDK_VERSION + ")";
+#ifdef _WIN64
+		sTitleString.append(" - x64");
+#endif
+
 		SetConsoleTitleA(sTitleString.c_str());
 	}
 
@@ -115,6 +119,7 @@ YYTKStatus API::Internal::__InitializeConsole__()
 	DWORD dwMode;
 	GetConsoleMode(hInput, &dwMode);
 	SetConsoleMode(hInput, ENABLE_EXTENDED_FLAGS | (dwMode & ~ENABLE_QUICK_EDIT_MODE));
+
 
 #if _DEBUG
 	Utils::Logging::Message(CLR_GOLD, "YYToolkit %s (Debug) by Archie#8615", YYSDK_VERSION);
@@ -199,11 +204,27 @@ YYTKStatus API::Internal::MmFindByteArray(const char* pszArray, size_t uArraySiz
 
 YYTKStatus API::Internal::MmFindCodeExecute(uintptr_t& dwOutBuffer)
 {
-#if _WIN64
-	return YYTK_UNAVAILABLE;
-#else
 	uintptr_t dwPattern = 0;
+#ifdef _WIN64
+	if (YYTKStatus _Status = MmFindByteArray(
+		"\x4C\x8B\x50\x08\x75\x18",
+		UINT_MAX,
+		0,
+		0,
+		"xxxxx",
+		false,
+		dwPattern
+	))
+		return _Status;
+
+	if (dwPattern == 0)
+		return YYTK_INVALIDRESULT;
+
+	dwOutBuffer = dwPattern;
 	
+	return YYTK_OK;
+#else
+
 	if (YYTKStatus _Status = MmFindByteArray(
 		"\x8A\xD8\x83\xC4\x14\x80\xFB\x01\x74",
 		UINT_MAX,
@@ -241,13 +262,12 @@ YYTKStatus API::Internal::VfGetFunctionPointer(const char* szFunctionName, EFPTy
 	if (!szFunctionName)
 		return YYTK_INVALIDARG;
 
+	// Assembly References aren't possible on x64 because the address is relative to RIP
+#ifndef _WIN64
 	bool bShouldFindAssemblyReference = (ePointerType == FPType_AssemblyReference);
 
 	if (bShouldFindAssemblyReference)
 	{
-#if _WIN64
-		return YYTK_UNAVAILABLE;
-#else
 		uintptr_t dwStringReference = 0;
 
 		std::string Mask(strlen(szFunctionName) + 1, 'x');
@@ -296,10 +316,10 @@ YYTKStatus API::Internal::VfGetFunctionPointer(const char* szFunctionName, EFPTy
 
 		delete[] pbNewPattern;
 		return YYTK_OK;
-#endif
 	}
 	
 	else
+#endif
 	{
 		TRoutine pRoutine = nullptr;
 		YYTKStatus stLookupResult = Internal::VfLookupFunction(szFunctionName, pRoutine, nullptr);

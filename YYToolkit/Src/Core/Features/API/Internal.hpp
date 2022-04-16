@@ -6,7 +6,7 @@
 struct CModule
 {
 	uintptr_t Base;
-	uintptr_t Size;
+	DWORD Size;
 	uintptr_t EntryPoint;
 };
 

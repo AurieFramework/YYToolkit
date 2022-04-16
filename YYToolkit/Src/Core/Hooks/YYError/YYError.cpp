@@ -38,9 +38,6 @@ namespace Hooks
 
 		void* GetTargetAddress()
 		{
-#ifdef _WIN64
-			return nullptr;
-#else
 			TRoutine Routine;
 
 			if (!API::GetFunctionByName("camera_create", Routine))
@@ -53,17 +50,19 @@ namespace Hooks
 
 				return nullptr;
 			}
-
+#ifdef _WIN64
+			uintptr_t Pattern = API::FindPattern("\x48\x83\xC4\x20\x5B\xE9\x00\x00\x00\x00", "xxxxxx????", reinterpret_cast<uintptr_t>(Routine), 64u);
+#else
 			uintptr_t Pattern = API::FindPattern("\x68\x00\x00\x00\x00\xE8\x00\x00\x00\x00\x83\xC4", "x????x????xx", reinterpret_cast<uintptr_t>(Routine), 64u);
-
+#endif
 			if (!Pattern)
 				return nullptr;
 
-			unsigned long Relative = *reinterpret_cast<unsigned long*>(Pattern + 6);
+			uintptr_t Relative = *reinterpret_cast<unsigned long*>(Pattern + 6);
 			Relative = (Pattern + 10) + Relative; // eip = instruction base + 5 + relative offset
 
 			return reinterpret_cast<void*>(Relative);
-#endif
+
 		}
 	}
 }

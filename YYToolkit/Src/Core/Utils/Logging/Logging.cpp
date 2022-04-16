@@ -13,7 +13,7 @@ namespace Utils::Logging
 		char Buf[MaxStringLength];
 		memset(Buf, 0, MaxStringLength);
 
-		strncpy(Buf, fmt, MaxStringLength);
+		strncpy_s(Buf, fmt, MaxStringLength);
 
 		vsprintf_s(Buf, fmt, Args);
 
