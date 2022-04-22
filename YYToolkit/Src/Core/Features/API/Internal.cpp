@@ -451,6 +451,12 @@ YYTKStatus API::Internal::VfGetIdByName(YYObjectBase* pObject, const char* szNam
 	return YYTK_OK;
 }
 
+DllExport YYTKStatus API::Internal::VfGetAPIState(CAPIVars*& outState)
+{
+	outState = &gAPIVars;
+	return YYTK_OK;
+}
+
 YYTKStatus API::Internal::MmGetScriptArrayPtr(CDynamicArray<CScript*>*& outArray, const int& nMaxInstructions)
 {
 #if _WIN64

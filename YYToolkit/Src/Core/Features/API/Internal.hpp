@@ -136,5 +136,9 @@ namespace API
 			const char* szName,
 			int& outId
 		);
+
+		DllExport YYTKStatus VfGetAPIState(
+			CAPIVars*& outState
+		);
 	}
 }
