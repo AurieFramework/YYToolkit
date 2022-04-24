@@ -143,6 +143,12 @@ namespace API
 		...
 	);
 
+	DllExport void PrintMessageNoNewline(
+		Color color,
+		const char* fmt,
+		...
+	);
+
 	DllExport void PrintError(
 		const char* File,
 		const int& Line,

@@ -7,7 +7,7 @@ bool Tests::RunUnitTests()
 {
 	bool bPassedTests = true;
 
-	Utils::Logging::Message(CLR_LIGHTBLUE, "\nRunning Unit Tests...");
+	Utils::Logging::Message(CLR_DEFAULT, ""); // newline
 
 	// Code_Execute
 	{
@@ -101,8 +101,6 @@ bool Tests::RunUnitTests()
 			}
 		}
 	}
-
-	Utils::Logging::Message(CLR_LIGHTBLUE, "Unit Test Status: %s", bPassedTests ? "Passed" : "Failed");
 
 	if (!bPassedTests)
 	{

@@ -104,7 +104,7 @@ void PrintMessage(Color color, const char* fmt, ...)
 {
 	constexpr size_t MaxStringLength = 1024;
 
-	if (strlen(fmt) >= (MaxStringLength / 2))
+	if (strlen(fmt) >= MaxStringLength)
 		return;
 
 	va_list vaArgs;
@@ -127,7 +127,7 @@ void PrintError(const char* File, const int& Line, const char* fmt, ...)
 {
 	constexpr size_t MaxStringLength = 1024;
 
-	if (strlen(fmt) >= (MaxStringLength / 2))
+	if (strlen(fmt) >= MaxStringLength)
 		return;
 
 	va_list vaArgs;
@@ -144,6 +144,29 @@ void PrintError(const char* File, const int& Line, const char* fmt, ...)
 	decltype(&PrintError) Func = reinterpret_cast<decltype(&PrintError)>(GetProcAddress(YYTKModule, __FUNCTION__));
 
 	return Func(File, Line, Buf);
+}
+
+void PrintMessageNoNewline(Color color, const char* fmt, ...)
+{
+	constexpr size_t MaxStringLength = 1024;
+
+	if (strlen(fmt) >= MaxStringLength)
+		return;
+
+	va_list vaArgs;
+	va_start(vaArgs, fmt);
+
+	char Buf[MaxStringLength];
+	memset(Buf, 0, MaxStringLength);
+	strncpy(Buf, fmt, MaxStringLength);
+	vsprintf_s(Buf, fmt, vaArgs);
+	va_end(vaArgs);
+
+	HMODULE YYTKModule = GetYYTKModule();
+
+	decltype(&PrintMessageNoNewline) Func = reinterpret_cast<decltype(&PrintMessageNoNewline)>(GetProcAddress(YYTKModule, __FUNCTION__));
+
+	return Func(color, Buf);
 }
 
 YYTKStatus PmGetPluginAttributes(YYTKPlugin* pObject, PluginAttributes_t*& outAttributes)

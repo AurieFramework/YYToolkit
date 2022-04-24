@@ -25,6 +25,10 @@ DllExport YYTKStatus PluginEntry(YYTKPlugin* PluginObject)
 	// Set the unload routine
 	PluginObject->PluginUnload = PluginUnload;
 
+	MessageBoxA(0, "This plugin is designed for development purposes.\n"
+		"If you want to enable debug mode for DELTARUNE Chapter 1&2, use the Chapter2_EnableDebug plugin.",
+		"Warning!", MB_OK | MB_ICONWARNING | MB_TOPMOST | MB_SETFOREGROUND);
+
 	// Print a message to the console
 	PrintMessage(CLR_DEFAULT, "[Example Plugin] - Hello from PluginEntry!");
 

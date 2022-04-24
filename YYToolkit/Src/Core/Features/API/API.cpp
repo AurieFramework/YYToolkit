@@ -166,6 +166,16 @@ void API::PrintMessage(Color color, const char* fmt, ...)
 	return Utils::Logging::Message(color, Message.c_str());
 }
 
+void API::PrintMessageNoNewline(Color color, const char* fmt, ...)
+{
+	va_list vaArgs;
+	va_start(vaArgs, fmt);
+	std::string Message = Utils::Logging::ParseVA(fmt, vaArgs);
+	va_end(vaArgs);
+
+	return Utils::Logging::NoNewlineMessage(color, Message.c_str());
+}
+
 void API::PrintError(const char* File, const int& Line, const char* fmt, ...)
 {
 	va_list vaArgs;

@@ -63,6 +63,12 @@ void PrintError(
 	...
 );
 
+void PrintMessageNoNewline(
+	Color color,
+	const char* fmt,
+	...
+);
+
 YYTKStatus PmGetPluginAttributes(
 	YYTKPlugin* pObject,
 	PluginAttributes_t*& outAttributes
@@ -90,5 +96,4 @@ YYTKStatus PmGetExported(
 	const char* szRoutineName, 
 	void*& pfnOutRoutine
 );
-
 #endif
