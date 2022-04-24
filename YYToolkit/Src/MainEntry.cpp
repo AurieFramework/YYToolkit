@@ -11,6 +11,16 @@
 
 LONG WINAPI WhenIMakeAFuckyWucky(struct _EXCEPTION_POINTERS* apExceptionInfo)
 {
+	if (IsDebuggerPresent())
+	{
+		Utils::Logging::Error(__FILE__, __LINE__, "Exception 0x%X occured at %p - DEBUGGER ATTACHED, NOT EXITING.",
+			apExceptionInfo->ExceptionRecord->ExceptionCode,
+			apExceptionInfo->ExceptionRecord->ExceptionAddress
+		);
+
+		return EXCEPTION_CONTINUE_EXECUTION;
+	}
+
 	Utils::Logging::Critical(__FILE__, __LINE__,
 		"Exception 0x%X occured at %p",
 		apExceptionInfo->ExceptionRecord->ExceptionCode,

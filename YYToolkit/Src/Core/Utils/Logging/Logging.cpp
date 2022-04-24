@@ -82,6 +82,7 @@ namespace Utils::Logging
 		
 		sFinalText += "File: " + std::string(File) + "\n";
 		sFinalText += "Line: " + std::to_string(Line) + "\n";
+		sFinalText += "Debugger Present: " + std::string(IsDebuggerPresent() ? "Yes" : "No");
 
 		MessageBoxA(0, sFinalText.c_str(), "YYToolkit - Fatal Error", MB_OK | MB_ICONERROR | MB_SETFOREGROUND | MB_TOPMOST);
 
