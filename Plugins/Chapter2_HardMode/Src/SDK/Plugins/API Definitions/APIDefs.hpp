@@ -96,4 +96,13 @@ YYTKStatus PmGetExported(
 	const char* szRoutineName, 
 	void*& pfnOutRoutine
 );
+
+YYTKStatus PmLoadPlugin(
+	const char* szPath,
+	void*& pOutBaseAddress
+);
+
+YYTKStatus PmUnloadPlugin(
+	void* pBaseAddress
+);
 #endif

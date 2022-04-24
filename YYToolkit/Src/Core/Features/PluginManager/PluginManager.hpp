@@ -26,5 +26,7 @@ namespace API
 		DllExport YYTKStatus PmRemoveCallback(CallbackAttributes_t* CallbackAttributes);
 		DllExport YYTKStatus PmSetExported(PluginAttributes_t* pObjectAttributes, const char* szRoutineName, void* pfnRoutine);
 		DllExport YYTKStatus PmGetExported(const char* szRoutineName, void*& pfnOutRoutine);
+		DllExport YYTKStatus PmLoadPlugin(const char* szPath, void*& pOutBaseAddress);
+		DllExport YYTKStatus PmUnloadPlugin(void* pBaseAddress);
 	}
 }

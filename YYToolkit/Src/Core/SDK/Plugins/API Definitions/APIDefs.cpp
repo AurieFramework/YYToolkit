@@ -213,3 +213,21 @@ YYTKStatus PmGetExported(const char* szRoutineName, void*& pfnOutRoutine)
 
 	return Func(szRoutineName, pfnOutRoutine);
 }
+
+YYTKStatus PmLoadPlugin(const char* szPath, void*& pOutBaseAddress)
+{
+	HMODULE YYTKModule = GetYYTKModule();
+
+	decltype(&PmLoadPlugin) Func = reinterpret_cast<decltype(&PmLoadPlugin)>(GetProcAddress(YYTKModule, __FUNCTION__));
+
+	return Func(szPath, pOutBaseAddress);
+}
+
+YYTKStatus PmUnloadPlugin(void* pBaseAddress)
+{
+	HMODULE YYTKModule = GetYYTKModule();
+
+	decltype(&PmUnloadPlugin) Func = reinterpret_cast<decltype(&PmUnloadPlugin)>(GetProcAddress(YYTKModule, __FUNCTION__));
+
+	return Func(pBaseAddress);
+}

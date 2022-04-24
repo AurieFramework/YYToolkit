@@ -256,7 +256,7 @@ YYTKStatus API::PluginManager::PmSetExported(PluginAttributes_t* pObjectAttribut
 	return YYTK_OK;
 }
 
-DllExport YYTKStatus API::PluginManager::PmGetExported(const char* szRoutineName, void*& pfnOutRoutine)
+YYTKStatus API::PluginManager::PmGetExported(const char* szRoutineName, void*& pfnOutRoutine)
 {
 	if (!szRoutineName || *szRoutineName == '\0')
 		return YYTK_INVALIDARG;
@@ -270,6 +270,37 @@ DllExport YYTKStatus API::PluginManager::PmGetExported(const char* szRoutineName
 				pfnOutRoutine = Export.pfnRoutine;
 				return YYTK_OK;
 			}
+		}
+	}
+
+	return YYTK_NOT_FOUND;
+}
+
+YYTKStatus API::PluginManager::PmLoadPlugin(const char* szPath, void*& pOutBaseAddress)
+{
+	if (!szPath || !*szPath)
+		return YYTK_INVALIDARG;
+
+	YYTKPlugin* pPlugin = LoadPlugin(szPath);
+
+	if (!pPlugin)
+		return YYTK_FAIL;
+
+	pOutBaseAddress = pPlugin->PluginStart;
+	return YYTK_OK;
+}
+
+DllExport YYTKStatus API::PluginManager::PmUnloadPlugin(void* pBaseAddress)
+{
+	if (!pBaseAddress)
+		return YYTK_INVALIDARG;
+
+	for (auto& PluginAttributes : g_PluginStorage)
+	{
+		if (PluginAttributes.GetPluginObject().PluginStart == pBaseAddress)
+		{
+			UnloadPlugin(PluginAttributes.GetPluginObject(), true);
+			return YYTK_OK;
 		}
 	}
 
