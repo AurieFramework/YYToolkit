@@ -8,7 +8,7 @@ namespace API
 	{
 		inline std::list<PluginAttributes_t> g_PluginStorage;
 
-		YYTKPlugin* LoadPlugin(const char* Path);
+		YYTKPlugin* LoadPlugin(const wchar_t* Path);
 		bool UnloadPlugin(YYTKPlugin& pPlugin, bool Notify);
 
 		std::string GetPluginVersionString(HMODULE Plugin);

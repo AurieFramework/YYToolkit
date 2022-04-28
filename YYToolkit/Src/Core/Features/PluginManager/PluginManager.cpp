@@ -5,35 +5,35 @@
 #include "../API/API.hpp"
 #include <filesystem>
 
-YYTKPlugin* API::PluginManager::LoadPlugin(const char* Path)
+YYTKPlugin* API::PluginManager::LoadPlugin(const wchar_t* Path)
 {
-	char Buffer[MAX_PATH] = { 0 };
+	wchar_t Buffer[MAX_PATH] = { 0 };
 	FNPluginEntry lpPluginEntry = nullptr;
 	FNPluginPreloadEntry lpPluginPreloadEntry = nullptr;
 
-	GetFullPathNameA(Path, MAX_PATH, Buffer, 0);
+	GetFullPathNameW(Path, MAX_PATH, Buffer, 0);
 
 	if (!Utils::DoesPEExportRoutine(Buffer, "PluginEntry"))
 		return nullptr;
 
 	if (!Utils::DoesPEExportRoutine(Buffer, "__PluginGetSDKVersion"))
 	{
-		std::string FileName(Buffer);
+		std::wstring FileName(Buffer);
 
-		std::string AlertMessage(
-			"The version of plugin \"" + FileName.substr(FileName.find_last_of("/\\") + 1) + "\" couldn't be fetched.\n"
-			"This usually means it was made for an old version of YYToolkit.\n"
-			"Loading this plugin may introduce instability / outright crash the game.\n"
-			"Try updating the plugin if a newer version is available.\n\n"
-			"Load anyway?");
+		std::wstring AlertMessage(
+			L"The version of plugin \"" + FileName.substr(FileName.find_last_of(L"/\\") + 1) + L"\" couldn't be fetched.\n"
+			L"This usually means it was made for an old version of YYToolkit.\n"
+			L"Loading this plugin may introduce instability / outright crash the game.\n"
+			L"Try updating the plugin if a newer version is available.\n\n"
+			L"Load anyway?");
 
-		int Result = MessageBoxA(0, AlertMessage.c_str(), "Warning", MB_ICONWARNING | MB_YESNO | MB_TOPMOST | MB_SETFOREGROUND);
+		int Result = MessageBoxW(0, AlertMessage.c_str(), L"Warning", MB_ICONWARNING | MB_YESNO | MB_TOPMOST | MB_SETFOREGROUND);
 
 		if (Result == IDNO)
 			return nullptr;
 	}
 
-	HMODULE PluginModule = LoadLibraryA(Buffer);
+	HMODULE PluginModule = LoadLibraryW(Buffer);
 
 	if (!PluginModule)
 		return nullptr;
@@ -43,15 +43,20 @@ YYTKPlugin* API::PluginManager::LoadPlugin(const char* Path)
 
 	if (!IsPluginCompatible(PluginModule))
 	{
-		std::string FileName(Buffer);
-		std::string AlertMessage(
-			"The plugin \"" + FileName.substr(FileName.find_last_of("/\\") + 1) + "\" was made for\n"
-			"YYTK version " + GetPluginVersionString(PluginModule) + ", but you are running " + YYSDK_VERSION + ".\n"
-			"Loading this plugin may crash the game.\n"
-			"Try updating the plugin if a newer version is available.\n\n"
-			"Load anyway?");
+		std::wstring FileName(Buffer);
+		std::string PluginVersionString(GetPluginVersionString(PluginModule));
+		std::wstring wPluginVersionString(PluginVersionString.begin(), PluginVersionString.end());
+		std::string CoreVersionString(YYSDK_VERSION);
+		std::wstring wCoreVersionString(CoreVersionString.begin(), CoreVersionString.end());
 
-		int Result = MessageBoxA(0, AlertMessage.c_str(), "Warning", MB_ICONWARNING | MB_YESNO | MB_TOPMOST | MB_SETFOREGROUND);
+		std::wstring AlertMessage(
+			L"The plugin \"" + FileName.substr(FileName.find_last_of(L"/\\") + 1) + L"\" was made for\n"
+			L"YYTK version " + wPluginVersionString + L", but you are running " + wCoreVersionString + ".\n"
+			L"Loading this plugin may crash the game.\n"
+			L"Try updating the plugin if a newer version is available.\n\n"
+			L"Load anyway?");
+
+		int Result = MessageBoxW(0, AlertMessage.c_str(), L"Warning", MB_ICONWARNING | MB_YESNO | MB_TOPMOST | MB_SETFOREGROUND);
 
 		if (Result == IDNO)
 		{
@@ -153,19 +158,16 @@ void API::PluginManager::Initialize()
 	if (!fs::is_directory(Path))
 		return;
 
-	if (fs::is_empty(Path))
-		return;
-
 	for (auto& entry : fs::directory_iterator(Path))
 	{
-		if (entry.path().extension().string().find(".dll") == std::string::npos)
+		if (entry.path().extension().wstring().find(L".dll") == std::wstring::npos)
 			continue;
 
 		// We have a DLL, try loading it
-		if (YYTKPlugin* p = LoadPlugin(entry.path().string().c_str()))
-			Utils::Logging::Message(CLR_GREEN, "[+] Loaded '%s' - mapped to 0x%p.", entry.path().filename().string().c_str(), p->PluginStart);
+		if (YYTKPlugin* p = LoadPlugin(entry.path().wstring().c_str()))
+			Utils::Logging::Message(CLR_GREEN, "[+] Loaded '%S' - mapped to 0x%p.", entry.path().filename().wstring().c_str(), p->PluginStart);
 		else
-			Utils::Logging::Message(CLR_RED, "[-] Failed to load '%s' - the file may not be a plugin.", entry.path().filename().string().c_str());
+			Utils::Logging::Message(CLR_RED, "[-] Failed to load '%S' - the file may not be a plugin.", entry.path().filename().wstring().c_str());
 	}
 }
 
@@ -281,7 +283,9 @@ YYTKStatus API::PluginManager::PmLoadPlugin(const char* szPath, void*& pOutBaseA
 	if (!szPath || !*szPath)
 		return YYTK_INVALIDARG;
 
-	YYTKPlugin* pPlugin = LoadPlugin(szPath);
+	std::string sPath(szPath);
+
+	YYTKPlugin* pPlugin = LoadPlugin(std::wstring(sPath.begin(), sPath.end()).c_str());
 
 	if (!pPlugin)
 		return YYTK_FAIL;

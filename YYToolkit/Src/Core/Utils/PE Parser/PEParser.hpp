@@ -8,5 +8,5 @@ namespace Utils
 {
 	DWORD RVA_To_Offset(PIMAGE_NT_HEADERS pNTHeader, DWORD dwRVA);
 
-	bool DoesPEExportRoutine(const char* FilePath, const char* RoutineName);
+	bool DoesPEExportRoutine(const wchar_t* FilePath, const char* RoutineName);
 }

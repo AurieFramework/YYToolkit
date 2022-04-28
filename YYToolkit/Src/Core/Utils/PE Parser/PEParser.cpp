@@ -20,7 +20,7 @@ DWORD Utils::RVA_To_Offset(PIMAGE_NT_HEADERS pNTHeader, DWORD dwRVA)
     return 0;
 }
 
-bool Utils::DoesPEExportRoutine(const char* FilePath, const char* RoutineName)
+bool Utils::DoesPEExportRoutine(const wchar_t* FilePath, const char* RoutineName)
 {
     // Open the file
     std::ifstream fFileStream(FilePath, std::ios::binary | std::ios::ate);
