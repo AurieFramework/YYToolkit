@@ -17,13 +17,6 @@ enum EFPType : int
 	FPType_DirectPointer,
 };
 
-// Lookup types
-enum ELType : int
-{
-	LType_FunctionName,
-	LType_Index,
-};
-
 namespace API
 {
 	extern CAPIVars gAPIVars;
@@ -90,32 +83,6 @@ namespace API
 			uintptr_t& pOutBuffer
 		);
 
-		/// <summary>
-		/// Gets the RFunction object of a builtin function by it's index. 
-		/// This function is not to be used by plugins, as it is entirely game-dependant.
-		/// Plugins should use GetFunctionByName or CallBuiltin.
-		/// </summary>
-		/// <param name="nIndex:">
-		/// The index of the function.
-		/// </param>
-		/// <param name="pOutRoutine:">
-		/// A pointer to a buffer which will receive a pointer to the routine. 
-		/// This argument is optional.
-		/// </param>
-		/// <param name="pOutArgumentCount:">
-		/// A pointer to a buffer which will receive the number of arguments required by the routine.
-		/// This argument is optional.
-		/// </param>
-		/// <param name="pOutNameBuffer:">
-		/// A pointer to a buffer which will receive the name of the routine. 
-		/// This argument is optional.
-		/// </param>
-		/// <returns>
-		/// Returns YYTK_INVALIDARG if one or more arguments are invalid.
-		/// Returns YYTK_UNAVAILABLE if the Code_Function_GET_the_function isn't set.
-		/// Returns YYTK_INVALIDRESULT if the index doesn't exist or the function has no name.
-		/// Returns YYTK_OK on success.
-		/// </returns>
 		DllExport YYTKStatus VfGetFunctionEntryFromGameArray(
 			int nIndex, // Required
 			TRoutine* pOutRoutine, // Optional
@@ -123,8 +90,6 @@ namespace API
 			char** pOutNameBuffer // Optional
 		);
 
-		// Wrapper around VfGetFunctionEntryFromGameArray, loops until it found the matching name
-		// Pretty much the internal 
 		DllExport YYTKStatus VfLookupFunction(
 			const char* szFunctionName,
 			TRoutine& outRoutine,
