@@ -51,7 +51,7 @@ namespace Launcher
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.cbAutoCleanup = new System.Windows.Forms.CheckBox();
             this.cbUseRandomFilename = new System.Windows.Forms.CheckBox();
-            this.cbUseLatestCommit = new System.Windows.Forms.CheckBox();
+            this.cbForceUpdates = new System.Windows.Forms.CheckBox();
             this.cbUsePreloading = new System.Windows.Forms.CheckBox();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
             this.gbSelectFiles.SuspendLayout();
@@ -256,7 +256,7 @@ namespace Launcher
             // 
             this.groupBox1.Controls.Add(this.cbAutoCleanup);
             this.groupBox1.Controls.Add(this.cbUseRandomFilename);
-            this.groupBox1.Controls.Add(this.cbUseLatestCommit);
+            this.groupBox1.Controls.Add(this.cbForceUpdates);
             this.groupBox1.Controls.Add(this.cbUsePreloading);
             this.groupBox1.Font = new System.Drawing.Font("Segoe UI Semibold", 12F);
             this.groupBox1.ForeColor = System.Drawing.Color.White;
@@ -294,18 +294,21 @@ namespace Launcher
         "s.");
             this.cbUseRandomFilename.UseVisualStyleBackColor = true;
             // 
-            // cbUseLatestCommit
+            // cbForceUpdates
             // 
-            this.cbUseLatestCommit.AutoSize = true;
-            this.cbUseLatestCommit.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(3)))), ((int)(((byte)(11)))), ((int)(((byte)(30)))));
-            this.cbUseLatestCommit.Font = new System.Drawing.Font("Segoe UI", 12F);
-            this.cbUseLatestCommit.Location = new System.Drawing.Point(9, 28);
-            this.cbUseLatestCommit.Name = "cbUseLatestCommit";
-            this.cbUseLatestCommit.Size = new System.Drawing.Size(130, 25);
-            this.cbUseLatestCommit.TabIndex = 1;
-            this.cbUseLatestCommit.Text = "Latest Commit";
-            this.toolTip1.SetToolTip(this.cbUseLatestCommit, "Uses the most up-to-date version of YYToolkit, available from the latest build.");
-            this.cbUseLatestCommit.UseVisualStyleBackColor = false;
+            this.cbForceUpdates.AutoSize = true;
+            this.cbForceUpdates.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(3)))), ((int)(((byte)(11)))), ((int)(((byte)(30)))));
+            this.cbForceUpdates.Checked = true;
+            this.cbForceUpdates.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.cbForceUpdates.Font = new System.Drawing.Font("Segoe UI", 12F);
+            this.cbForceUpdates.Location = new System.Drawing.Point(9, 28);
+            this.cbForceUpdates.Name = "cbForceUpdates";
+            this.cbForceUpdates.Size = new System.Drawing.Size(128, 25);
+            this.cbForceUpdates.TabIndex = 1;
+            this.cbForceUpdates.Text = "Force Updates";
+            this.toolTip1.SetToolTip(this.cbForceUpdates, "Forces a redownload of the YYToolkit DLL upon game launch.\r\n\r\nIf you disable this" +
+        ", you risk not having the latest YYToolkit release.");
+            this.cbForceUpdates.UseVisualStyleBackColor = false;
             // 
             // cbUsePreloading
             // 
@@ -340,7 +343,7 @@ namespace Launcher
             this.MinimumSize = new System.Drawing.Size(720, 380);
             this.Name = "MainWindow";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "YYToolkit Launcher (v1.4.1)";
+            this.Text = "YYToolkit Launcher (v2.1.0)";
             this.gbSelectFiles.ResumeLayout(false);
             this.gbSelectFiles.PerformLayout();
             this.gbInject.ResumeLayout(false);
@@ -369,10 +372,10 @@ namespace Launcher
         private System.Windows.Forms.CheckBox cbUsePreloading;
         private System.Windows.Forms.ToolTip toolTip1;
         private System.Windows.Forms.Button btOpenData;
-        private System.Windows.Forms.CheckBox cbUseLatestCommit;
         private System.Windows.Forms.Button btLaunchCustomDLL;
         private System.Windows.Forms.ContextMenuStrip ctxStrip1;
         private System.Windows.Forms.CheckBox cbUseRandomFilename;
         private System.Windows.Forms.CheckBox cbAutoCleanup;
+        private System.Windows.Forms.CheckBox cbForceUpdates;
     }
 }

@@ -56,7 +56,7 @@ namespace Launcher
                 return;
             }
 
-            string YYTKPath = GetYYTKPath(cbUseLatestCommit.Checked, cbUseRandomFilename.Checked ? Path.GetRandomFileName().Replace(".", "").Substring(0, 6) : "YYToolkit");
+            string YYTKPath = GetYYTKPath(cbForceUpdates.Checked, cbUseRandomFilename.Checked ? Path.GetRandomFileName().Replace(".", "").Substring(0, 6) : "YYToolkit");
 
             if (string.IsNullOrEmpty(YYTKPath))
                 return;
@@ -305,6 +305,11 @@ namespace Launcher
 
                 Utils.Inject(p, Path.GetFullPath(fileDialog.FileName));
             }
+        }
+
+        private void cbForceUpdates_CheckedChanged(object sender, EventArgs e)
+        {
+
         }
     }
 }
