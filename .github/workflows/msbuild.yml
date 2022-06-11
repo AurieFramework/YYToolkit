@@ -31,44 +31,44 @@ jobs:
       # See https://docs.microsoft.com/visualstudio/msbuild/msbuild-command-line-reference
       run: msbuild .\YYToolkit\YYToolkit.vcxproj /property:Configuration=Release /property:PlatformTarget=x86
       
-    - name: Build YYTK ExamplePlugin
-      working-directory: ${{env.GITHUB_WORKSPACE}}
-      # Add additional options to the MSBuild command line here (like platform or verbosity level).
-      # See https://docs.microsoft.com/visualstudio/msbuild/msbuild-command-line-reference
-      run: msbuild .\Plugins\ExamplePlugin\ExamplePlugin.vcxproj /property:Configuration=Release /property:PlatformTarget=x86
+#    - name: Build YYTK ExamplePlugin
+#      working-directory: ${{env.GITHUB_WORKSPACE}}
+#      # Add additional options to the MSBuild command line here (like platform or verbosity level).
+#      # See https://docs.microsoft.com/visualstudio/msbuild/msbuild-command-line-reference
+#      run: msbuild .\Plugins\ExamplePlugin\ExamplePlugin.vcxproj /property:Configuration=Release /property:PlatformTarget=x86
 
-    - name: Build Chapter2 Hard Mode Plugin
-      working-directory: ${{env.GITHUB_WORKSPACE}}
-      # Add additional options to the MSBuild command line here (like platform or verbosity level).
-      # See https://docs.microsoft.com/visualstudio/msbuild/msbuild-command-line-reference
-      run: msbuild .\Plugins\Chapter2_HardMode\Chapter2_HardMode.vcxproj /property:Configuration=Release /property:PlatformTarget=x86
-      
-    - name: Build YYLauncher
-      working-directory: ${{env.GITHUB_WORKSPACE}}
-      # Add additional options to the MSBuild command line here (like platform or verbosity level).
-      # See https://docs.microsoft.com/visualstudio/msbuild/msbuild-command-line-reference
-      run: msbuild .\YYLauncher\Launcher.csproj /property:Configuration=Release /property:PlatformTarget=x86
-      
+#    - name: Build Chapter2 Hard Mode Plugin
+#      working-directory: ${{env.GITHUB_WORKSPACE}}
+#      # Add additional options to the MSBuild command line here (like platform or verbosity level).
+#      # See https://docs.microsoft.com/visualstudio/msbuild/msbuild-command-line-reference
+#      run: msbuild .\Plugins\Chapter2_HardMode\Chapter2_HardMode.vcxproj /property:Configuration=Release /property:PlatformTarget=x86
+#      
+#    - name: Build YYLauncher
+#      working-directory: ${{env.GITHUB_WORKSPACE}}
+#      # Add additional options to the MSBuild command line here (like platform or verbosity level).
+#      # See https://docs.microsoft.com/visualstudio/msbuild/msbuild-command-line-reference
+#      run: msbuild .\YYLauncher\Launcher.csproj /property:Configuration=Release /property:PlatformTarget=x86
+#      
     - name: Upload YYTK Core as artifact
       uses: actions/upload-artifact@v2
       with:
         name: YYTK-Core
         path: .\YYToolkit\Build\Core\Release\YYToolkit.dll
       
-    - name: Upload ExamplePlugin as artifact
-      uses: actions/upload-artifact@v2
-      with:
-        name: ExamplePlugin
-        path: .\Plugins\ExamplePlugin\Build\Plugins\Example\Release\ExamplePlugin.dll
+#    - name: Upload ExamplePlugin as artifact
+#      uses: actions/upload-artifact@v2
+#      with:
+#        name: ExamplePlugin
+#        path: .\Plugins\ExamplePlugin\Build\Plugins\Example\Release\ExamplePlugin.dll
         
-    - name: Upload Hard Mode as artifact
-      uses: actions/upload-artifact@v2
-      with:
-        name: HardMode
-        path: .\Plugins\Chapter2_HardMode\Build\Plugins\Hard Mode\Release\Chapter2_HardMode.dll
+#    - name: Upload Hard Mode as artifact
+#      uses: actions/upload-artifact@v2
+#      with:
+#        name: HardMode
+#        path: .\Plugins\Chapter2_HardMode\Build\Plugins\Hard Mode\Release\Chapter2_HardMode.dll
         
-    - name: Upload YYLauncher as artifact
-      uses: actions/upload-artifact@v2
-      with:
-        name: YYLauncher
-        path: .\YYLauncher\bin\Release\Launcher.exe
+#    - name: Upload YYLauncher as artifact
+#      uses: actions/upload-artifact@v2
+#      with:
+#        name: YYLauncher
+#        path: .\YYLauncher\bin\Release\Launcher.exe
