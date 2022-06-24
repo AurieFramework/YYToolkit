@@ -1,5 +1,5 @@
 #include "../../../Dependencies/MinHook/MinHook.h"
-#include "../API.hpp"
+#include "../RTK.hpp"
 #include <memory>
 
 namespace rtk

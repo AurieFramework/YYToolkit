@@ -1,9 +1,10 @@
 #include <Windows.h>
-#include "Features/RTK API/API.hpp"
+#include "Features/RTK API/RTK.hpp"
 
 DWORD WINAPI Main(LPVOID lpInstance)
 {
 	// Initialize RTK API - this must be done first, to enable hooking etc
+	// Also loads plugins
 	rtk::CrInitializeAPI();
 
 	rtk::PmRunInitializeRoutines();

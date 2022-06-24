@@ -185,7 +185,8 @@
     <ClInclude Include="src\Dependencies\MinHook\MinHook.h" />
     <ClInclude Include="src\Dependencies\MinHook\trampoline.h" />
     <ClInclude Include="src\Dependencies\PE Parser\PEParser.hpp" />
-    <ClInclude Include="src\Features\RTK API\API.hpp" />
+    <ClInclude Include="src\Features\GM2\GM2.hpp" />
+    <ClInclude Include="src\Features\RTK API\RTK.hpp" />
     <ClInclude Include="src\SDK\Tool\CRTKObject\CRTKObject.hpp" />
     <ClInclude Include="src\SDK\Tool\CRTKPlugin\CRTKPlugin.hpp" />
     <ClInclude Include="src\SDK\Tool\CRTKString\CRTKString.hpp" />
