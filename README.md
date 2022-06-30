@@ -15,14 +15,9 @@ Currently, only Windows is supported.
 - Runtime loading / unloading
   - Mods and even the tool itself can be (un)loaded while the game is running, seamlessly.
 
-## Directory Structure
-- MakeConfig - a directory for ``make`` files - currently unused, I don't even know how it works tbh.
-- Plugins - Contains source code of all the plugins
-  - ExamplePlugin - Source code for the Example plugin
-  - Chapter2_EnableDebug - Source code for the Chapter 2 Debug plugin
-  - Chapter2_HardMode - Source code for the Hard Mode plugin
-- YYLauncher - Source code for the launcher
-- YYToolkit - Source code for the DLL
+## Getting help
+- For general game modding questions - [Underminers Server](https://discord.gg/3ESNF4QPrh)
+- For extended help with YYToolkit - [YYToolkit Server](https://discord.gg/vbT8Ed4cpq)
 
 ## Contributors
 - [MousieDev](https://github.com/MousieDev) for creating makefiles (which I'm not sure even work at this point)
