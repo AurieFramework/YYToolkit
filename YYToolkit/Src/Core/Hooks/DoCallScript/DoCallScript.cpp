@@ -21,7 +21,14 @@ namespace Hooks
 		void* GetTargetAddress()
 		{
 #if _WIN64
-			return nullptr;
+			uintptr_t FuncCallPattern = API::FindPattern("\xE8\x00\x00\x00\x00\x48\x8B\xF0\x4D\x85\xFF", "x????xxxxxx", 0, 0);
+
+			if (!FuncCallPattern)
+				return nullptr;
+
+			uintptr_t Relative = *reinterpret_cast<uint32_t*>(FuncCallPattern + 1);
+			Relative = (FuncCallPattern + 5) + Relative; // eip = instruction base + 5 + relative offset
+
 #else
 			unsigned long DoCallGMLPattern = API::FindPattern("\x8B\x00\x05\x60\x79\xFE\xFF\x00\xE8", "xxxxxxx?x", 0, 0);
 
@@ -35,9 +42,8 @@ namespace Hooks
 
 			unsigned long Relative = *reinterpret_cast<unsigned long*>(FuncCallPattern + 1);
 			Relative = (FuncCallPattern + 5) + Relative; // eip = instruction base + 5 + relative offset
-
-			return reinterpret_cast<void*>(Relative);
 #endif
+			return reinterpret_cast<void*>(Relative);
 		}
 	}
 }

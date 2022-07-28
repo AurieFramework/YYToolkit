@@ -206,6 +206,29 @@ YYTKStatus API::Internal::MmFindCodeExecute(uintptr_t& dwOutBuffer)
 {
 	uintptr_t dwPattern = 0;
 #ifdef _WIN64
+
+	// direct ref
+	// address in opcode
+	if (YYTKStatus _Status = MmFindByteArray(
+		"\xE8\x00\x00\x00\x00\x0F\xB6\xD8\x3C\x01",
+		UINT_MAX,
+		0,
+		0,
+		"x????xxxxx",
+		false,
+		dwPattern
+	))
+		return _Status;
+
+	if (dwPattern)
+	{
+		unsigned long Relative = *reinterpret_cast<unsigned long*>(dwPattern + 1);
+		dwOutBuffer = (dwPattern + 5) + Relative; // eip = instruction base + 5 + relative offset
+
+		if (dwOutBuffer)
+			return YYTK_OK;
+	}
+	
 	if (YYTKStatus _Status = MmFindByteArray(
 		"\x4C\x8B\x50\x08\x75\x18",
 		UINT_MAX,
@@ -216,9 +239,6 @@ YYTKStatus API::Internal::MmFindCodeExecute(uintptr_t& dwOutBuffer)
 		dwPattern
 	))
 		return _Status;
-
-	if (dwPattern == 0)
-		return YYTK_INVALIDRESULT;
 
 	dwOutBuffer = dwPattern;
 	
