@@ -76,6 +76,11 @@ namespace API
 			const int& nMaxInstructions
 		);
 
+		DllExport YYTKStatus MmGetScriptData(
+			CScript*& outScript, 
+			int index
+		);
+
 		// VARIABLE FUNCTIONS
 		DllExport YYTKStatus VfGetFunctionPointer(
 			const char* szFunctionName,

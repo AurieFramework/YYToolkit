@@ -533,3 +533,30 @@ YYTKStatus API::Internal::MmGetScriptArrayPtr(CDynamicArray<CScript*>*& outArray
 	return YYTK_NOT_FOUND;
 #endif
 }
+
+DllExport YYTKStatus API::Internal::MmGetScriptData(CScript*& outScript, int index)
+{
+#ifdef _WIN64
+	using FNScriptData = CScript*(*)(int);
+	
+	if (index < 0)
+		return YYTK_INVALIDARG;
+
+	uintptr_t FuncCallPattern = FindPattern("\xE8\x00\x00\x00\x00\x33\xC9\x0F\xB7\xD3", "x????xxxxx", 0, 0);
+
+	if (!FuncCallPattern)
+		return YYTK_INVALIDRESULT;
+
+	uintptr_t Relative = *reinterpret_cast<uint32_t*>(FuncCallPattern + 1);
+	Relative = (FuncCallPattern + 5) + Relative;
+
+	if (!Relative)
+		return YYTK_INVALIDRESULT;
+
+	outScript = reinterpret_cast<FNScriptData>(Relative)(index);
+
+	return YYTK_OK;
+#else
+	return YYTK_UNAVAILABLE;
+#endif
+}
