@@ -45,6 +45,8 @@ CURLcode network::fetch_response_binary(CURL* easy_handle, std::string_view url,
 	curl_easy_setopt(easy_handle, CURLOPT_WRITEFUNCTION, curl_parse_data_binary);
 	curl_easy_setopt(easy_handle, CURLOPT_WRITEDATA, &vector);
 	curl_easy_setopt(easy_handle, CURLOPT_FOLLOWLOCATION, 1);
+	// Fix for Windows versions other than 10
+	curl_easy_setopt(easy_handle, CURLOPT_SSLVERSION, CURL_SSLVERSION_MAX_TLSv1_2);
 
 #if _DEBUG
 	curl_easy_setopt(easy_handle, CURLOPT_VERBOSE, 1);
@@ -60,6 +62,9 @@ CURLcode network::fetch_response(CURL* easy_handle, std::string_view url, std::s
 	curl_easy_setopt(easy_handle, CURLOPT_WRITEFUNCTION, curl_parse_data);
 	curl_easy_setopt(easy_handle, CURLOPT_WRITEDATA, &out_response);
 	curl_easy_setopt(easy_handle, CURLOPT_FOLLOWLOCATION, 1);
+
+	// Fix for Windows versions other than 10
+	curl_easy_setopt(easy_handle, CURLOPT_SSLVERSION, CURL_SSLVERSION_MAX_TLSv1_2);
 
 #if _DEBUG
 	curl_easy_setopt(easy_handle, CURLOPT_VERBOSE, 1);
