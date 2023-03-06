@@ -200,7 +200,7 @@ void launch::do_full_launch(const launch_info_t& launch_info, std::atomic<int>* 
 			"Failed to fetch releases.\n"
 			"Do you want to use a locally-stored DLL?",
 			"cURL error",
-			MB_YESNO | MB_SETFOREGROUND | MB_TOPMOST | MB_ICONERROR
+			MB_YESNO | MB_SETFOREGROUND | MB_TOPMOST | MB_ICONWARNING
 		);
 
 		if (selection == IDYES)

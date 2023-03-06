@@ -16,59 +16,7 @@
 // Universal window flags, added to every window
 constexpr auto window_flags = ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoBringToFrontOnFocus;
 
-static WNDPROC original_windowproc = nullptr;
 static ImVec2 viewport_size = ImVec2(0, 0);
-
-static LRESULT CALLBACK windowproc_hook(HWND window, UINT message, WPARAM wparam, LPARAM lparam)
-{
-	// call original first because we gotta act on the result
-	LRESULT original_return = CallWindowProc(original_windowproc, window, message, wparam, lparam);
-	bool should_allow_movement = false;	
-
-	// Determines for values x, y if they're close to tX and tY by lX and lY differences
-	auto near_enough = [](int check_x, int check_y, int target_x, int target_y, int leeway_x, int leeway_y) -> bool
-	{
-		int minX = target_x - leeway_x;
-		int maxX = target_x + leeway_x;
-
-		int minY = target_y - leeway_y;
-		int maxY = target_y + leeway_y;
-
-		return (check_x >= minX && check_x <= maxX) && (check_y >= minY && check_y <= maxY);
-	};
-
-	// Get Window XY and the cursor's XY
-	POINT cursor_position;
-	int window_x, window_y;
-
-	GetCursorPos(&cursor_position);
-	glfwGetWindowPos(CMenu::get_instance()->main_window, &window_x, &window_y);
-
-	if (near_enough(cursor_position.x, cursor_position.y, window_x, window_y, static_cast<int>(viewport_size.x) - 20, 20))
-	{
-		should_allow_movement = true;
-	}
-
-	switch (message)
-	{
-		case WM_NCHITTEST:
-		{
-			if (original_return == HTCLIENT && should_allow_movement)
-			{
-				original_return = HTCAPTION;
-			}
-			break;
-		}
-		
-		case WM_MOVE:
-		{
-			should_allow_movement = false;
-			break;
-		}
-	}
-
-	return original_return;
-}
 
 void CMenu::set_style(GLFWwindow* window)
 {
@@ -151,9 +99,6 @@ void CMenu::init(GLFWwindow* window)
 	);
 
 	io.Fonts->Build();
-
-	original_windowproc = reinterpret_cast<WNDPROC>(GetWindowLongPtr(glfwGetWin32Window(window), GWLP_WNDPROC));
-	SetWindowLongPtr(glfwGetWin32Window(window), GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(windowproc_hook));
 
 	selected_version = version_tags.empty() ? "<failed to fetch>" : version_tags.front();
 
@@ -275,7 +220,7 @@ void CMenu::run(GLFWwindow* window)
 	viewport_size = ImGui::GetMainViewport()->Size;
 
 	// Draw the draggable window header
-	draw_window_header(window);
+	// draw_window_header(window);
 
 	// Set the "menu window" to be as big as possible
 	ImGui::SetNextWindowSize(viewport_size);
@@ -477,10 +422,26 @@ void CMenu::run(GLFWwindow* window)
 		ImGui::PopStyleVar();
 
 		ImGui::SetCursorPosX(viewport_size.x * 0.5f);
-		if (ImGui::Button("Open plugin folder", { viewport_size.x * 0.5f - 8, 0 }))
+		if (ImGui::Button("Open plugin folder", { viewport_size.x * 0.49f, 0 }))
 		{
 			auto path = (runner_filepath.parent_path() / "autoexec");
+
+			if (!std::filesystem::exists(path))
+				std::filesystem::create_directory(path);
+
 			ShellExecuteW(NULL, L"open", path.wstring().c_str(), NULL, NULL, SW_SHOWDEFAULT);
+		}
+		
+		ImGui::SetCursorPosX(viewport_size.x * 0.5f);
+		if (ImGui::Button("Add plugin", { viewport_size.x * 0.24f, 0 }))
+		{
+			MessageBoxA(0, "add plugin", "test", MB_OK);
+		}
+
+		ImGui::SameLine(0, viewport_size.x * 0.01f);
+		if (ImGui::Button("Remove plugin", { viewport_size.x * 0.24f, 0 }))
+		{
+			MessageBoxA(0, "remove plugin", "test", MB_OK);
 		}
 	}
 

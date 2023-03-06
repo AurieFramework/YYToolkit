@@ -83,13 +83,13 @@ int main()
 	printf("[~] Entering main loop\n");
 
 #if not _DEBUG
-	// Disable window resizing and maximizing - can't be countered by AltSnap
-	// This is not done in Debug compilations because looks < productivity
-	LONG_PTR window_style = GetWindowLongPtr(window_handle, GWL_STYLE);
-	SetWindowLongPtr(window_handle, GWL_STYLE, window_style & ~WS_THICKFRAME & ~WS_MAXIMIZEBOX & ~WS_CAPTION);
-
 	glfwSetWindowSizeLimits(ui_window, window_x, window_y, window_x, window_y);
+
+	HWND console_window = GetConsoleWindow();
 	FreeConsole();
+	CloseWindow(console_window);
+
+	printf("[~] If you see this, Windows failed to close the console again...\n");
 #endif // _DEBUG
 
 	// Main window loop
