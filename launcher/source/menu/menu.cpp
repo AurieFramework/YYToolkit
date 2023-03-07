@@ -426,8 +426,18 @@ void CMenu::run(GLFWwindow* window)
 		{
 			auto path = (runner_filepath.parent_path() / "autoexec");
 
-			if (!std::filesystem::exists(path))
-				std::filesystem::create_directory(path);
+			try
+			{
+				if (!std::filesystem::exists(path))
+					std::filesystem::create_directory(path);
+			}
+			catch (std::exception& e)
+			{
+				std::string error_string = "Error while creating plugin folder: ";
+				error_string.append(e.what());
+
+				MessageBoxA(0, error_string.c_str(), "Error", MB_ICONERROR | MB_OK | MB_TOPMOST | MB_SETFOREGROUND);
+			}
 
 			ShellExecuteW(NULL, L"open", path.wstring().c_str(), NULL, NULL, SW_SHOWDEFAULT);
 		}
@@ -435,13 +445,62 @@ void CMenu::run(GLFWwindow* window)
 		ImGui::SetCursorPosX(viewport_size.x * 0.5f);
 		if (ImGui::Button("Add plugin", { viewport_size.x * 0.24f, 0 }))
 		{
-			MessageBoxA(0, "add plugin", "test", MB_OK);
+			auto dialog_results = pfd::open_file("Select plugin", "", {"YYTK plugins", "*.dll"}).result();
+
+			// There can only be one element in the vector
+			// but this is more compact than checking if it's empty etc.
+			for (const std::string& result : dialog_results)
+			{
+				std::filesystem::path original_path = cp::codepage_to_unicode(CP_UTF8, result);
+				std::filesystem::path new_path = runner_filepath.parent_path() / "autoexec" / original_path.filename();
+
+				std::error_code ec;
+				std::filesystem::copy_file(original_path, new_path, ec);
+				if (ec)
+				{
+					std::wstring error_string = L"Failed to install plugin: ";
+					error_string.append(original_path.filename().wstring());
+
+					MessageBoxW(
+						0,
+						error_string.c_str(),
+						L"Error",
+						MB_ICONERROR | MB_OK | MB_TOPMOST | MB_SETFOREGROUND
+					);
+					continue;
+				}
+			}
 		}
 
 		ImGui::SameLine(0, viewport_size.x * 0.01f);
+
 		if (ImGui::Button("Remove plugin", { viewport_size.x * 0.24f, 0 }))
 		{
-			MessageBoxA(0, "remove plugin", "test", MB_OK);
+			auto path = runner_filepath.parent_path();
+			path /= "autoexec";
+
+			auto dialog_results = pfd::open_file("Select plugin", cp::unicode_to_codepage(CP_UTF8, path.wstring()), { "YYTK plugins", "*.dll" }, pfd::opt::force_path).result();
+
+			// There can only be one element in the vector
+			// but this is more compact than checking if it's empty etc.
+			for (const std::string& result : dialog_results)
+			{
+				// We shouldn't allow the user to remove plugins outside of the current game's folder
+				std::filesystem::path target_path = cp::codepage_to_unicode(CP_UTF8, result);
+				if (target_path.parent_path() != runner_filepath.parent_path() / "autoexec")
+				{
+					MessageBoxA(
+						0, 
+						"This plugin is currently not installed.\nYou can only remove plugins in the game's plugin folder.",
+						"Error",
+						MB_ICONERROR | MB_OK | MB_TOPMOST | MB_SETFOREGROUND
+					);
+					continue;
+				}
+
+				std::error_code ec;
+				std::filesystem::remove(target_path, ec);
+			}
 		}
 	}
 
