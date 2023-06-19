@@ -130,6 +130,11 @@ HANDLE launch::create_process(const std::filesystem::path& process_path, const s
 		&process_info
 	);
 
+	if (!process_created)
+	{
+		printf("[create_process] failed with error %x\n", GetLastError());
+	}
+
 	CloseHandle(process_info.hThread);
 
 	return process_info.hProcess;

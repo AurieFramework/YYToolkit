@@ -12,6 +12,8 @@
 #pragma comment(lib, "ws2_32.lib")		// WinSock stuff
 #pragma comment(lib, "normaliz.lib")	// International domain names to text
 
+#pragma comment(linker, "/NODEFAULTLIB:LIBCMT") // Disable linking of linux functions lol
+
 // Includes
 #include <Windows.h>
 #include <GLFW/glfw3.h>
@@ -54,7 +56,7 @@ int main()
 	GLFWwindow* ui_window = glfwCreateWindow(
 		window_x, 
 		window_y, 
-		"Archway",
+		"Archway beta",
 		nullptr, 
 		nullptr
 	);
@@ -90,6 +92,7 @@ int main()
 	CloseWindow(console_window);
 
 	printf("[~] If you see this, Windows failed to close the console again...\n");
+	printf("[~] I blame Microsoft.\n");
 #endif // _DEBUG
 
 	// Main window loop

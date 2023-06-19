@@ -70,6 +70,9 @@ void CMenu::init(GLFWwindow* window)
 
 	ImGuiIO& io = ImGui::GetIO();
 
+	// Disable the creation of INI files
+	io.IniFilename = nullptr;
+
 	if (!ImGui_ImplGlfw_InitForOpenGL(window, true))
 		printf("[-] Failed to init ImGui GLFW impl\n");
 
@@ -108,24 +111,6 @@ void CMenu::init(GLFWwindow* window)
 namespace ImGui
 {
 	bool CloseButton(ImGuiID id, const ImVec2& pos);
-}
-
-// Draw the window header (window title + close button)
-static void draw_window_header(GLFWwindow* window)
-{
-	if (!ImGui::BeginMainMenuBar())
-		return;
-
-	ImGui::TextColored(ImVec4(0, 180, 255, 255), "Archway");
-
-	ImGui::SetCursorPosX(viewport_size.x - 20);
-
-	if (ImGui::CloseButton(ImGui::GetID("close"), ImVec2(viewport_size.x - 20, 0)))
-	{
-		glfwSetWindowShouldClose(window, true);
-	}
-
-	ImGui::EndMainMenuBar();
 }
 
 // Draw the TextInputs + Select and Close buttons
