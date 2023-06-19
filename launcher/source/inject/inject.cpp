@@ -14,6 +14,8 @@ static bool inject_loadlib_internal(HANDLE process_handle, const std::wstring& p
 		PAGE_READWRITE
 	);
 
+	printf("[inject_loadlib_internal] got memory at %p\n", allocated_memory);
+		
 	if (!allocated_memory)
 	{
 		return false;
@@ -32,6 +34,8 @@ static bool inject_loadlib_internal(HANDLE process_handle, const std::wstring& p
 	{
 		return false;
 	}
+	
+	printf("[inject_loadlib_internal] DLL path write success\n");
 
 	// Create a thread and hope it works
 	HANDLE thread_handle = CreateRemoteThread(
@@ -48,6 +52,8 @@ static bool inject_loadlib_internal(HANDLE process_handle, const std::wstring& p
 	{
 		return false;
 	}
+
+	printf("[inject_loadlib_internal] thread creation success\n");
 
 	// Wait until the thread finishes (LLW returns)
 	// Then don't forget to close the handle
@@ -395,6 +401,8 @@ bool inject::inject(HANDLE process_handle, const std::wstring& path_to_dll)
 	// If both processes are the same arch, we can perform a regular injection
 	if (is_injector_x64 == is_injectee_x64)
 	{
+		printf("[inject_internal] is_injector_x64 == is_injectee_x64\n");
+
 		return inject_loadlib_internal(
 			process_handle,
 			path_to_dll,
@@ -406,6 +414,7 @@ bool inject::inject(HANDLE process_handle, const std::wstring& path_to_dll)
 	// This only happens if we have a 32-bit injector AND a 64-bit target
 	if (!is_injector_x64)
 	{
+		printf("[inject_internal] !is_injector_x64, returning false now\n");
 		return false;
 	}
 
@@ -418,8 +427,13 @@ bool inject::inject(HANDLE process_handle, const std::wstring& path_to_dll)
 	if (target_kernel32_path.empty())
 		return false;
 
+	printf("[inject_internal] get_process_module_path(\"kernel32.dll\") returns %S\n", target_kernel32_path.c_str());
+
 	uintptr_t kernel32_base = get_process_module_base(process_handle, L"kernel32.dll");
 	uintptr_t offset_to_llw = get_pe_export_offset(target_kernel32_path, "LoadLibraryW");
+
+	printf("[inject_internal] kernel32_base %llx\n", kernel32_base);
+	printf("[inject_internal] offset_to_llw %llx\n", offset_to_llw);
 
 	// Re-enable the FS redirection as per MSDN recommendation
 	Wow64EnableWow64FsRedirection(true);
