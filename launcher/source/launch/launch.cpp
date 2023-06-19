@@ -160,6 +160,8 @@ void launch::do_full_launch(const launch_info_t& launch_info, std::atomic<int>* 
 	// Create our libcurl handle
 	curl_handle = curl_easy_init();
 
+	printf("[inject] Got cURL handle %p\n", curl_handle);
+
 	// ... and make sure it's valid
 	if (!curl_handle)
 	{
@@ -170,6 +172,8 @@ void launch::do_full_launch(const launch_info_t& launch_info, std::atomic<int>* 
 	// Find NTDLL.dll
 	ntdll_module = GetModuleHandleW(L"ntdll.dll");
 
+	printf("[inject] ntdll %p\n", ntdll_module);
+
 	// ... and make sure it's valid (x2)
 	if (!ntdll_module)
 	{
@@ -179,6 +183,8 @@ void launch::do_full_launch(const launch_info_t& launch_info, std::atomic<int>* 
 
 	// Get the address of NtResumeProcess
 	NtResumeProcess = reinterpret_cast<PNTResumeProcess>(GetProcAddress(ntdll_module, "NtResumeProcess"));
+
+	printf("[inject] NtResumeProcess %p\n", NtResumeProcess);
 
 	// ... and make sure it's valid (x3)
 	if (!NtResumeProcess)
@@ -240,6 +246,8 @@ void launch::do_full_launch(const launch_info_t& launch_info, std::atomic<int>* 
 		OpenProcess(PROCESS_ALL_ACCESS, FALSE, launch_info.pid_override) : 
 		launch::create_process(launch_info.runner, launch_info.arguments, true);
 
+	printf("[inject] target_process pid %d\n", GetProcessId(target_process));
+
 	if (!target_process)
 	{
 		MessageBoxA(0, "Failed to initialize the game.", "WinAPI error", mb_flags);
@@ -248,6 +256,8 @@ void launch::do_full_launch(const launch_info_t& launch_info, std::atomic<int>* 
 
 	// Check if our game is x64
 	is_target_x64 = inject::is_x64(target_process);
+
+	printf("[inject] is_target_x64 returns %d\n", is_target_x64);
 
 	// Make sure the current release supports the architecture
 	if (is_target_x64 && selected_release.assets.download_url_x64.empty())
@@ -287,6 +297,8 @@ void launch::do_full_launch(const launch_info_t& launch_info, std::atomic<int>* 
 			goto thread_cleanup;
 		}
 
+		printf("[inject] GetTempPath returns %S\n", relative_temp_folder_path);
+
 		if (!GetFullPathName(relative_temp_folder_path, MAX_PATH, absolute_temp_folder_path, nullptr))
 		{
 			MessageBoxA(0, "Failed to qualify the temporary path.", "WinAPI error", mb_flags);
@@ -296,6 +308,8 @@ void launch::do_full_launch(const launch_info_t& launch_info, std::atomic<int>* 
 
 			goto thread_cleanup;
 		}
+
+		printf("[inject] GetFullPathName(relative_path) returns %S\n", absolute_temp_folder_path);
 
 		std::filesystem::path desired_path = absolute_temp_folder_path;
 		desired_path = desired_path / launch_info.forced_dllname;
@@ -402,6 +416,8 @@ void launch::do_full_launch_offline(const launch_info_t& launch_info, std::atomi
 	// Find NTDLL.dll
 	ntdll_module = GetModuleHandleW(L"ntdll.dll");
 
+	printf("[inject] ntdll %p\n", ntdll_module);
+
 	// ... and make sure it's valid
 	if (!ntdll_module)
 	{
@@ -411,6 +427,8 @@ void launch::do_full_launch_offline(const launch_info_t& launch_info, std::atomi
 
 	// Get the address of NtResumeProcess
 	NtResumeProcess = reinterpret_cast<PNTResumeProcess>(GetProcAddress(ntdll_module, "NtResumeProcess"));
+
+	printf("[inject] NtResumeProcess %p\n", NtResumeProcess);
 
 	// ... and make sure it's valid (x2)
 	if (!NtResumeProcess)
@@ -426,6 +444,8 @@ void launch::do_full_launch_offline(const launch_info_t& launch_info, std::atomi
 	target_process = launch_info.pid_override ?
 		OpenProcess(PROCESS_ALL_ACCESS, FALSE, launch_info.pid_override) :
 		launch::create_process(launch_info.runner, launch_info.arguments, true);
+
+	printf("[inject] target_process pid %d\n", GetProcessId(target_process));
 
 	if (!target_process)
 	{
