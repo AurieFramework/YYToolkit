@@ -370,6 +370,48 @@ void launch::do_full_launch(const launch_info_t& launch_info, std::atomic<int>* 
 		NtResumeProcess(target_process);
 		while (!launch::wait_until_ready(target_process))
 		{
+			// If the process terminated, we might have a new one spawned
+			// This often occurs with steam games if steamapi.dll exists in the game folder
+			DWORD process_status = 0;
+			if (GetExitCodeProcess(target_process, &process_status))
+			{
+				// If the process died
+				if (process_status != STILL_ACTIVE)
+				{
+					int mb_result = MessageBoxA(
+						0, 
+						"The process died while waiting.\n"
+						"Do you want to try finding a new process of the same executable?\n"
+						"If you see the game has already launched in the background, click Yes.",
+						"Framework error", 
+						mb_flags | MB_YESNO
+					);
+
+					// If the user wants to try finding a new one
+					if (mb_result == IDYES)
+					{
+						DWORD pid = launch::get_running_process_pid(launch_info.runner);
+
+						// If we found a running process with the same PID
+						if (pid)
+						{
+							CloseHandle(target_process);
+							target_process = OpenProcess(PROCESS_ALL_ACCESS, FALSE, pid);
+
+							if (!target_process)
+							{
+								MessageBoxA(0, "Failed to initialize the game.", "WinAPI error", mb_flags);
+								goto thread_cleanup;
+							}
+						}
+					}
+					else
+					{
+						goto thread_cleanup;
+					}
+				}
+			}
+
 			std::this_thread::sleep_for(std::chrono::milliseconds(50));
 		}
 

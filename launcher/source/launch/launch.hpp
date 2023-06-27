@@ -31,6 +31,17 @@ struct launch_info_t
 
 	// Use early launch
 	bool early_launch;
+
+	launch_info_t()
+	{
+		runner.clear();
+		arguments.clear();
+		forced_tagname.clear();
+		injection_delay = 0;
+		forced_dllname.clear();
+		pid_override = 0;
+		early_launch = false;
+	}
 };
 
 namespace launch

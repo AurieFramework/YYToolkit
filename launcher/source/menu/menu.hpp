@@ -45,6 +45,7 @@ private:
 	{
 		main_window = nullptr;
 		injection_delay = 0;
+		pid_override = 0;
 
 		use_early_launch = false;
 

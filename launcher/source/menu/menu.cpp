@@ -230,7 +230,7 @@ void CMenu::run(GLFWwindow* window)
 		// Used later when positioning the plugin manager
 		float ypos_after_settings = ImGui::GetCursorPosY();
 
-		ImGui::PushItemWidth(viewport_size.x / 4);
+		ImGui::PushItemWidth(viewport_size.x / 3.5);
 
 		// Draw releases combo
 		{
@@ -259,7 +259,9 @@ void CMenu::run(GLFWwindow* window)
 		static std::atomic<int> injection_progress = 0;
 		static std::thread injection_thread_obj;
 
-		if (ImGui::Button("Start process##Main"))
+		ImGui::Spacing();
+
+		if (ImGui::Button("Launch with YYToolkit##Main", { viewport_size.x / 2.1f, 0 }))
 		{
 			std::wstring arguments = L"";
 
@@ -298,6 +300,13 @@ void CMenu::run(GLFWwindow* window)
 				SWP_NOMOVE | SWP_NOSIZE
 			);
 		}
+
+		if (ImGui::Button("Inject into a running process##Main", { viewport_size.x / 2.1f, 0 }))
+		{
+			MessageBoxA(0, "Not yet implemented!", "Error", MB_OK);
+		}
+
+		ImGui::Checkbox("Use early launch", &use_early_launch);
 
 		// I want the popup to be rounded!
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 10);
