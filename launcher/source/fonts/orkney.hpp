@@ -1,5 +1,5 @@
-#ifndef YYTK_LAUNCHER_FONTS_ROBOTO_H_
-#define YYTK_LAUNCHER_FONTS_ROBOTO_H_
+#ifndef RTK_LAUNCHER_ROBOTO_H_
+#define RTK_LAUNCHER_ROBOTO_H_
 
 unsigned char Roboto_Regular_ttf[] = {
   0x00, 0x01, 0x00, 0x00, 0x00, 0x12, 0x01, 0x00, 0x00, 0x04, 0x00, 0x20,
@@ -14027,4 +14027,4 @@ unsigned char Roboto_Regular_ttf[] = {
 };
 unsigned int Roboto_Regular_ttf_len = 168260;
 
-#endif // YYTK_LAUNCHER_FONTS_ROBOTO_H_
+#endif // RTK_LAUNCHER_ROBOTO_H_

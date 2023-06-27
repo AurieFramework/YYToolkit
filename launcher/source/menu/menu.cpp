@@ -275,6 +275,7 @@ void CMenu::run(GLFWwindow* window)
 			info.injection_delay = injection_delay;
 			info.forced_dllname = "rtkmod.tmp";
 			info.pid_override = pid_override;
+			info.early_launch = use_early_launch;
 
 			// Start the injection thread
 			injection_thread_obj = std::thread(launch::do_full_launch, info, &injection_progress);
@@ -513,7 +514,7 @@ void CMenu::run(GLFWwindow* window)
 
 	ImGui::End();
 
-	//ImGui::ShowDemoWindow();
+	// ImGui::ShowDemoWindow();
 
 	ImGui::Render();
 	glClear(GL_COLOR_BUFFER_BIT);

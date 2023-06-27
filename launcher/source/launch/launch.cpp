@@ -365,15 +365,18 @@ void launch::do_full_launch(const launch_info_t& launch_info, std::atomic<int>* 
 	// --- WAITING FOR GAME ---
 	progress_out->store(4);
 
-	NtResumeProcess(target_process);
-	while (!launch::wait_until_ready(target_process))
+	if (!launch_info.early_launch)
 	{
-		std::this_thread::sleep_for(std::chrono::milliseconds(50));
-	}
+		NtResumeProcess(target_process);
+		while (!launch::wait_until_ready(target_process))
+		{
+			std::this_thread::sleep_for(std::chrono::milliseconds(50));
+		}
 
-	if (launch_info.injection_delay)
-	{
-		std::this_thread::sleep_for(std::chrono::milliseconds(launch_info.injection_delay));
+		if (launch_info.injection_delay)
+		{
+			std::this_thread::sleep_for(std::chrono::milliseconds(launch_info.injection_delay));
+		}
 	}
 
 	// --- INJECTING ---
@@ -386,6 +389,7 @@ void launch::do_full_launch(const launch_info_t& launch_info, std::atomic<int>* 
 		// Make sure we don't leave a suspended process running in the background
 		TerminateProcess(target_process, 0);
 	}
+
 
 thread_cleanup:
 	// --- CLEANING UP ---

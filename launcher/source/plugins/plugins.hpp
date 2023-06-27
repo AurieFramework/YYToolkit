@@ -1,5 +1,5 @@
-#ifndef YYTK_LAUNCHER_PLUGINS_PLUGINS_H_
-#define YYTK_LAUNCHER_PLUGINS_PLUGINS_H_
+#ifndef RTK_LAUNCHER_PLUGINS_H_
+#define RTK_LAUNCHER_PLUGINS_H_
 
 #include <string>
 #include <filesystem>
@@ -23,4 +23,4 @@ namespace plugins
 	std::vector<plugin_item_t> get_plugins_from_folder(const std::filesystem::path& folder_path);
 }
 
-#endif // YYTK_LAUNCHER_PLUGINS_PLUGINS_H_
+#endif // RTK_LAUNCHER_PLUGINS_H_

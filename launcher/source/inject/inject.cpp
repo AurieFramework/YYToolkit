@@ -438,8 +438,16 @@ bool inject::inject(HANDLE process_handle, const std::wstring& path_to_dll)
 	// Re-enable the FS redirection as per MSDN recommendation
 	Wow64EnableWow64FsRedirection(true);
 
+	// Kernel32.dll might not yet be mapped (Early Launch is faster!)
 	if (!kernel32_base)
-		return false;
+	{
+		printf("[inject_internal] kernel32_base %llx\n", kernel32_base);
+		kernel32_base = get_arch_module_base(L"kernel32.dll", is_injectee_x64);
+
+		// If we can't find a kernel32.dll of our target architecture anywhere, just give up
+		if (!kernel32_base)
+			return false;
+	}
 
 	if (!offset_to_llw)
 		return false;
@@ -449,4 +457,56 @@ bool inject::inject(HANDLE process_handle, const std::wstring& path_to_dll)
 		path_to_dll,
 		reinterpret_cast<LPTHREAD_START_ROUTINE>(kernel32_base + offset_to_llw)
 	);
+}
+
+uintptr_t inject::get_arch_module_base(const std::wstring& module_name, bool should_be_x64)
+{
+	// Get a list of all processes
+	HANDLE process_snapshot = CreateToolhelp32Snapshot(
+		TH32CS_SNAPPROCESS,
+		0
+	);
+
+	// ... and make sure it's valid
+	if (process_snapshot == INVALID_HANDLE_VALUE)
+	{
+		return 0;
+	}
+
+	PROCESSENTRY32 process_entry; process_entry.dwSize = sizeof(process_entry);
+	Process32First(process_snapshot, &process_entry);
+
+	// Loop over all the processes and find one matching our architecture
+	do
+	{
+		// Open a handle to the current process
+		HANDLE process_handle = OpenProcess(PROCESS_QUERY_INFORMATION, false, process_entry.th32ProcessID);
+		
+		// This may fail due to security reasons (protected processes, etc.)
+		if (!process_handle)
+			continue;
+
+		// If the architecture matches the one we're looking for
+		if (should_be_x64 == is_x64(process_handle))
+		{
+			// Get the module base and bail
+			
+			uintptr_t module_base = get_process_module_base(process_handle, module_name);
+
+			printf("[get_arch_module_base] process %d just saved your ass (%S => 0x%X)\n", 
+				process_entry.th32ProcessID, 
+				module_name.c_str(),
+				module_base
+			);
+
+			CloseHandle(process_handle);
+			return module_base;
+		}
+
+		CloseHandle(process_handle);
+
+	} while (Process32Next(process_snapshot, &process_entry));
+
+	CloseHandle(process_snapshot);
+	return 0;
 }

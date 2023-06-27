@@ -1,5 +1,5 @@
-#ifndef YYTK_LAUNCHER_NETWORK_NETWORK_H_
-#define YYTK_LAUNCHER_NETWORK_NETWORK_H_
+#ifndef RTK_LAUNCHER_NETWORK_H_
+#define RTK_LAUNCHER_NETWORK_H_
 
 #include <string>
 #include <vector>
@@ -40,4 +40,4 @@ namespace network
 	CURLcode download_file(CURL* easy_handle, std::string_view url, const std::filesystem::path& path);
 }
 
-#endif // YYTK_LAUNCHER_NETWORK_NETWORK_H_
+#endif // RTK_LAUNCHER_NETWORK_H_

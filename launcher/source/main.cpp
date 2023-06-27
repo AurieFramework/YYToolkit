@@ -3,6 +3,11 @@
 #define GLFW_EXPOSE_NATIVE_WIN32
 #define CURL_STATICLIB
 
+#if not _WIN64
+#error "The launcher is not compatible with x86 compile targets - use x64."
+#endif
+
+
 // Libraries
 #pragma comment(lib, "opengl32.lib")	// OpenGL for GLFW
 #pragma comment(lib, "glfw3_mt.lib")	// GLFW

@@ -1,5 +1,5 @@
-#ifndef YYTK_LAUNCHER_MENU_MENU_H_
-#define YYTK_LAUNCHER_MENU_MENU_H_
+#ifndef RTK_LAUNCHER_MENU_H_
+#define RTK_LAUNCHER_MENU_H_
 
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
@@ -53,4 +53,4 @@ private:
 	}
 };
 
-#endif // YYTK_LAUNCHER_MENU_MENU_H_
+#endif // RTK_LAUNCHER_MENU_H_

@@ -1,5 +1,5 @@
-#ifndef YYTK_LAUNCHER_LAUNCH_LAUNCH_H_
-#define YYTK_LAUNCHER_LAUNCH_LAUNCH_H_
+#ifndef RTK_LAUNCHER_LAUNCH_H_
+#define RTK_LAUNCHER_LAUNCH_H_
 
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
@@ -28,6 +28,9 @@ struct launch_info_t
 
 	// Force injection into this process instead of creating a new one
 	long pid_override;
+
+	// Use early launch
+	bool early_launch;
 };
 
 namespace launch
@@ -43,4 +46,4 @@ namespace launch
 	void do_full_launch_offline(const launch_info_t& launch_info, std::atomic<int>* progress_out);
 }
 
-#endif // YYTK_LAUNCHER_LAUNCH_LAUNCH_H_
+#endif // RTK_LAUNCHER_LAUNCH_H_

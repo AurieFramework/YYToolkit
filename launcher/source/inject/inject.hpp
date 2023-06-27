@@ -1,5 +1,5 @@
-#ifndef YYTK_LAUNCHER_INJECT_INJECT_H_
-#define YYTK_LAUNCHER_INJECT_INJECT_H_
+#ifndef RTK_LAUNCHER_INJECT_H_
+#define RTK_LAUNCHER_INJECT_H_
 
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
@@ -18,6 +18,8 @@ namespace inject
 	bool is_x64(HANDLE process_handle);
 
 	bool inject(HANDLE process_handle, const std::wstring& path_to_dll);
+
+	uintptr_t get_arch_module_base(const std::wstring& module_name, bool should_be_x64);
 }
 
-#endif // YYTK_LAUNCHER_INJECT_INJECT_H_
+#endif // RTK_LAUNCHER_INJECT_H_
