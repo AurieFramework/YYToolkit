@@ -13,7 +13,7 @@ struct process_info_t
 	bool found;
 };
 
-static BOOL CALLBACK enum_windows_callback(HWND hwnd, process_info_t* process_info)
+static BOOL CALLBACK wait_until_ready_callback(HWND hwnd, process_info_t* process_info)
 {
 	DWORD process_id = 0;
 	GetWindowThreadProcessId(hwnd, &process_id);
@@ -36,7 +36,7 @@ bool launch::wait_until_ready(HANDLE process)
 	process_info.target_pid = GetProcessId(process);
 	process_info.found = false;
 
-	EnumWindows(reinterpret_cast<WNDENUMPROC>(enum_windows_callback), reinterpret_cast<LPARAM>(&process_info));
+	EnumWindows(reinterpret_cast<WNDENUMPROC>(wait_until_ready_callback), reinterpret_cast<LPARAM>(&process_info));
 	
 	return process_info.found;
 }
@@ -378,35 +378,26 @@ void launch::do_full_launch(const launch_info_t& launch_info, std::atomic<int>* 
 				// If the process died
 				if (process_status != STILL_ACTIVE)
 				{
-					int mb_result = MessageBoxA(
-						0, 
-						"The process died while waiting.\n"
-						"Do you want to try finding a new process of the same executable?\n"
-						"If you see the game has already launched in the background, click Yes.",
-						"Framework error", 
-						mb_flags | MB_YESNO
-					);
+					// Sleep for a bit, maybe it will get relaunched as part of Steam or something
+					std::this_thread::sleep_for(std::chrono::seconds(3));
 
-					// If the user wants to try finding a new one
-					if (mb_result == IDYES)
+					DWORD pid = launch::get_running_process_pid(launch_info.runner);
+
+					// If we found a running process with the same PID
+					if (pid)
 					{
-						DWORD pid = launch::get_running_process_pid(launch_info.runner);
+						CloseHandle(target_process);
+						target_process = OpenProcess(PROCESS_ALL_ACCESS, FALSE, pid);
 
-						// If we found a running process with the same PID
-						if (pid)
+						if (!target_process)
 						{
-							CloseHandle(target_process);
-							target_process = OpenProcess(PROCESS_ALL_ACCESS, FALSE, pid);
-
-							if (!target_process)
-							{
-								MessageBoxA(0, "Failed to initialize the game.", "WinAPI error", mb_flags);
-								goto thread_cleanup;
-							}
+							MessageBoxA(0, "Failed to initialize the game.", "WinAPI error", mb_flags);
+							goto thread_cleanup;
 						}
 					}
 					else
 					{
+						MessageBoxA(0, "The target process died and did not respawn in time.", "Framework error", mb_flags);
 						goto thread_cleanup;
 					}
 				}
@@ -549,4 +540,32 @@ thread_cleanup:
 		CloseHandle(target_process);
 
 	std::this_thread::sleep_for(std::chrono::milliseconds(500));
+}
+
+static BOOL CALLBACK get_open_windows_callback(HWND hwnd, std::vector<window_info_t>* window_info)
+{
+	DWORD process_id = 0;
+	GetWindowThreadProcessId(hwnd, &process_id);
+
+	if (IsWindowVisible(hwnd) && GetWindowTextLengthA(hwnd) > 0 && process_id != GetCurrentProcessId())
+	{
+		wchar_t process_name[128] = { 0 };
+		GetWindowTextW(hwnd, process_name, 128);
+
+		window_info_t info;
+		info.name = cp::unicode_to_codepage(CP_UTF8, process_name);
+		info.process_id = process_id;
+
+		window_info->push_back(info);
+	}
+
+	return true;
+}
+
+std::vector<window_info_t> launch::get_open_windows()
+{
+	std::vector<window_info_t> window_info;
+	EnumWindows(reinterpret_cast<WNDENUMPROC>(get_open_windows_callback), reinterpret_cast<LPARAM>(&window_info));
+
+	return window_info;
 }

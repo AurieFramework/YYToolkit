@@ -14,7 +14,7 @@
 #include <GLFW/glfw3native.h>
 
 // Universal window flags, added to every window
-constexpr auto window_flags = ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoBringToFrontOnFocus;
+constexpr auto window_flags = ImGuiWindowFlags_NoBringToFrontOnFocus;
 
 static ImVec2 viewport_size = ImVec2(0, 0);
 
@@ -89,7 +89,7 @@ void CMenu::init(GLFWwindow* window)
 
 	// Add our required ranges
 	range_builder.AddRanges(io.Fonts->GetGlyphRangesDefault());
-	range_builder.AddText(u8"ÌìŠšÈèØøŽžÝýÁáÍíÉéÏï");
+	range_builder.AddText(u8"ÌìŠšÈèØøŽžÝýÁáÍíÉéÏïÚúÙù–—");
 	range_builder.AddRanges(io.Fonts->GetGlyphRangesCyrillic());
 	range_builder.BuildRanges(&font_ranges);
 	
@@ -131,7 +131,7 @@ static void draw_runner_data_controls(std::filesystem::path& runner_filepath, st
 		ImGui::SameLine(120);
 
 		ImGui::SetNextItemWidth(viewport_size.x * 0.525f);
-		ImGui::InputText("##InputRunner", &runner_filename, ImGuiInputTextFlags_ReadOnly);
+		ImGui::InputText("##InputRunner", &runner_filename, ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_AutoSelectAll);
 
 		ImGui::SameLine();
 	}
@@ -169,7 +169,7 @@ static void draw_runner_data_controls(std::filesystem::path& runner_filepath, st
 	ImGui::SameLine(120);
 
 	ImGui::SetNextItemWidth(viewport_size.x * 0.525f);
-	ImGui::InputText("##InputData", &data_filename, ImGuiInputTextFlags_ReadOnly);
+	ImGui::InputText("##InputData", &data_filename, ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_AutoSelectAll);
 
 	ImGui::SameLine();
 
@@ -230,7 +230,7 @@ void CMenu::run(GLFWwindow* window)
 		// Used later when positioning the plugin manager
 		float ypos_after_settings = ImGui::GetCursorPosY();
 
-		ImGui::PushItemWidth(viewport_size.x / 3.5);
+		ImGui::PushItemWidth(viewport_size.x / 3.5f);
 
 		// Draw releases combo
 		{
@@ -282,12 +282,6 @@ void CMenu::run(GLFWwindow* window)
 			// Start the injection thread
 			injection_thread_obj = std::thread(launch::do_full_launch, info, &injection_progress);
 
-			// Make the injection progress window centered
-			ImGui::SetNextWindowPos(ImGui::GetMainViewport()->GetCenter(),
-				ImGuiCond_Always,
-				ImVec2(0.5f, 0.5f)
-			);
-
 			// Open the actual injection progress window
 			ImGui::OpenPopup("Injection progress");
 
@@ -303,7 +297,8 @@ void CMenu::run(GLFWwindow* window)
 
 		if (ImGui::Button("Inject into a running process##Main", { viewport_size.x / 2.1f, 0 }))
 		{
-			MessageBoxA(0, "Not yet implemented!", "Error", MB_OK);
+			// Open the actual window
+			ImGui::OpenPopup("Manual injection");
 		}
 
 		ImGui::Checkbox("Use early launch", &use_early_launch);
@@ -311,10 +306,108 @@ void CMenu::run(GLFWwindow* window)
 		// I want the popup to be rounded!
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 10);
 		{
+			// Center all these windows
+			ImGui::SetNextWindowPos(ImGui::GetMainViewport()->GetCenter(),
+				ImGuiCond_Always,
+				ImVec2(0.5f, 0.5f)
+			);
+
+			if (ImGui::BeginPopupModal(
+				"Manual injection",
+				nullptr,
+				ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_AlwaysAutoResize
+			))
+			{
+				std::vector<window_info_t> window_pid_mapping = launch::get_open_windows();
+				static int pid_selected = 0;
+
+				if (ImGui::BeginTable(
+					"Process Table##Manual injection",
+					2, 
+					ImGuiTableFlags_Resizable | ImGuiTableFlags_Borders | ImGuiTableFlags_SizingFixedFit | ImGuiTableFlags_ScrollY,
+					{0, viewport_size.y * 0.75f}
+				))
+				{
+					ImGui::TableSetupScrollFreeze(0, 1);
+					ImGui::TableSetupColumn("Window name");
+					ImGui::TableSetupColumn("Process ID");
+					ImGui::TableHeadersRow();
+
+					for (auto& window : window_pid_mapping)
+					{
+						ImGui::TableNextRow();
+						ImGui::TableNextColumn();
+
+						if (ImGui::Selectable(
+							window.name.c_str(),
+							pid_selected == window.process_id,
+							ImGuiSelectableFlags_SpanAllColumns | ImGuiSelectableFlags_DontClosePopups
+						))
+						{
+							pid_selected = window.process_id;
+						}
+
+						ImGui::TableNextColumn();
+
+						// Need spaces here because otherwise the "Process ID" column title will get cut off
+						ImGui::Text("%d             ", window.process_id);
+					}
+					ImGui::EndTable();
+				}
+
+				if (ImGui::Button("Cancel", { 100, 0 }))
+					ImGui::CloseCurrentPopup();
+
+				ImGui::SameLine();
+
+				if (ImGui::Button("Refresh", { 100, 0 }))
+					window_pid_mapping = launch::get_open_windows();
+
+				ImGui::SameLine();
+
+				if (ImGui::Button("Inject", { 100, 0 }))
+				{
+					pid_override = pid_selected;
+
+					// Prepare arguments for the injection thread
+					launch_info_t info;
+					info.forced_tagname = selected_version;
+					info.forced_dllname = "rtkmod.tmp";
+					info.pid_override = pid_override;
+
+					// Start the injection thread
+					injection_thread_obj = std::thread(launch::do_full_launch, info, &injection_progress);
+
+					// Make the injection progress window centered
+					ImGui::SetNextWindowPos(ImGui::GetMainViewport()->GetCenter(),
+						ImGuiCond_Always,
+						ImVec2(0.5f, 0.5f)
+					);
+
+					// FIXME: Injection progress won't appear no matter what I do
+					// Tried putting the BeginPopupModal call here
+					// Tried calling OpenPopup
+					// neither works
+
+					// Make the launcher topmost, so the game doesn't get in the way
+					SetWindowPos(
+						glfwGetWin32Window(window),
+						HWND_TOPMOST,
+						0, 0,
+						0, 0,
+						SWP_NOMOVE | SWP_NOSIZE
+					);
+
+					ImGui::CloseCurrentPopup();
+				}
+
+				ImGui::EndPopup();
+			}
+
 			if (ImGui::BeginPopupModal(
 				"Injection progress",
 				NULL,
-				ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_AlwaysAutoResize
+				ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_AlwaysAutoResize
 			))
 			{
 				const std::map<int, std::string> load_stages = {
@@ -438,7 +531,7 @@ void CMenu::run(GLFWwindow* window)
 					MessageBoxA(0, error_string.c_str(), "Error", MB_ICONERROR | MB_OK | MB_TOPMOST | MB_SETFOREGROUND);
 				}
 
-				ShellExecuteW(NULL, L"open", path.wstring().c_str(), NULL, NULL, SW_SHOWDEFAULT);
+				ShellExecuteW(0, L"open", path.wstring().c_str(), NULL, NULL, SW_SHOWDEFAULT);
 			}
 			else
 			{

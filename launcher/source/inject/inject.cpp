@@ -489,8 +489,7 @@ uintptr_t inject::get_arch_module_base(const std::wstring& module_name, bool sho
 		// If the architecture matches the one we're looking for
 		if (should_be_x64 == is_x64(process_handle))
 		{
-			// Get the module base and bail
-			
+			// Get the module base
 			uintptr_t module_base = get_process_module_base(process_handle, module_name);
 
 			printf("[get_arch_module_base] process %d just saved your ass (%S => 0x%X)\n", 
@@ -500,6 +499,8 @@ uintptr_t inject::get_arch_module_base(const std::wstring& module_name, bool sho
 			);
 
 			CloseHandle(process_handle);
+			CloseHandle(process_snapshot);
+
 			return module_base;
 		}
 

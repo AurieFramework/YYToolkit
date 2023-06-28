@@ -8,6 +8,7 @@
 #include <filesystem>
 #include <Windows.h>
 #include <vector>
+#include <string>
 
 struct launch_info_t
 {
@@ -44,6 +45,15 @@ struct launch_info_t
 	}
 };
 
+struct window_info_t
+{
+	// The name of the window
+	std::string name;
+
+	// The process ID the window belongs to
+	long process_id;
+};
+
 namespace launch
 {
 	bool wait_until_ready(HANDLE process);
@@ -55,6 +65,8 @@ namespace launch
 	void do_full_launch(const launch_info_t& launch_info, std::atomic<int>* progress_out);
 
 	void do_full_launch_offline(const launch_info_t& launch_info, std::atomic<int>* progress_out);
+
+	std::vector<window_info_t> get_open_windows();
 }
 
 #endif // RTK_LAUNCHER_LAUNCH_H_
