@@ -207,9 +207,27 @@ YYTKStatus API::Internal::MmFindCodeExecute(uintptr_t& dwOutBuffer)
 	uintptr_t dwPattern = 0;
 #ifdef _WIN64
 
+	// New method for 2023.x
+	// Is inconsistent, not using it for now...
+	/*
+	if (!MmFindByteArray(
+		"\xE8\x00\x00\x00\x00\x3C\x01\x74\x15",
+		UINT_MAX,
+		0,
+		0,
+		"x????xxxx",
+		false,
+		dwPattern
+	))
+	{
+		dwOutBuffer = dwPattern + 5 + *(int32_t*)(dwPattern + 1);
+		return YYTK_OK;
+	}
+	*/
+
 	// direct ref
 	// address in opcode
-	if (YYTKStatus _Status = MmFindByteArray(
+	if (!MmFindByteArray(
 		"\xE8\x00\x00\x00\x00\x0F\xB6\xD8\x3C\x01",
 		UINT_MAX,
 		0,
@@ -218,31 +236,32 @@ YYTKStatus API::Internal::MmFindCodeExecute(uintptr_t& dwOutBuffer)
 		false,
 		dwPattern
 	))
-		return _Status;
-
-	if (dwPattern)
 	{
-		unsigned long Relative = *reinterpret_cast<unsigned long*>(dwPattern + 1);
-		dwOutBuffer = (dwPattern + 5) + Relative; // eip = instruction base + 5 + relative offset
+		if (dwPattern)
+		{
+			unsigned long Relative = *reinterpret_cast<int32_t*>(dwPattern + 1);
+			dwOutBuffer = (dwPattern + 5) + Relative; // eip = instruction base + 5 + relative offset
 
-		if (dwOutBuffer)
-			return YYTK_OK;
+			if (dwOutBuffer)
+				return YYTK_OK;
+		}
 	}
-	
-	if (YYTKStatus _Status = MmFindByteArray(
+
+	if (!MmFindByteArray(
 		"\x4C\x8B\x50\x08\x75\x18",
 		UINT_MAX,
 		0,
 		0,
-		"xxxxx",
+		"xxxxxx",
 		false,
 		dwPattern
 	))
-		return _Status;
-
-	dwOutBuffer = dwPattern;
+	{
+		dwOutBuffer = dwPattern;
+		return YYTK_OK;
+	}
 	
-	return YYTK_OK;
+	return YYTK_NOMATCH;
 #else
 
 	if (YYTKStatus _Status = MmFindByteArray(
@@ -268,12 +287,61 @@ YYTKStatus API::Internal::MmFindCodeExecute(uintptr_t& dwOutBuffer)
 #endif
 }
 
+
+struct RFunction
+{
+	union {
+		unsigned char padding[64];
+		char* name;
+	};
+
+	void* function;
+	int32_t argc;
+	int32_t padding2;
+};
+
+static RFunction** the_functions_array = nullptr;
+
+static void dummy_find_function(int id, char** bufName, void** bufRoutine, int* bufArgs, void* unused)
+{
+	*bufName = (char*)(&(*the_functions_array)[id].name);
+	*bufRoutine = (*the_functions_array)[id].function;
+	*bufArgs = (*the_functions_array)[id].argc;
+}
+
 YYTKStatus API::Internal::MmFindCodeFunction(uintptr_t& dwOutBuffer)
 {
 #if _WIN64
-	return MmFindByteArray("\x3B\x0D\x00\x00\x00\x00\x7F\x3A", UINT_MAX, 0, 0, "xx????xx", false, dwOutBuffer);
+	YYTKStatus Status = MmFindByteArray("\x3B\x0D\x00\x00\x00\x00\x7F\x3A", UINT_MAX, 0, 0, "xx????xx", false, dwOutBuffer);
+
+	// If we found it using the old method
+	if (!Status)
+		return YYTK_OK;
+
+	// I literally can't find better words to describe this
+	// Finds the_functions array in FINALIZE_Code_Function
+	uintptr_t holy_shit_result = 0;
+	YYTKStatus holy_shit_pattern = MmFindByteArray(
+		"\x48\x8B\x0D\x00\x00\x00\x00\xE8\x00\x00\x00\x00\x33\xC0\x48\x89\x05\x00\x00\x00\x00\x89\x05\x00\x00\x00\x00",
+		UINT_MAX,
+		0,
+		0,
+		"xxx????x????xxxxx????xx????",
+		false,
+		holy_shit_result
+	);
+
+	// We failed anyway...
+	if (holy_shit_pattern || holy_shit_result == 0)
+	{
+		return holy_shit_pattern;
+	}
+
+	the_functions_array = (RFunction**)(holy_shit_result + 7ULL + *(int32_t*)(holy_shit_result + 3));
+	dwOutBuffer = (uintptr_t)dummy_find_function;
+	return YYTK_OK;
 #else
-	return MmFindByteArray("\x8B\x44\x24\x04\x3B\x05\x00\x00\x00\x00\x7F", UINT_MAX, 0, 0, "xxxxxx????x", false, dwOutBuffer);
+	YYTKStatus Status = MmFindByteArray("\x8B\x44\x24\x04\x3B\x05\x00\x00\x00\x00\x7F", UINT_MAX, 0, 0, "xxxxxx????x", false, dwOutBuffer);
 #endif
 }
 
