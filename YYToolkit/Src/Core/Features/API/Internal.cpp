@@ -341,7 +341,7 @@ YYTKStatus API::Internal::MmFindCodeFunction(uintptr_t& dwOutBuffer)
 	dwOutBuffer = (uintptr_t)dummy_find_function;
 	return YYTK_OK;
 #else
-	YYTKStatus Status = MmFindByteArray("\x8B\x44\x24\x04\x3B\x05\x00\x00\x00\x00\x7F", UINT_MAX, 0, 0, "xxxxxx????x", false, dwOutBuffer);
+	return MmFindByteArray("\x8B\x44\x24\x04\x3B\x05\x00\x00\x00\x00\x7F", UINT_MAX, 0, 0, "xxxxxx????x", false, dwOutBuffer);
 #endif
 }
 
