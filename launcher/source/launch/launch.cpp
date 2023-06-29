@@ -201,6 +201,8 @@ void launch::do_full_launch(const launch_info_t& launch_info, std::atomic<int>* 
 	// --- FETCHING RELEASES ---
 	progress_out->store(1);
 
+	printf("[inject] Fetching releases (stage 1)\n");
+
 	network::fetch_releases(curl_handle, "Archie-osu", "YYToolkit", yytk_versions);
 
 	// Failed to fetch?
@@ -246,6 +248,8 @@ void launch::do_full_launch(const launch_info_t& launch_info, std::atomic<int>* 
 
 	// --- PREPARING ENVIRONMENT ---
 	progress_out->store(2);
+
+	printf("[inject] Preparing environment (stage 2)\n");
 
 	target_process = launch_info.pid_override ? 
 		OpenProcess(PROCESS_ALL_ACCESS, FALSE, launch_info.pid_override) : 
@@ -325,6 +329,8 @@ void launch::do_full_launch(const launch_info_t& launch_info, std::atomic<int>* 
 	// --- DOWNLOADING DATA ---
 	progress_out->store(3);
 
+	printf("[inject] Downloading data (stage 3)\n");
+
 	if (is_target_x64)
 	{
 		CURLcode curl_result = network::download_file(
@@ -365,9 +371,13 @@ void launch::do_full_launch(const launch_info_t& launch_info, std::atomic<int>* 
 	// --- WAITING FOR GAME ---
 	progress_out->store(4);
 
+	printf("[inject] Waiting for game (stage 4)\n");
+
 	if (!launch_info.early_launch)
 	{
 		NtResumeProcess(target_process);
+		printf("[inject] early launch off, waiting for process %d\n", GetProcessId(target_process));
+
 		while (!launch::wait_until_ready(target_process))
 		{
 			// If the process terminated, we might have a new one spawned
@@ -378,6 +388,8 @@ void launch::do_full_launch(const launch_info_t& launch_info, std::atomic<int>* 
 				// If the process died
 				if (process_status != STILL_ACTIVE)
 				{
+					printf("[inject] Process died while waiting for it to inject\n");
+
 					// Sleep for a bit, maybe it will get relaunched as part of Steam or something
 					std::this_thread::sleep_for(std::chrono::seconds(3));
 
@@ -386,6 +398,8 @@ void launch::do_full_launch(const launch_info_t& launch_info, std::atomic<int>* 
 					// If we found a running process with the same PID
 					if (pid)
 					{
+						printf("[inject] Found new alive PID %d\n", pid);
+
 						CloseHandle(target_process);
 						target_process = OpenProcess(PROCESS_ALL_ACCESS, FALSE, pid);
 
@@ -414,6 +428,8 @@ void launch::do_full_launch(const launch_info_t& launch_info, std::atomic<int>* 
 
 	// --- INJECTING ---
 	progress_out->store(5);
+
+	printf("[inject] Injecting (stage 5)\n");
 
 	if (!inject::inject(target_process, temp_file_path))
 	{
