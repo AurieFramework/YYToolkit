@@ -492,7 +492,7 @@ uintptr_t inject::get_arch_module_base(const std::wstring& module_name, bool sho
 			// Get the module base
 			uintptr_t module_base = get_process_module_base(process_handle, module_name);
 
-			printf("[get_arch_module_base] process %d just saved your ass (%S => 0x%X)\n", 
+			printf("[get_arch_module_base] process %d just saved your ass (%S => 0x%llX)\n", 
 				process_entry.th32ProcessID, 
 				module_name.c_str(),
 				module_base
