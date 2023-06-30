@@ -4,6 +4,10 @@
 struct YYGMLFuncs
 {
 	const char* pName;
-	PFUNC_YYGML pFunc;
+	union
+	{
+		PFUNC_YYGMLScript pScriptFunc;
+		PFUNC_YYGML pFunc;
+	};
 	YYVAR* pFuncVar;
 };

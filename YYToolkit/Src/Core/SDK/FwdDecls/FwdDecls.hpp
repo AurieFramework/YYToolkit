@@ -70,15 +70,16 @@ struct CallbackAttributes_t;
 // Typedefs
 using TRoutine = void(__cdecl*)(RValue* _result, CInstance* _self, CInstance* _other, int _argc, RValue* _args);
 using PFUNC_YYGML = void(__cdecl*)(CInstance* _self, CInstance* _other);
-typedef void (*FNCodeFunctionGetTheFunction)(int id, char** bufName, void** bufRoutine, int* bufArgs, void* unused);
-typedef bool (*FNCodeExecute)(YYObjectBase* Self, YYObjectBase* Other, CCode* code, YYRValue* res, int flags);
+using FNCodeFunctionGetTheFunction = void(*)(int id, char** bufName, void** bufRoutine, int* bufArgs, void* unused);
+using FNCodeExecute = bool(*)(YYObjectBase* Self, YYObjectBase* Other, CCode* code, YYRValue* res, int flags);
+using PFUNC_YYGMLScript = YYRValue * (*)(CInstance* _self, CInstance* _other, YYRValue* _return_value, int _argc, YYRValue** args);
 
 // Macros
 
 #define WIN32_LEAN_AND_MEAN 1
 #define YYTK_MAGIC 'TFSI'
 
-static const char* YYSDK_VERSION = "2.1.3b";
+static const char* YYSDK_VERSION = "2.2.0";
 
 // Macros, but complicated
 #ifdef _MSC_VER
