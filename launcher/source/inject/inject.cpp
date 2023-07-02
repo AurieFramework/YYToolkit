@@ -449,6 +449,8 @@ bool inject::inject(HANDLE process_handle, const std::wstring& path_to_dll)
 			return false;
 	}
 
+	// LoadLibraryW should be found, if it's not well guess we can't inject lol
+	// TODO: Maybe add more injection methods 
 	if (!offset_to_llw)
 		return false;
 
@@ -498,6 +500,7 @@ uintptr_t inject::get_arch_module_base(const std::wstring& module_name, bool sho
 				module_base
 			);
 
+			// Remember to clean up after ourselves
 			CloseHandle(process_handle);
 			CloseHandle(process_snapshot);
 

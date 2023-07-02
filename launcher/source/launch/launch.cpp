@@ -526,15 +526,57 @@ void launch::do_full_launch_offline(const launch_info_t& launch_info, std::atomi
 	// --- WAITING FOR GAME ---
 	progress_out->store(4);
 
-	NtResumeProcess(target_process);
-	while (!launch::wait_until_ready(target_process))
+	if (!launch_info.early_launch)
 	{
-		std::this_thread::sleep_for(std::chrono::milliseconds(50));
-	}
+		NtResumeProcess(target_process);
+		printf("[inject] early launch off, waiting for process %d\n", GetProcessId(target_process));
 
-	if (launch_info.injection_delay)
-	{
-		std::this_thread::sleep_for(std::chrono::milliseconds(launch_info.injection_delay));
+		while (!launch::wait_until_ready(target_process))
+		{
+			// If the process terminated, we might have a new one spawned
+			// This often occurs with steam games if steamapi.dll exists in the game folder
+			DWORD process_status = 0;
+			if (GetExitCodeProcess(target_process, &process_status))
+			{
+				// If the process died
+				if (process_status != STILL_ACTIVE)
+				{
+					printf("[inject] Process died while waiting for it to inject\n");
+
+					// Sleep for a bit, maybe it will get relaunched as part of Steam or something
+					std::this_thread::sleep_for(std::chrono::seconds(3));
+
+					DWORD pid = launch::get_running_process_pid(launch_info.runner);
+
+					// If we found a running process with the same PID
+					if (pid)
+					{
+						printf("[inject] Found new alive PID %d\n", pid);
+
+						CloseHandle(target_process);
+						target_process = OpenProcess(PROCESS_ALL_ACCESS, FALSE, pid);
+
+						if (!target_process)
+						{
+							MessageBoxA(0, "Failed to initialize the game.", "WinAPI error", mb_flags);
+							goto thread_cleanup;
+						}
+					}
+					else
+					{
+						MessageBoxA(0, "The target process died and did not respawn in time.", "Framework error", mb_flags);
+						goto thread_cleanup;
+					}
+				}
+			}
+
+			std::this_thread::sleep_for(std::chrono::milliseconds(50));
+		}
+
+		if (launch_info.injection_delay)
+		{
+			std::this_thread::sleep_for(std::chrono::milliseconds(launch_info.injection_delay));
+		}
 	}
 
 	// --- INJECTING ---
