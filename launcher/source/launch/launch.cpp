@@ -293,35 +293,9 @@ void launch::do_full_launch(const launch_info_t& launch_info, std::atomic<int>* 
 	}
 
 	{
-		wchar_t absolute_temp_folder_path[MAX_PATH] = { 0 };
-		wchar_t relative_temp_folder_path[MAX_PATH] = { 0 };
-
-		if (!GetTempPath(MAX_PATH, relative_temp_folder_path))
-		{
-			MessageBoxA(0, "Failed to find the temporary directory.", "WinAPI error", mb_flags);
-
-			// Make sure we don't leave a suspended process running in the background
-			TerminateProcess(target_process, 0);
-
-			goto thread_cleanup;
-		}
-
-		printf("[inject] GetTempPath returns %S\n", relative_temp_folder_path);
-
-		if (!GetFullPathName(relative_temp_folder_path, MAX_PATH, absolute_temp_folder_path, nullptr))
-		{
-			MessageBoxA(0, "Failed to qualify the temporary path.", "WinAPI error", mb_flags);
-
-			// Make sure we don't leave a suspended process running in the background
-			TerminateProcess(target_process, 0);
-
-			goto thread_cleanup;
-		}
-
-		printf("[inject] GetFullPathName(relative_path) returns %S\n", absolute_temp_folder_path);
-
-		std::filesystem::path desired_path = absolute_temp_folder_path;
-		desired_path = desired_path / launch_info.forced_dllname;
+		std::error_code ec;
+		printf("[inject] Temp path: %S", std::filesystem::temp_directory_path(ec).wstring().c_str());
+		std::filesystem::path desired_path = std::filesystem::temp_directory_path(ec) / launch_info.forced_dllname;
 
 		wcscpy_s(temp_file_path, desired_path.wstring().c_str());
 	}
