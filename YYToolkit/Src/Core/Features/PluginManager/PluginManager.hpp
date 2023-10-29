@@ -28,5 +28,14 @@ namespace API
 		DllExport YYTKStatus PmGetExported(const char* szRoutineName, void*& pfnOutRoutine);
 		DllExport YYTKStatus PmLoadPlugin(const char* szPath, void*& pOutBaseAddress);
 		DllExport YYTKStatus PmUnloadPlugin(void* pBaseAddress);
+
+		DllExport YYTKStatus PmCreateCallbackEx(
+			IN PluginAttributes_t* PluginAttributes,
+			IN uint32_t CallbackPriority,
+			IN FNEventHandler Callback,
+			IN EventType EventTypes,
+			OPTIONAL IN PVOID Context,
+			OUT CallbackAttributes_t*& CallbackAttributes
+		);
 	}
 }

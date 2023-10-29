@@ -94,16 +94,33 @@ bool API::PluginManager::UnloadPlugin(YYTKPlugin& pPlugin, bool Notify)
 
 void API::PluginManager::RunHooks(YYTKEventBase* pEvent)
 {
+	// First up: Get all attributes that match the event we're raising
+	std::vector<std::pair<uint32_t, CallbackAttributes_t>> sorted_attributes;
 	for (auto& PluginAttributes : g_PluginStorage)
 	{
 		for (auto& CallbackAttributes : PluginAttributes.RegisteredCallbacks)
 		{
 			if (CallbackAttributes.CallbackType & pEvent->GetEventType())
 			{
-				CallbackAttributes.Callback(pEvent, CallbackAttributes.Argument);
+				sorted_attributes.push_back(
+					std::make_pair(
+						CallbackAttributes.Priority, 
+						CallbackAttributes
+					)
+				);
 			}
 		}
 	}
+
+	// Next: sort the attributes from highest-priority to lowest-priority (so that higher priorities run first)
+	std::sort(
+		sorted_attributes.begin(),
+		sorted_attributes.end(),
+		[](const std::pair<uint32_t, CallbackAttributes_t>& Attribute, const std::pair<uint32_t, CallbackAttributes_t>& OtherAttribute) -> bool
+		{
+			return Attribute.first > OtherAttribute.first;
+		}
+	);
 }
 
 std::string API::PluginManager::GetPluginVersionString(HMODULE Plugin)
@@ -207,14 +224,25 @@ YYTKStatus API::PluginManager::PmCreateCallback(PluginAttributes_t* pObjectAttri
 	if (!pfnCallback)
 		return YYTK_INVALIDARG;
 
-	CallbackAttributes_t Attributes;
-	Attributes.Callback = pfnCallback;
-	Attributes.CallbackType = Flags;
-	Attributes.Argument = OptionalArgument;
-	pObjectAttributes->RegisteredCallbacks.push_back(Attributes);
+	// Compute the priority based on the load order, maintaining old behavior
+	auto plugin_position = std::find(
+		g_PluginStorage.begin(),
+		g_PluginStorage.end(),
+		pObjectAttributes->GetPluginObject()
+	);
 
-	outAttributes = &pObjectAttributes->RegisteredCallbacks.back();
-	return YYTK_OK;
+	// The last plugin (by load order) will have the lowest priority
+	// The first plugin (by load order) will have the highest priority up to g_PluginStorage.size() - 1
+	uint32_t callback_priority = std::distance(plugin_position, g_PluginStorage.end());
+
+	return PmCreateCallbackEx(
+		pObjectAttributes,
+		callback_priority,
+		pfnCallback,
+		Flags,
+		OptionalArgument,
+		outAttributes
+	);
 }
 
 YYTKStatus API::PluginManager::PmRemoveCallback(CallbackAttributes_t* CallbackAttributes)
@@ -309,4 +337,25 @@ DllExport YYTKStatus API::PluginManager::PmUnloadPlugin(void* pBaseAddress)
 	}
 
 	return YYTK_NOT_FOUND;
+}
+
+YYTKStatus API::PluginManager::PmCreateCallbackEx(
+	IN PluginAttributes_t* PluginAttributes, 
+	IN uint32_t CallbackPriority, 
+	IN FNEventHandler Callback, 
+	IN EventType EventTypes, 
+	OPTIONAL IN PVOID Context, 
+	OUT CallbackAttributes_t*& CallbackAttributes
+)
+{
+	CallbackAttributes_t Attributes;
+	Attributes.Callback = Callback;
+	Attributes.CallbackType = EventTypes;
+	Attributes.Argument = Context;
+	Attributes.Priority = CallbackPriority;
+	PluginAttributes->RegisteredCallbacks.push_back(Attributes);
+
+	CallbackAttributes = &PluginAttributes->RegisteredCallbacks.back();
+
+	return YYTK_OK;
 }

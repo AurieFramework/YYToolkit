@@ -8,11 +8,12 @@ struct CallbackAttributes_t
 {
 	EventType CallbackType;
 	FNEventHandler Callback;
+	uint32_t Priority;
 	void* Argument;
 
 	bool operator==(const CallbackAttributes_t& other) const
 	{
-		return (this->Callback == other.Callback && this->CallbackType == other.CallbackType);
+		return (this->Callback == other.Callback && this->CallbackType == other.CallbackType && this->Priority == other.Priority);
 	}
 };
 
