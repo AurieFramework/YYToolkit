@@ -105,4 +105,13 @@ YYTKStatus PmLoadPlugin(
 YYTKStatus PmUnloadPlugin(
 	void* pBaseAddress
 );
+
+YYTKStatus PmCreateCallbackEx(
+	IN PluginAttributes_t* PluginAttributes,
+	IN uint32_t CallbackPriority,
+	IN FNEventHandler Callback,
+	IN EventType EventTypes,
+	OPTIONAL IN PVOID Context,
+	OUT CallbackAttributes_t*& CallbackAttributes
+);
 #endif
