@@ -121,6 +121,10 @@ void API::PluginManager::RunHooks(YYTKEventBase* pEvent)
 			return Attribute.first > OtherAttribute.first;
 		}
 	);
+
+	// Finally, don't forget to run the now-sorted callbacks
+	for (auto& [Priority, CallbackAttributes] : sorted_attributes)
+		CallbackAttributes.Callback(pEvent, CallbackAttributes.Argument);
 }
 
 std::string API::PluginManager::GetPluginVersionString(HMODULE Plugin)
