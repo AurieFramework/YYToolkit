@@ -254,3 +254,16 @@ YYTKStatus PmCreateCallbackEx(
 		CallbackAttributes
 	);
 }
+
+void PmGetPluginStorage(
+	OUT std::list<PluginAttributes_t>*& List
+)
+{
+	HMODULE YYTKModule = GetYYTKModule();
+
+	decltype(&PmGetPluginStorage) Func = reinterpret_cast<decltype(&PmGetPluginStorage)>(GetProcAddress(YYTKModule, __FUNCTION__));
+
+	return Func(
+		List
+	);
+}

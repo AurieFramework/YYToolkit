@@ -37,5 +37,9 @@ namespace API
 			OPTIONAL IN PVOID Context,
 			OUT CallbackAttributes_t*& CallbackAttributes
 		);
+
+		DllExport void PmGetPluginStorage(
+			OUT std::list<PluginAttributes_t>*& List
+		);
 	}
 }

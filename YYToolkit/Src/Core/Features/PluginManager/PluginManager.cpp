@@ -363,3 +363,10 @@ YYTKStatus API::PluginManager::PmCreateCallbackEx(
 
 	return YYTK_OK;
 }
+
+void API::PluginManager::PmGetPluginStorage(
+	OUT std::list<PluginAttributes_t>*& List
+)
+{
+	List = &g_PluginStorage;
+}
