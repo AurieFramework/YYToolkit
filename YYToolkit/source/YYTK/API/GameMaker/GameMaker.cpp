@@ -1,0 +1,246 @@
+#include "../API.hpp"
+#include <cinttypes>
+#include "Zydis/Zydis.h" // oh boy, the fun starts now...
+
+namespace YYTK
+{
+	namespace Internal
+	{
+		YYTKStatus GmpGetRunnerInterface(
+			OUT YYRunnerInterface& Interface
+		)
+		{
+			using namespace Aurie;
+
+			AurieStatus last_status = AURIE_SUCCESS;
+
+			// Scan the memory for this pattern:
+			/*
+
+				In Runner 2023.8 symbols
+					E8 CF 30 18 00        call    class DLL_RFunction * __ptr64 __cdecl DLL_GetFunc(int)
+					33 C9                 xor     ecx, ecx
+					48 89 8D 88 00 00 00  mov     [rbp+7C0h+Interface.Script_Perform], rcx
+					48 8D 0D CF 9F 1D 00  lea     rcx, void __cdecl YYprintf(char const * __ptr64,...)
+					48 89 4D 90           mov     [rbp+7C0h+Interface.DebugConsoleOutput], rcx
+					48 8D 0D B4 05 00 00  lea     rcx, void __cdecl ReleaseConsoleOutput(char const * __ptr64,...)
+					... every field assigned here...
+				In Risk of Rain Returns
+					E8 9F 2D 00 00        call    DLL_GetFunc
+					33 C9                 xor     ecx, ecx
+					48 89 8D 88 00 00 00  mov     [rbp+136], rcx
+					48 8D 0D 4F 30 F1 FF  lea     rcx, YYprintf
+					48 89 4D 90           mov     [rbp-112], rcx
+					48 8D 0D B4 05 00 00  lea     rcx, ReleaseConsoleInput
+					48 89 4D 98           mov     [rbp-104], rcx
+					48 8D 0D B9 93 01 00  lea     rcx, ShowMessage
+					48 89 4D A0           mov     [rbp+7C0h+Interface.ShowMessage], rcx
+					48 8D 0D EE 1C F1 FF  lea     rcx, sub_1412C0D70
+					48 89 4D A8           mov     [rbp+7C0h+Interface.YYError], rcx
+
+				Diffing to see what's similar (non-matches replaced with ??)
+
+					E8 ?? ?? ?? ??	      call    DLL_GetFunc
+					33 C9                 xor     ecx, ecx
+					48 89 8D 88 00 00 00  mov     [rbp+136], rcx
+					48 8D 0D ?? ?? ?? ??  lea     [rip+??]
+					48 89 4D 90           mov     [rbp-112], rcx
+					... all the way down ...
+
+				Turns out in Will You Snail, this changes
+
+					33 C0				  xor     eax, eax
+					48 89 85 88 00 00 00  mov     [rbp+7D0h+var_840.Script_Perform], rax
+					48 8D 05 9B 97 0F 00  lea     rax, DebugConsoleOutput
+			*/
+
+			// Find the required pattern in the game
+			// There may be multiple that match, but only one is correct.
+			uint64_t text_section_base = 0;
+			size_t text_section_size = 0;
+
+			// Get the .text section address for the game executable
+			last_status = Aurie::Internal::PpiGetModuleSectionBounds(
+				GetModuleHandleW(nullptr),
+				".text",
+				text_section_base,
+				text_section_size
+			);
+
+			if (!AurieSuccess(last_status))
+				return ConvertStatus(last_status);
+
+			// Since PpiGetModuleSectionBounds returns the offset to the .text section
+			// we need the base address of the game to add to the offset
+			char* game_base = reinterpret_cast<char*>(GetModuleHandleW(nullptr));
+
+			// Scan for all occurences of this pattern in memory
+			std::vector<size_t> pattern_matches = {};
+			GmpSigscanRegionEx(
+				reinterpret_cast<const unsigned char*>((game_base + text_section_base)),
+				text_section_size,
+				UTEXT(
+					"\x33\xC9"						// xor ??, ??
+					"\x48\x89\x8D\x00\x00\x00\x00"	// mov [rbp+??], ??
+					"\x48\x8D\x0D\x00\x00\x00\x00"	// lea [??+??]
+				),
+				"x?xx?????xx?????",
+				pattern_matches
+			);
+			
+
+			// Loop through all the matches, and check if they have a long function chain
+			std::vector<PVOID> function_chain = {};
+			for (const size_t& match : pattern_matches)
+			{
+				// Magic numbers, look at the disassembly in that huge comment above
+				function_chain = GmpGetFunctionChain(
+					reinterpret_cast<PVOID>(match),
+					0x1000,
+					4
+				);
+
+				// If there's less than 80 functions, it's probably not the interface
+				// YYRunnerInterface has 96 functions in LTS + 2 variables = 98 lea matches
+				if (function_chain.size() > 90 && function_chain.size() < 104)
+					break;
+
+				function_chain.clear();
+			}
+
+			if (function_chain.empty())
+				return YYTK_OBJECT_NOT_FOUND;
+
+			CmWriteWarning("Found %lld functions!", function_chain.size());
+
+			return YYTK_SUCCESS;
+		}
+
+		std::vector<PVOID> GmpGetFunctionChain(
+			IN PVOID Address,
+			IN size_t MaximumSize,
+			IN size_t MaximumInstructionsWithoutFunction
+		)
+		{
+			using namespace Aurie;
+
+			std::vector<PVOID> function_addresses = {};
+
+			ZyanU8* memory_data = reinterpret_cast<ZyanU8*>(MmAllocateMemory(g_ArSelfModule, MaximumSize));
+			if (!memory_data)
+				return {};
+
+			// Copy the bytes from the .text section to our buffer
+			ZyanUPointer runtime_address = reinterpret_cast<ZyanUPointer>(Address);
+			memcpy(memory_data, Address, MaximumSize);
+
+			// Start disassembling via Zydis
+			ZyanUSize offset = 0;
+			ZyanI32 instructions_since_last_function = 0;
+			ZydisDisassembledInstruction current_instruction;
+			while (ZYAN_SUCCESS(ZydisDisassembleIntel(
+				ZYDIS_MACHINE_MODE_LONG_64,
+				runtime_address,
+				memory_data + offset,
+				MaximumSize - offset,
+				&current_instruction
+			)))
+			{
+				// Too many instructions without a function means we probably wondered off...
+				if (instructions_since_last_function >= MaximumInstructionsWithoutFunction)
+					break;
+
+				instructions_since_last_function++;
+				ZyanU8 instruction_length = current_instruction.info.length;
+
+				// Filter for lea instructions
+				if (current_instruction.info.mnemonic == ZYDIS_MNEMONIC_LEA)
+				{
+					// Loop their operands
+					for (size_t i = 0; i < current_instruction.info.operand_count; i++)
+					{
+						ZydisDecodedOperand& current_operand = current_instruction.operands[i];
+
+						// Find one of type memory (a pointer)
+						if (current_operand.type != ZYDIS_OPERAND_TYPE_MEMORY)
+							continue;
+
+						// Get the RIP of the instruction, make sure the instruction has displacement (a value)
+						ZyanUPointer rip = runtime_address;
+						if (!current_operand.mem.disp.has_displacement)
+							continue;
+
+						// Determine the address being loaded
+						ZyanUPointer potential_function = rip + instruction_length + current_operand.mem.disp.value;
+
+						function_addresses.push_back(reinterpret_cast<PVOID>(potential_function));
+
+						// Reset our counter
+						instructions_since_last_function = 0;
+
+						CmWriteWarning(
+							"Function: %016" PRIX64 " %s => %" PRIX64,
+							runtime_address,
+							current_instruction.text,
+							potential_function
+						);
+					}
+				}
+				else
+				{
+					CmWriteInfo(
+						"%016" PRIX64 " %s",
+						runtime_address,
+						current_instruction.text
+					);
+				}
+
+				offset += current_instruction.info.length;
+				runtime_address += current_instruction.info.length;
+			}
+
+			MmFreeMemory(g_ArSelfModule, memory_data);
+			return function_addresses;
+		}
+
+		YYTKStatus GmpSigscanRegionEx(
+			IN const unsigned char* RegionBase,
+			IN const size_t RegionSize,
+			IN const unsigned char* Pattern, 
+			IN const char* PatternMask, 
+			OUT std::vector<size_t>& Matches
+		)
+		{
+			Matches.clear();
+
+			size_t pattern_size = strlen(PatternMask);
+			size_t region_base = reinterpret_cast<size_t>(RegionBase);
+			size_t region_size_left = RegionSize;
+
+			while (true)
+			{
+				// Scan for the pattern
+				size_t current_match = Aurie::MmSigscanRegion(
+					reinterpret_cast<const unsigned char*>(region_base),
+					region_size_left,
+					Pattern,
+					PatternMask
+				);
+
+				// Once a pattern is not found, we break out and exit
+				if (!current_match)
+					break;
+
+				// If we found it, there might still be more instances of that pattern!
+				Matches.push_back(current_match);
+
+				// Shift the region base, and subtract the size remaining accordingly
+				// We subtract the size first, since we need the unchanged region_base variable.
+				region_size_left -= (current_match + pattern_size) - region_base;
+				region_base = current_match + pattern_size;
+			}
+
+			return YYTK_SUCCESS;
+		}
+	}
+}
