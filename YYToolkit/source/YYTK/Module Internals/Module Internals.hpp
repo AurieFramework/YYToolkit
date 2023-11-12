@@ -57,6 +57,11 @@ namespace YYTK
 			IN const std::vector<TargettedInstruction>& Instructions
 		);
 
+		YYTKStatus GmpFindFunctionsArray(
+			IN const YYRunnerInterface& Interface,
+			OUT RFunction*** FunctionsArray
+		);
+
 		// Allows for multiple matches in a scanned region
 		YYTKStatus GmpSigscanRegionEx(
 			IN const unsigned char* RegionBase,

@@ -1,8 +1,7 @@
+#include <Aurie/shared.hpp>
 #include "YYTK/Tool.hpp"
 using namespace Aurie;
 
-// Called in an Early Launch environment, only Aurie functions are available.
-// The process entry point hasn't been called yet.
 EXPORTED AurieStatus ModulePreinitialize(
 	IN AurieModule* Module,
 	IN const fs::path& ModulePath
@@ -14,8 +13,8 @@ EXPORTED AurieStatus ModulePreinitialize(
 	fs::path plugin_folder;
 
 	// Get the game folder 
-	last_status = Internal::MdpGetImageFolder(
-		g_ArInitialImage, 
+	last_status = Aurie::Internal::MdpGetImageFolder(
+		g_ArInitialImage,
 		plugin_folder
 	);
 
@@ -25,21 +24,26 @@ EXPORTED AurieStatus ModulePreinitialize(
 	// Craft the path %GAMEDIR%\\mods\\yytk
 	plugin_folder = plugin_folder / "mods" / "yytk";
 
-	YYTK::YYRunnerInterface my_interface;
-	YYTK::YYTKStatus status = YYTK::Internal::GmpGetRunnerInterface(my_interface);
-
-	my_interface.ShowMessage("we got it!");
-
-	YYTK::CmWriteError(
-		__FILE__,
-		__LINE__,
-		"YYTKStatus %d", status
+	Aurie::ObCreateInterface(
+		Module,
+		&YYTK::g_ModuleInterface,
+		"YYTK_Main"
 	);
+
+	YYTK::g_ModuleInterface.Create();
 
 	return AURIE_SUCCESS;
 }
 
 EXPORTED AurieStatus ModuleInitialize(
+	IN AurieModule* Module,
+	IN const fs::path& ModulePath
+)
+{
+	return AURIE_SUCCESS;
+}
+
+EXPORTED AurieStatus ModuleUnload(
 	IN AurieModule* Module,
 	IN const fs::path& ModulePath
 )

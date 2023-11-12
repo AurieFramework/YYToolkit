@@ -1,51 +1,57 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Source Files">
+    <Filter Include="Zdrojové soubory">
       <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
       <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
     </Filter>
-    <Filter Include="Header Files">
+    <Filter Include="Hlavičkové soubory">
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
     </Filter>
-    <Filter Include="Resource Files">
+    <Filter Include="Soubory zdrojů">
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Src\Toolkit\Utils\StackTrace.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="source\YYTK\API\API.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="source\include\Aurie\shared.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="source\YYTK\Shared.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="source\YYTK\Tool.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="source\include\Zydis\Zydis.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
+    <ClCompile Include="source\ModuleMain.cpp">
+      <Filter>Zdrojové soubory</Filter>
+    </ClCompile>
+    <ClCompile Include="include\Zydis\Zydis.c">
+      <Filter>Zdrojové soubory</Filter>
+    </ClCompile>
+    <ClCompile Include="source\YYTK\Module Internals\Console\Console.cpp">
+      <Filter>Zdrojové soubory</Filter>
+    </ClCompile>
+    <ClCompile Include="source\YYTK\Module Internals\GameMaker\GameMaker.cpp">
+      <Filter>Zdrojové soubory</Filter>
+    </ClCompile>
+    <ClCompile Include="source\YYTK\Module Interface\Interface.cpp">
+      <Filter>Zdrojové soubory</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="source\main.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="source\YYTK\API\Console\Console.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="source\YYTK\API\GameMaker\GameMaker.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="source\include\Zydis\Zydis.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
+    <ClInclude Include="include\Aurie\shared.hpp">
+      <Filter>Hlavičkové soubory</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Zydis\Zydis.h">
+      <Filter>Hlavičkové soubory</Filter>
+    </ClInclude>
+    <ClInclude Include="source\YYTK\Module Internals\Module Internals.hpp">
+      <Filter>Hlavičkové soubory</Filter>
+    </ClInclude>
+    <ClInclude Include="source\YYTK\Shared.hpp">
+      <Filter>Hlavičkové soubory</Filter>
+    </ClInclude>
+    <ClInclude Include="source\YYTK\Tool.hpp">
+      <Filter>Hlavičkové soubory</Filter>
+    </ClInclude>
+    <ClInclude Include="source\YYTK\Module Interface\Interface.hpp">
+      <Filter>Hlavičkové soubory</Filter>
+    </ClInclude>
+    <ClInclude Include="include\FunctionWrapper\FunctionWrapper.hpp">
+      <Filter>Hlavičkové soubory</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

@@ -2,14 +2,23 @@
 #define YYTK_TOOL_H_
 
 #include <Zydis/Zydis.h>
-#include <Aurie/shared.hpp>
 #include "Shared.hpp"
 
 namespace YYTK
 {
+	struct HTTP_REQ_CONTEXT;
 	typedef int (*PFUNC_async)(HTTP_REQ_CONTEXT* _pContext, void* _pPayload, int* _pMap);
 	typedef void (*PFUNC_cleanup)(HTTP_REQ_CONTEXT* _pContext);
 	typedef void (*PFUNC_process)(HTTP_REQ_CONTEXT* _pContext);
+	typedef void* HYYMUTEX;
+	typedef void* HSPRITEASYNC;
+	
+	struct RFunction
+	{
+		const char* FunctionName;
+		TRoutine Routine;
+		int ArgumentCount;
+	};
 
 	constexpr YYTKStatus ConvertStatus(const Aurie::AurieStatus& Status)
 	{
@@ -174,6 +183,7 @@ namespace YYTK
 }
 
 // Private includes
-#include "API/API.hpp"
+#include "Module Internals/Module Internals.hpp"
+#include "Module Interface/Interface.hpp"
 
 #endif // YYTK_TOOL_H_

@@ -7,6 +7,10 @@
 #ifndef YYTK_SHARED_H_
 #define YYTK_SHARED_H_
 
+#include <Aurie/shared.hpp>
+#include <FunctionWrapper/FunctionWrapper.hpp>
+#include <d3d11.h>
+
 #include <cstdint>
 #include <string>
 
@@ -20,15 +24,6 @@
 
 namespace YYTK
 {
-	struct IBuffer;
-	struct CInstance;
-	struct YYObjectBase;
-
-	typedef void* HYYMUTEX;
-	typedef void* HSPRITEASYNC;
-
-	struct HTTP_REQ_CONTEXT;
-
 	enum CmColor : uint8_t
 	{
 		CM_BLACK = 0,
@@ -102,18 +97,17 @@ namespace YYTK
 		// The target file header, directory, or RVA could not be found or is invalid.
 		YYTK_FILE_PART_NOT_FOUND,
 		// The object was not found.
-		YYTK_OBJECT_NOT_FOUND
+		YYTK_OBJECT_NOT_FOUND,
+		// YYTK Exclusive: The interface is currently unavailable.
+		YYTK_INTERFACE_UNAVAILABLE
 	};
 
-	enum EventType : uint32_t
+	// These cannot be bitwise-operated on anymore
+	enum EventTriggers : uint32_t
 	{
-		EVT_CODE_EXECUTE = (1 << 0),					// The event represents a Code_Execute() call.
-		EVT_YYERROR = (1 << 1),							// The event represents a YYError() call.
-		EVT_ENDSCENE = (1 << 2),						// The event represents an LPDIRECT3DDEVICE9::EndScene() call.
-		EVT_PRESENT = (1 << 3),							// The event represents an IDXGISwapChain::Present() call.
-		EVT_RESIZEBUFFERS = (1 << 4),					// The event represents an IDXGISwapChain::ResizeBuffers() call.
-		EVT_WNDPROC = (1 << 5),							// The event represents a window procedure call.
-		EVT_DOCALLSCRIPT = (1 << 6),					// The event represents a DoCallScript() call.
+		EVENT_OBJECT_CALL = 1,	// The event represents a Code_Execute() call.
+		EVENT_FRAME = 2,		// The event represents an IDXGISwapChain::Present() call.
+		EVENT_SCRIPT_CALL = 3,	// The event represents a DoCallScript() call.
 	};
 
 	enum InstanceKeywords : int
@@ -129,141 +123,201 @@ namespace YYTK
 		VAR_ARGUMENT = -15,
 	};
 
-	// https://github.com/YoYoGames/GMEXT-Steamworks/blob/main/source/Steamworks_vs/Steamworks/Ref.h
-	template <typename T> 
-	struct RefFactory
-	{
-		static T Alloc(T Thing, int Size) 
-		{ 
-			return Thing;
-		}
+	struct IBuffer;
+	struct CInstance;
+	struct YYObjectBase;
+	struct YYRunnerInterface;
+	struct RValue;
 
-		static T Create(T Thing, int& _size)
-		{ 
-			_size = 0; 
-			return Thing;
-		}
+	using TRoutine = void(*)(
+		OUT RValue* Result,
+		IN CInstance* Self,
+		IN CInstance* Other,
+		IN int ArgumentCount,
+		IN RValue* Arguments
+		);
 
-		static T Destroy(T Thing)
-		{
-			return Thing;
-		}
-	};
+	using PFUNC_YYGML = void(*)(
+		IN CInstance* Self,
+		IN CInstance* Other
+		);
 
-	// https://github.com/YoYoGames/GMEXT-Steamworks/blob/main/source/Steamworks_vs/Steamworks/Ref.h
-	template <typename T>
-	struct RefThingInternal
-	{
-		T Thing;
-		int RefCount;
-		int Size;
+	using PFUNC_YYGMLScript = RValue * (*)(
+		IN CInstance* Self,
+		IN CInstance* Other,
+		OUT RValue* ReturnValue,
+		IN int ArgumentCount,
+		IN RValue** Arguments
+		);
 
-		RefThingInternal(T Thing)
-		{
-			this->Thing = RefFactory<T>::Create(Thing, this->Size);
-			this->RefCount = 0;
-
-			this->Reference();
-		}
-
-		RefThingInternal(int MaxSize)
-		{
-			this->Thing = RefFactory<T>::Alloc(this->Thing, MaxSize);
-			this->Size = MaxSize;
-			this->RefCount = 0;
-
-			this->Reference();
-		} 
-
-		~RefThingInternal()
-		{
-			this->Dereference();
-		}
-
-		void Reference()
-		{
-			RefCount++;
-		}
-
-		void Dereference()
-		{
-			RefCount--;
-			if (RefCount == 0)
-			{
-				delete this;
-			}
-		}
-
-		static RefThingInternal<T>* Assign(RefThingInternal<T>* Other) 
-		{ 
-			if (Other)
-				Other->Reference();
-
-			return Other;
-		}
-
-		static RefThingInternal<T>* Remove(RefThingInternal<T>* Other)
-		{ 
-			if (Other)
-				Other->Dereference();
-
-			return nullptr; 
-		}
-	};
-
-	template <typename T>
-	struct RefThing
-	{
-		RefThingInternal<T>* Thing;
-
-		RefThing() 
-		{
-			Thing = nullptr;
-		}
-
-		RefThing(T Thing)
-		{
-			this->Thing = new RefThingInternal<T>(Thing);
-		}
-
-		RefThing(const RefThingInternal<T>& Other)
-		{
-			this->Thing = Other.Thing;
-			
-			if (this->Thing)
-				this->Thing->Reference();
-		}
-
-		~RefThing()
-		{
-			if (this->Thing)
-				this->Thing->Dereference();
-		}
-	};
-
-	using RefString = RefThingInternal<const char*>;
-
-	// https://github.com/YoYoGames/GMEXT-Steamworks/blob/main/source/Steamworks_vs/Steamworks/YYRValue.h
 #pragma pack(push, 4)
 	struct RValue
 	{
 		union
 		{
-			int32_t i32;
-			int64_t i64;
-			double real;
+			int32_t m_i32;
+			int64_t m_i64;
+			double m_Real;
 
-			union
-			{
-				RefString* string;
-				PVOID pointer;
-			};
+			PVOID m_Pointer;
 		};
 
-		unsigned int flags;
-		RValueType kind;
+		unsigned int m_Flags;
+		RValueType m_Kind;
+
+		RValue()
+		{
+			this->m_Real = 0;
+			this->m_Flags = 0;
+			this->m_Kind = VALUE_UNSET;
+		}
 	};
 #pragma pack(pop)
+
+	struct RToken
+	{
+		int m_Kind;
+		unsigned int m_Type;
+		int m_Ind;
+		int m_Ind2;
+		RValue m_Value;
+		int m_ItemNumber;
+		RToken* m_Items;
+		int m_Position;
+	};
+
+	struct YYGMLFuncs
+	{
+		const char* m_Name;
+		union
+		{
+			PFUNC_YYGMLScript m_ScriptFunction;
+			PFUNC_YYGML m_Function;
+		};
+		PVOID m_FunctionVariables; // YYVAR
+	};
+
+	struct CCode
+	{
+		int (**_vptr$CCode)(void);
+		CCode* m_Next;
+		int m_Kind;
+		int m_Compiled;
+		const char* m_Str;
+		RToken m_Token;
+		RValue m_Value;
+		PVOID m_VmInstance;
+		PVOID* m_VmDebugInfo;
+		char* m_Code;
+		const char* m_Name;
+		int m_CodeIndex;
+		YYGMLFuncs* m_Functions;
+		bool m_Watch;
+		int m_Offset;
+		int m_LocalsCount;
+		int m_ArgsCount;
+		int m_Flags;
+		YYObjectBase* m_Prototype;
+
+		const char* GetName() const { return this->m_Name; }
+	};
+
+	template <typename TFunction>
+	using FNCallbackRoutine = void(*)(
+		IN FunctionWrapper<TFunction> Context
+	);
+
+	struct CScript
+	{
+		int (**_vptr$CScript)(void);
+		CCode* m_Code;
+		YYGMLFuncs* m_Functions;
+		CInstance* m_StaticObject;
+
+		union
+		{
+			const char* m_Script;
+			int m_CompiledIndex;
+		};
+
+		const char* m_Name;
+		int m_Offset;
+
+		const char* GetName() const { return this->m_Name; }
+	};
+
+	// ExecuteIt
+	using FWCodeEvent = FNCallbackRoutine<bool(CInstance*, CInstance*, CCode*, int, RValue*)>;
+	// IDXGISwapChain::Present
+	using FWFrame = FNCallbackRoutine<HRESULT(IDXGISwapChain*, UINT, UINT)>;
+	// DoCallScript (only in VM)
+	using FWScriptEvent = FNCallbackRoutine<PVOID(CScript*)>;
+
+	class YYTKInterface : public Aurie::AurieInterfaceBase
+	{
+	public:
+		virtual YYTKStatus GetNamedRoutineIndex(
+			IN const char* FunctionName,
+			OUT int* FunctionIndex
+		) = 0;
+
+		virtual YYTKStatus GetNamedRoutinePointer(
+			IN const char* FunctionName,
+			OUT PVOID* FunctionPointer
+		) = 0;
+
+		virtual YYTKStatus GetGlobalInstance(
+			OUT CInstance** Instance
+		) = 0;
+
+		virtual RValue CallBuiltin(
+			IN const char* FunctionName,
+			IN const std::vector<RValue>& Arguments
+		) = 0;
+
+		virtual RValue CallBuiltinEx(
+			IN const char* FunctionName,
+			IN CInstance* SelfInstance,
+			IN CInstance* OtherInstance,
+			IN const std::vector<RValue>& Arguments
+		) = 0;
+
+		virtual void Print(
+			IN CmColor Color,
+			IN const char* Format,
+			IN ...
+		) = 0;
+
+		virtual void PrintInfo(
+			IN const char* Format,
+			IN ...
+		) = 0;
+
+		virtual void PrintWarning(
+			IN const char* Format,
+			IN ...
+		) = 0;
+
+		virtual void PrintError(
+			IN const char* Function,
+			IN const int Line,
+			IN const char* Format,
+			IN ...
+		) = 0;
+
+		virtual YYTKStatus CreateCallback(
+			IN const Aurie::AurieModule* Module,
+			IN EventTriggers Trigger,
+			IN PVOID Routine
+		) = 0;
+
+		virtual YYTKStatus RemoveCallback(
+			IN const Aurie::AurieModule* Module,
+			IN PVOID Routine
+		) = 0;
+
+		virtual YYTKStatus InvalidateAllCaches() = 0;
+	};
 }
 
 #endif // YYTK_SHARED_H_

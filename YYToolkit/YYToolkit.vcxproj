@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -19,9 +19,9 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <VCProjectVersion>16.0</VCProjectVersion>
+    <VCProjectVersion>17.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{32e96c73-e7b3-42c6-9596-b4f0a5e3b533}</ProjectGuid>
+    <ProjectGuid>{f1bd3df9-c309-4b62-9a9a-4a5ecca6a5db}</ProjectGuid>
     <RootNamespace>YYToolkit</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
@@ -70,43 +70,19 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <LinkIncremental>true</LinkIncremental>
-    <OutDir>$(SolutionDir)Build\Core\$(Configuration)\</OutDir>
-    <IntDir>$(SolutionDir)Build\Core\$(Configuration)\</IntDir>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <LinkIncremental>false</LinkIncremental>
-    <OutDir>$(SolutionDir)Build\Core\$(Configuration)\</OutDir>
-    <IntDir>$(SolutionDir)Build\Core\$(Configuration)\</IntDir>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <LinkIncremental>true</LinkIncremental>
-    <OutDir>$(SolutionDir)Build\Core\$(Configuration)\</OutDir>
-    <IntDir>$(SolutionDir)Build\Core\$(Configuration)\</IntDir>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <LinkIncremental>false</LinkIncremental>
-    <OutDir>$(SolutionDir)Build\Core\$(Configuration)\</OutDir>
-    <IntDir>$(SolutionDir)Build\Core\$(Configuration)\</IntDir>
-  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>YYTK_INCLUDE_PRIVATE;WIN32;_CRT_SECURE_NO_WARNINGS;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>YYTK_INCLUDE_PRIVATE;WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <EnforceTypeConversionRules>true</EnforceTypeConversionRules>
-      <LanguageStandard>stdcpp20</LanguageStandard>
-      <UseFullPaths>false</UseFullPaths>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
-      <AdditionalIncludeDirectories>$(ProjectDir)source\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <ModuleDefinitionFile>
-      </ModuleDefinitionFile>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -115,20 +91,17 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>YYTK_INCLUDE_PRIVATE;WIN32;_CRT_SECURE_NO_WARNINGS;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>YYTK_INCLUDE_PRIVATE;WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <LanguageStandard>stdcpp20</LanguageStandard>
-      <UseFullPaths>false</UseFullPaths>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <AdditionalIncludeDirectories>$(ProjectDir)source\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <ModuleDefinitionFile>
-      </ModuleDefinitionFile>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -137,14 +110,13 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>YYTK_INCLUDE_PRIVATE;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(ProjectDir)source\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <AdditionalIncludeDirectories>$(ProjectDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <ModuleDefinitionFile>
-      </ModuleDefinitionFile>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -155,31 +127,32 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>YYTK_INCLUDE_PRIVATE;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(ProjectDir)source\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <AdditionalIncludeDirectories>$(ProjectDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <ModuleDefinitionFile>
-      </ModuleDefinitionFile>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="source\include\Aurie\shared.hpp" />
-    <ClInclude Include="source\include\Zydis\Zydis.h" />
-    <ClInclude Include="source\YYTK\API\API.hpp" />
-    <ClInclude Include="source\YYTK\Shared.hpp" />
-    <ClInclude Include="source\YYTK\Tool.hpp" />
-    <ClInclude Include="Src\Toolkit\Utils\StackTrace.hpp" />
+    <ClCompile Include="include\Zydis\Zydis.c" />
+    <ClCompile Include="source\ModuleMain.cpp" />
+    <ClCompile Include="source\YYTK\Module Interface\Interface.cpp" />
+    <ClCompile Include="source\YYTK\Module Internals\Console\Console.cpp" />
+    <ClCompile Include="source\YYTK\Module Internals\GameMaker\GameMaker.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="source\include\Zydis\Zydis.c" />
-    <ClCompile Include="source\YYTK\API\Console\Console.cpp" />
-    <ClCompile Include="source\YYTK\API\GameMaker\GameMaker.cpp" />
-    <ClCompile Include="source\main.cpp" />
+    <ClInclude Include="include\Aurie\shared.hpp" />
+    <ClInclude Include="include\FunctionWrapper\FunctionWrapper.hpp" />
+    <ClInclude Include="include\Zydis\Zydis.h" />
+    <ClInclude Include="source\YYTK\Module Interface\Interface.hpp" />
+    <ClInclude Include="source\YYTK\Module Internals\Module Internals.hpp" />
+    <ClInclude Include="source\YYTK\Shared.hpp" />
+    <ClInclude Include="source\YYTK\Tool.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

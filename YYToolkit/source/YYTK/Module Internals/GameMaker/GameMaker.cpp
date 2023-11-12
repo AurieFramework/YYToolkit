@@ -1,4 +1,4 @@
-#include "../API.hpp"
+#include "../Module Internals.hpp"
 #include <cinttypes>
 
 namespace YYTK
@@ -86,7 +86,7 @@ namespace YYTK
 				"x?xx?????xx?????",
 				pattern_matches
 			);
-			
+
 
 			// Loop through all the matches, and check if they have a long function chain
 			std::vector<TargettedInstruction> instructions = {};
@@ -131,11 +131,11 @@ namespace YYTK
 
 				if (operand.type != ZYDIS_OPERAND_TYPE_REGISTER)
 					continue;
-				
+
 				// We got the register. That's great. But given we're x64, we have to 
 				// take care of the conversion between eg. ecx <=> rcx
 				target_register = operand.reg.value;
-				
+
 				// Gets the bigger register, ie. converts ecx => rcx; bx => rbx
 				ZydisRegister enclosing_register = ZydisRegisterGetLargestEnclosing(
 					ZYDIS_MACHINE_MODE_LONG_64,
@@ -156,7 +156,7 @@ namespace YYTK
 			// the giant comment at the beginning of this function.
 			if (target_register == ZYDIS_REGISTER_NONE)
 				return YYTK_OBJECT_NOT_FOUND;
-		
+
 			CmWriteWarning(
 				"Target register is %s!",
 				ZydisRegisterGetString(target_register)
@@ -220,36 +220,36 @@ namespace YYTK
 				switch (instruction.Instruction.info.mnemonic)
 				{
 				case ZYDIS_MNEMONIC_MOV:
+				{
+					bool has_correct_operands = false;
+
+					for (size_t i = 0; i < instruction.Instruction.info.operand_count; i++)
 					{
-						bool has_correct_operands = false;
+						const ZydisDecodedOperand& operand = instruction.Instruction.operands[i];
 
-						for (size_t i = 0; i < instruction.Instruction.info.operand_count; i++)
-						{
-							const ZydisDecodedOperand& operand = instruction.Instruction.operands[i];
+						// Make sure the operand is of type memory
+						if (operand.type != ZYDIS_OPERAND_TYPE_MEMORY)
+							continue;
 
-							// Make sure the operand is of type memory
-							if (operand.type != ZYDIS_OPERAND_TYPE_MEMORY)
-								continue;
+						// We're looking for instructions that are [rbp+whatever], not [rsp+whatever]
+						if (operand.mem.base != ZYDIS_REGISTER_RBP)
+							continue;
 
-							// We're looking for instructions that are [rbp+whatever], not [rsp+whatever]
-							if (operand.mem.base != ZYDIS_REGISTER_RBP)
-								continue;
-
-							has_correct_operands = true;
-							break;
-						}
-
-						// Only push if the mov operands are correct (matches "mov [rbp+whatever], register" pattern)
-						if (has_correct_operands)
-							movs_and_leas.push_back(instruction);
-
-						break;
-					}	
-				case ZYDIS_MNEMONIC_LEA:
-					{
-						movs_and_leas.push_back(instruction);
+						has_correct_operands = true;
 						break;
 					}
+
+					// Only push if the mov operands are correct (matches "mov [rbp+whatever], register" pattern)
+					if (has_correct_operands)
+						movs_and_leas.push_back(instruction);
+
+					break;
+				}
+				case ZYDIS_MNEMONIC_LEA:
+				{
+					movs_and_leas.push_back(instruction);
+					break;
+				}
 				}
 			}
 
@@ -393,7 +393,7 @@ namespace YYTK
 						// Determine the address being loaded and save it to our current FunctionChainEntry
 						PVOID loaded_address = reinterpret_cast<PVOID>(
 							rip + current_instruction.info.length + current_operand.mem.disp.value
-						);
+							);
 						chain_entry.FunctionTarget = loaded_address;
 
 						// Reset our counter
@@ -427,11 +427,47 @@ namespace YYTK
 			return count;
 		}
 
+		YYTKStatus GmpFindFunctionsArray(
+			IN const YYRunnerInterface& Interface, 
+			OUT RFunction*** FunctionsArray
+		)
+		{
+			if (!Interface.Code_Function_Find)
+				return YYTK_INTERFACE_UNAVAILABLE;
+
+			// Disassemble this function
+			std::vector<TargettedInstruction> instructions = GmpDisassemble(
+				Interface.Code_Function_Find,
+				0x400,
+				0xFF
+			);
+
+			// It just so happens the first 7-byte long MOV  
+			// instruction references the the_functions array.
+			for (auto& instruction : instructions)
+			{
+				// The instruction has to be a mov
+				if (instruction.Instruction.info.mnemonic != ZYDIS_MNEMONIC_MOV)
+					continue;
+
+				// The instruction has to be 7 bytes in length
+				if (instruction.Instruction.info.length != 7)
+					continue;
+
+				// We found one, now loop the operands...
+				for (size_t i = 0; i < instruction.Instruction.info.operand_count; i++)
+				{
+					ZydisDecodedOperand& operand = instruction.Instruction.operands[i];
+					printf("%d", 1);
+				}
+			}
+		}
+
 		YYTKStatus GmpSigscanRegionEx(
 			IN const unsigned char* RegionBase,
 			IN const size_t RegionSize,
-			IN const unsigned char* Pattern, 
-			IN const char* PatternMask, 
+			IN const unsigned char* Pattern,
+			IN const char* PatternMask,
 			OUT std::vector<size_t>& Matches
 		)
 		{
