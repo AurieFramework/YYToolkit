@@ -47,10 +47,14 @@ namespace YYTK
 			OUT YYRunnerInterface& Interface
 		);
 
-		std::vector<PVOID> GmpGetFunctionChain(
+		std::vector<TargettedInstruction> GmpDisassemble(
 			IN PVOID Address,
 			IN size_t MaximumSize,
 			IN size_t MaximumInstructionsWithoutFunction
+		);
+
+		size_t GmpCountInstructionReferences(
+			IN const std::vector<TargettedInstruction>& Instructions
 		);
 
 		// Allows for multiple matches in a scanned region

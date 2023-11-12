@@ -28,6 +28,8 @@ EXPORTED AurieStatus ModulePreinitialize(
 	YYTK::YYRunnerInterface my_interface;
 	YYTK::YYTKStatus status = YYTK::Internal::GmpGetRunnerInterface(my_interface);
 
+	my_interface.ShowMessage("we got it!");
+
 	YYTK::CmWriteError(
 		__FILE__,
 		__LINE__,

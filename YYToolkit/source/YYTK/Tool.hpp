@@ -1,6 +1,7 @@
 #ifndef YYTK_TOOL_H_
 #define YYTK_TOOL_H_
 
+#include <Zydis/Zydis.h>
 #include <Aurie/shared.hpp>
 #include "Shared.hpp"
 
@@ -14,6 +15,12 @@ namespace YYTK
 	{
 		return static_cast<YYTKStatus>(static_cast<int>(Status));
 	}
+	
+	struct TargettedInstruction
+	{
+		ZydisDisassembledInstruction Instruction;
+		PVOID FunctionTarget;
+	};
 
 	// https://github.com/YoYoGames/GMEXT-Steamworks/blob/main/source/Steamworks_vs/Steamworks/Extension_Interface.h#L106
 	struct YYRunnerInterface
