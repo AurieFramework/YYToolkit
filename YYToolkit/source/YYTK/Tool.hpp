@@ -15,10 +15,12 @@ namespace YYTK
 	
 	struct RFunction
 	{
-		const char* FunctionName;
-		TRoutine Routine;
-		int ArgumentCount;
+		char m_Name[64];
+		TRoutine m_Routine;
+		int32_t m_ArgumentCount;
+		int32_t m_UsageCount;
 	};
+	static_assert(sizeof(RFunction) == 80);
 
 	constexpr YYTKStatus ConvertStatus(const Aurie::AurieStatus& Status)
 	{

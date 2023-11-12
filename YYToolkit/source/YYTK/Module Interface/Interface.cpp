@@ -13,11 +13,16 @@ namespace YYTK
 		if (last_status != YYTK_SUCCESS)
 			return Aurie::AURIE_MODULE_INTERNAL_ERROR;
 
-		RFunction** wtf;
 		last_status = YYTK::Internal::GmpFindFunctionsArray(
 			m_RunnerInterface,
-			&wtf
+			&m_FunctionsArray
 		);
+
+		if (last_status != YYTK_SUCCESS)
+			return Aurie::AURIE_MODULE_INTERNAL_ERROR;
+
+		YYTK::CmWriteOutput(CM_LIGHTBLUE, "Welcome to YYTK Next!");
+		YYTK::CmWriteOutput(CM_LIGHTBLUE, "m_Functions at %p!", m_FunctionsArray);
 
 		return Aurie::AURIE_SUCCESS;
 	}
