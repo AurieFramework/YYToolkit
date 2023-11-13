@@ -14,10 +14,6 @@
 #include <cstdint>
 #include <string>
 
-#ifndef YYTKAPI
-#define YYTKAPI extern "C" __declspec(dllexport)
-#endif // YYTKAPI
-
 #ifndef UTEXT
 #define UTEXT(x) ((const unsigned char*)(x))
 #endif // UTEXT
@@ -63,43 +59,6 @@ namespace YYTK
 		VALUE_ITERATOR,				// JS For-in Iterator
 		VALUE_REF,					// Reference value (uses the ptr to point at a RefBase structure)
 		VALUE_UNSET = 0x0ffffff		// Unset value (never initialized)
-	};
-
-	// A copy of AurieStatus, so plugins don't have to have the Aurie shared headers.
-	enum YYTKStatus : uint32_t
-	{
-		// The operation completed successfully.
-		YYTK_SUCCESS = 0,
-		// An invalid architecture was specified.
-		YYTK_INVALID_ARCH,
-		// An error occured in an external function call.
-		YYTK_EXTERNAL_ERROR,
-		// The requested file was not found.
-		YYTK_FILE_NOT_FOUND,
-		// The requested access to the object was denied.
-		YYTK_ACCESS_DENIED,
-		// An object with the same identifier / priority is already registered.
-		YYTK_OBJECT_ALREADY_EXISTS,
-		// One or more parameters were invalid.
-		YYTK_INVALID_PARAMETER,
-		// Insufficient memory is available.
-		YYTK_INSUFFICIENT_MEMORY,
-		// An invalid signature was detected.
-		YYTK_INVALID_SIGNATURE,
-		// The requested operation is not implemented.
-		YYTK_NOT_IMPLEMENTED,
-		// An internal error occured in the module.
-		YYTK_MODULE_INTERNAL_ERROR,
-		// The module failed to resolve dependencies.
-		YYTK_MODULE_DEPENDENCY_NOT_RESOLVED,
-		// The module failed to initialize.
-		YYTK_MODULE_INITIALIZATION_FAILED,
-		// The target file header, directory, or RVA could not be found or is invalid.
-		YYTK_FILE_PART_NOT_FOUND,
-		// The object was not found.
-		YYTK_OBJECT_NOT_FOUND,
-		// YYTK Exclusive: The interface is currently unavailable.
-		YYTK_INTERFACE_UNAVAILABLE
 	};
 
 	// These cannot be bitwise-operated on anymore
@@ -207,7 +166,7 @@ namespace YYTK
 		RToken m_Token;
 		RValue m_Value;
 		PVOID m_VmInstance;
-		PVOID* m_VmDebugInfo;
+		PVOID m_VmDebugInfo;
 		char* m_Code;
 		const char* m_Name;
 		int m_CodeIndex;
@@ -224,7 +183,7 @@ namespace YYTK
 
 	template <typename TFunction>
 	using FNCallbackRoutine = void(*)(
-		IN FunctionWrapper<TFunction> Context
+		IN FunctionWrapper<TFunction>& Context
 	);
 
 	struct CScript
@@ -256,30 +215,31 @@ namespace YYTK
 	class YYTKInterface : public Aurie::AurieInterfaceBase
 	{
 	public:
-		virtual YYTKStatus GetNamedRoutineIndex(
+		virtual Aurie::AurieStatus GetNamedRoutineIndex(
 			IN const char* FunctionName,
 			OUT int* FunctionIndex
 		) = 0;
 
-		virtual YYTKStatus GetNamedRoutinePointer(
+		virtual Aurie::AurieStatus GetNamedRoutinePointer(
 			IN const char* FunctionName,
-			OUT PVOID* FunctionPointer
+			OUT TRoutine* FunctionPointer
 		) = 0;
 
-		virtual YYTKStatus GetGlobalInstance(
+		virtual Aurie::AurieStatus GetGlobalInstance(
 			OUT CInstance** Instance
 		) = 0;
 
 		virtual RValue CallBuiltin(
 			IN const char* FunctionName,
-			IN const std::vector<RValue>& Arguments
+			IN std::vector<RValue> Arguments
 		) = 0;
 
-		virtual RValue CallBuiltinEx(
+		virtual Aurie::AurieStatus CallBuiltinEx(
+			OUT RValue& Result,
 			IN const char* FunctionName,
 			IN CInstance* SelfInstance,
 			IN CInstance* OtherInstance,
-			IN const std::vector<RValue>& Arguments
+			IN std::vector<RValue> Arguments
 		) = 0;
 
 		virtual void Print(
@@ -305,18 +265,18 @@ namespace YYTK
 			IN ...
 		) = 0;
 
-		virtual YYTKStatus CreateCallback(
+		virtual Aurie::AurieStatus CreateCallback(
 			IN const Aurie::AurieModule* Module,
 			IN EventTriggers Trigger,
 			IN PVOID Routine
 		) = 0;
 
-		virtual YYTKStatus RemoveCallback(
+		virtual Aurie::AurieStatus RemoveCallback(
 			IN const Aurie::AurieModule* Module,
 			IN PVOID Routine
 		) = 0;
 
-		virtual YYTKStatus InvalidateAllCaches() = 0;
+		virtual Aurie::AurieStatus InvalidateAllCaches() = 0;
 	};
 }
 

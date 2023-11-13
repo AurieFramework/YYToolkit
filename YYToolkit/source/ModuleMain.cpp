@@ -2,18 +2,39 @@
 #include "YYTK/Tool.hpp"
 using namespace Aurie;
 
+void ModuleCallbackRoutine(
+	IN const AurieModule* const AffectedModule,
+	IN const AurieModuleOperationType OperationType,
+	IN const bool IsFutureCall
+)
+{
+	// We're only interested in future calls (ie. calls that didn't yet happen)
+	if (!IsFutureCall)
+		return;
+
+	// We're waiting for ModuleInitialize calls
+	if (OperationType != AURIE_OPERATION_INITIALIZE)
+		return;
+
+	// Call the interface's Create function again, to make sure 
+	YYTK::g_ModuleInterface.Create();
+
+	// Disable any future callbacks
+	Internal::ObpSetModuleOperationCallback(g_ArSelfModule, nullptr);
+}
+
 EXPORTED AurieStatus ModulePreinitialize(
 	IN AurieModule* Module,
 	IN const fs::path& ModulePath
 )
 {
-	YYTK::Internal::CmpCreateConsole();
+	YYTK::CmpCreateConsole();
 
 	AurieStatus last_status = AURIE_SUCCESS;
 	fs::path plugin_folder;
 
 	// Get the game folder 
-	last_status = Aurie::Internal::MdpGetImageFolder(
+	last_status = Internal::MdpGetImageFolder(
 		g_ArInitialImage,
 		plugin_folder
 	);
@@ -24,13 +45,29 @@ EXPORTED AurieStatus ModulePreinitialize(
 	// Craft the path %GAMEDIR%\\mods\\yytk
 	plugin_folder = plugin_folder / "mods" / "yytk";
 
-	Aurie::ObCreateInterface(
+	ObCreateInterface(
 		Module,
 		&YYTK::g_ModuleInterface,
 		"YYTK_Main"
 	);
 
-	YYTK::g_ModuleInterface.Create();
+	int index = 0;
+	AurieStatus status = YYTK::g_ModuleInterface.GetNamedRoutineIndex(
+		"@@GlobalScope@@",
+		&index
+	);
+
+	YYTK::CmWriteOutput(
+		YYTK::CM_LIGHTAQUA, 
+		"[Preload] GetNamedRoutineIndex(\"@@GlobalScope@@\") returns status %d and function ID %d!",
+		status, 
+		index
+	);
+	
+	Internal::ObpSetModuleOperationCallback(
+		g_ArSelfModule,
+		ModuleCallbackRoutine
+	);
 
 	return AURIE_SUCCESS;
 }
@@ -40,6 +77,25 @@ EXPORTED AurieStatus ModuleInitialize(
 	IN const fs::path& ModulePath
 )
 {
+	if (!YYTK::g_ModuleInterface.m_FirstInitComplete)
+		return AURIE_MODULE_INITIALIZATION_FAILED;
+
+	if (!YYTK::g_ModuleInterface.m_SecondInitComplete)
+		return AURIE_MODULE_INITIALIZATION_FAILED;
+
+	int index = 0;
+	AurieStatus status = YYTK::g_ModuleInterface.GetNamedRoutineIndex(
+		"@@GlobalScope@@",
+		&index
+	);
+
+	YYTK::CmWriteOutput(
+		YYTK::CM_LIGHTAQUA,
+		"[Initialize] GetNamedRoutineIndex(\"@@GlobalScope@@\") returns status %d and function ID %d!",
+		status,
+		index
+	);
+
 	return AURIE_SUCCESS;
 }
 

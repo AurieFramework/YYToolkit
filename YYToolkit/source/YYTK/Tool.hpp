@@ -10,6 +10,7 @@ namespace YYTK
 	typedef int (*PFUNC_async)(HTTP_REQ_CONTEXT* _pContext, void* _pPayload, int* _pMap);
 	typedef void (*PFUNC_cleanup)(HTTP_REQ_CONTEXT* _pContext);
 	typedef void (*PFUNC_process)(HTTP_REQ_CONTEXT* _pContext);
+	using FNScriptData = CScript * (*)(int Index);
 	typedef void* HYYMUTEX;
 	typedef void* HSPRITEASYNC;
 
@@ -22,23 +23,47 @@ namespace YYTK
 		eBuffer_Format_Network = 5,
 	};
 	
-	struct RFunction
+	struct RFunctionStringFull
 	{
 		char m_Name[64];
 		TRoutine m_Routine;
 		int32_t m_ArgumentCount;
 		int32_t m_UsageCount;
 	};
+	static_assert(sizeof(RFunctionStringFull) == 80);
+
+	struct RFunctionStringRef
+	{
+		const char* m_Name;
+		TRoutine m_Routine;
+		int32_t m_ArgumentCount;
+		int32_t m_UsageCount;
+	};
+	static_assert(sizeof(RFunctionStringRef) == 24);
+
+	struct RFunction
+	{
+		union
+		{
+			RFunctionStringRef ReferentialEntry;
+			RFunctionStringFull FullEntry;
+		};
+
+		RFunctionStringFull& GetIndexFull(size_t Index)
+		{
+			return *reinterpret_cast<RFunctionStringFull*>(reinterpret_cast<char*>(this) + (sizeof(RFunctionStringFull) * Index));
+		}
+
+		RFunctionStringRef& GetIndexReferential(size_t Index)
+		{
+			return *reinterpret_cast<RFunctionStringRef*>(reinterpret_cast<char*>(this) + (sizeof(RFunctionStringRef) * Index));
+		}
+	};
 	static_assert(sizeof(RFunction) == 80);
 
-	constexpr YYTKStatus ConvertStatus(const Aurie::AurieStatus& Status)
-	{
-		return static_cast<YYTKStatus>(static_cast<int>(Status));
-	}
-	
 	struct TargettedInstruction
 	{
-		ZydisDisassembledInstruction Instruction;
+		ZydisDisassembledInstruction RawForm;
 		PVOID FunctionTarget;
 	};
 

@@ -3,17 +3,48 @@
 #include "../Tool.hpp"
 #include <map>
 
+using namespace Aurie;
+
 namespace YYTK
 {
 	class YYTKInterfaceImpl : public YYTKInterface
 	{
+	public:
+		// Dictates whether the first stage of initializing completed already.
+		bool m_FirstInitComplete = false;
+
+		// Dictates whether the second stage of initializing completed already.
+		bool m_SecondInitComplete = false;
 	private:
-		YYRunnerInterface m_RunnerInterface;
-		RFunction** m_FunctionsArray;
-		std::map<std::string, TRoutine> m_FunctionCache;
+		// The runner interface stolen by disassembling Extension_PrePrepare()
+		YYRunnerInterface m_RunnerInterface = {};
+
+		// A pointer to the functions array in memory
+		RFunction** m_FunctionsArray = nullptr;
+
+		// A pointer to the Script_Data() engine function.
+		FNScriptData m_GetScriptData = nullptr;
+
+		// The function cache used for faster lookups
+		std::map<std::string, TRoutine> m_FunctionCache = {};
+
+		// The size of one entry in the RFunction array
+		// GameMaker LTS still uses a 64-byte char array in the RFunction struct directly
+		// New runners (2023.8) use a const char* in the array
+		size_t m_FunctionEntrySize = 0;
+
+		void InternalExtractFunctionEntry(
+			IN size_t Index,
+			OUT std::string& FunctionName,
+			OUT TRoutine& FunctionRoutine,
+			OUT int32_t& ArgumentCount
+		);
+
+		size_t InternalDetermineFunctionEntrySize();
 
 	public:
-		virtual Aurie::AurieStatus Create() override final;
+		// === Interface Functions ===
+		virtual AurieStatus Create() override final;
 
 		virtual void Destroy() override final;
 
@@ -23,30 +54,31 @@ namespace YYTK
 			OUT short& Patch
 		);
 
-		virtual YYTKStatus GetNamedRoutineIndex(
+		virtual AurieStatus GetNamedRoutineIndex(
 			IN const char* FunctionName,
 			OUT int* FunctionIndex
 		) override final;
 
-		virtual YYTKStatus GetNamedRoutinePointer(
+		virtual AurieStatus GetNamedRoutinePointer(
 			IN const char* FunctionName,
-			OUT PVOID* FunctionPointer
+			OUT TRoutine* FunctionPointer
 		) override final;
 
-		virtual YYTKStatus GetGlobalInstance(
+		virtual AurieStatus GetGlobalInstance(
 			OUT CInstance** Instance
 		) override final;
 
 		virtual RValue CallBuiltin(
 			IN const char* FunctionName,
-			IN const std::vector<RValue>& Arguments
+			IN std::vector<RValue> Arguments
 		) override final;
 
-		virtual RValue CallBuiltinEx(
+		virtual AurieStatus CallBuiltinEx(
+			OUT RValue& Result,
 			IN const char* FunctionName,
 			IN CInstance* SelfInstance,
 			IN CInstance* OtherInstance,
-			IN const std::vector<RValue>& Arguments
+			IN std::vector<RValue> Arguments
 		) override final;
 
 		virtual void Print(
@@ -72,18 +104,18 @@ namespace YYTK
 			IN ...
 		) override final;
 
-		virtual YYTKStatus CreateCallback(
+		virtual AurieStatus CreateCallback(
 			IN const Aurie::AurieModule* Module,
 			IN EventTriggers Trigger,
 			IN PVOID Routine
 		) override final;
 
-		virtual YYTKStatus RemoveCallback(
+		virtual AurieStatus RemoveCallback(
 			IN const Aurie::AurieModule* Module,
 			IN PVOID Routine
 		) override final;
 
-		virtual YYTKStatus InvalidateAllCaches() override final;
+		virtual AurieStatus InvalidateAllCaches() override final;
 	};
 
 	inline YYTKInterfaceImpl g_ModuleInterface;

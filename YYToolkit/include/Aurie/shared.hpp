@@ -100,6 +100,17 @@ namespace Aurie
 		AURIE_OBJECT_HOOK = 4
 	};
 
+	enum AurieModuleOperationType : uint32_t
+	{
+		AURIE_OPERATION_UNKNOWN = 0,
+		// The call is a ModulePreinitialize call
+		AURIE_OPERATION_PREINITIALIZE = 1,
+		// The call is a ModuleInitialize call
+		AURIE_OPERATION_INITIALIZE = 2,
+		// The call is a ModuleUnload call
+		AURIE_OPERATION_UNLOAD = 3
+	};
+
 	constexpr inline bool AurieSuccess(const AurieStatus Status) noexcept
 	{
 		return Status == AURIE_SUCCESS;
@@ -136,6 +147,12 @@ namespace Aurie
 		IN OPTIONAL AurieEntry Routine,
 		IN OPTIONAL const fs::path& Path,
 		IN OPTIONAL AurieModule* SelfModule
+		);
+
+	using AurieModuleCallback = void(*)(
+		IN const AurieModule* const AffectedModule,
+		IN const AurieModuleOperationType OperationType,
+		IN const bool IsFutureCall
 		);
 }
 
@@ -198,12 +215,34 @@ namespace Aurie
 			ReturnType operator()(const char* FunctionName, TArgs&... Args)
 			{
 				auto Func = reinterpret_cast<TFunction*>(g_PpGetFrameworkRoutine(FunctionName));
+				if (!Func)
+				{
+					std::string error_string = "Tried to call function ";
+					error_string.append(FunctionName);
+					error_string.append(", but PpGetFrameworkRoutine returns nullptr!\n\n");
+					error_string.append("Is your Aurie installation up-to-date?");
+
+					MessageBoxA(0, error_string.c_str(), "Aurie API Dispatcher", MB_OK | MB_ICONERROR);
+					exit(0);
+				}
+
 				return Func(Args...);
 			}
 
 			ReturnType operator()(const char* FunctionName)
 			{
 				auto Func = reinterpret_cast<TFunction*>(g_PpGetFrameworkRoutine(FunctionName));
+				if (!Func)
+				{
+					std::string error_string = "Tried to call function ";
+					error_string.append(FunctionName);
+					error_string.append(", but PpGetFrameworkRoutine returns nullptr!\n\n");
+					error_string.append("Is your Aurie installation up-to-date?");
+
+					MessageBoxA(0, error_string.c_str(), "Aurie API Dispatcher", MB_OK | MB_ICONERROR);
+					exit(0);
+				}
+
 				return Func();
 			}
 		};
@@ -324,6 +363,13 @@ namespace Aurie
 		return AURIE_API_CALL(MdMapImage, ImagePath, Module);
 	}
 
+	inline bool MdIsImagePreinitialized(
+		IN AurieModule* Module
+	)
+	{
+		return AURIE_API_CALL(MdIsImagePreinitialized, Module);
+	}
+
 	inline bool MdIsImageInitialized(
 		IN AurieModule* Module
 	)
@@ -439,6 +485,14 @@ namespace Aurie
 
 	namespace Internal
 	{
+		inline void ObpSetModuleOperationCallback(
+			IN AurieModule* Module,
+			IN AurieModuleCallback CallbackRoutine
+		)
+		{
+			return AURIE_API_CALL(ObpSetModuleOperationCallback, Module, CallbackRoutine);
+		}
+
 		inline AurieObjectType ObpGetObjectType(
 			IN AurieObject* Object
 		)
@@ -475,6 +529,14 @@ namespace Aurie
 	)
 	{
 		return AURIE_API_CALL(PpGetCurrentArchitecture, ImageArchitecture);
+	}
+
+	inline AurieStatus PpGetImageSubsystem(
+		IN PVOID Image,
+		OUT unsigned short& ImageSubsystem
+	)
+	{
+		return AURIE_API_CALL(PpGetImageSubsystem, Image, ImageSubsystem);
 	}
 
 	namespace Internal
