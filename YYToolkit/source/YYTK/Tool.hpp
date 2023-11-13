@@ -12,6 +12,15 @@ namespace YYTK
 	typedef void (*PFUNC_process)(HTTP_REQ_CONTEXT* _pContext);
 	typedef void* HYYMUTEX;
 	typedef void* HSPRITEASYNC;
+
+	enum eBuffer_Format {
+		eBuffer_Format_Fixed = 0,
+		eBuffer_Format_Grow = 1,
+		eBuffer_Format_Wrap = 2,
+		eBuffer_Format_Fast = 3,
+		eBuffer_Format_VBuffer = 4,
+		eBuffer_Format_Network = 5,
+	};
 	
 	struct RFunction
 	{
