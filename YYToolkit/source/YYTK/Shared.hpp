@@ -222,7 +222,7 @@ namespace YYTK
 
 		virtual Aurie::AurieStatus GetNamedRoutinePointer(
 			IN const char* FunctionName,
-			OUT TRoutine* FunctionPointer
+			OUT PVOID* FunctionPointer
 		) = 0;
 
 		virtual Aurie::AurieStatus GetGlobalInstance(

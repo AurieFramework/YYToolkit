@@ -85,13 +85,13 @@ EXPORTED AurieStatus ModuleInitialize(
 
 	int index = 0;
 	AurieStatus status = YYTK::g_ModuleInterface.GetNamedRoutineIndex(
-		"@@GlobalScope@@",
+		"gml_Script_input_player_verify",
 		&index
 	);
 
 	YYTK::CmWriteOutput(
 		YYTK::CM_LIGHTAQUA,
-		"[Initialize] GetNamedRoutineIndex(\"@@GlobalScope@@\") returns status %d and function ID %d!",
+		"[Initialize] GetNamedRoutineIndex() returns status %d and function ID %d!",
 		status,
 		index
 	);

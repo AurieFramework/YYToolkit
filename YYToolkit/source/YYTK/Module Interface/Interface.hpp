@@ -61,7 +61,7 @@ namespace YYTK
 
 		virtual AurieStatus GetNamedRoutinePointer(
 			IN const char* FunctionName,
-			OUT TRoutine* FunctionPointer
+			OUT PVOID* FunctionPointer
 		) override final;
 
 		virtual AurieStatus GetGlobalInstance(

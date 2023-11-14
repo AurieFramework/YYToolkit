@@ -126,7 +126,7 @@ namespace YYTK
 			TRoutine copy_static = nullptr;
 			last_status = this->GetNamedRoutinePointer(
 				"@@CopyStatic@@",
-				&copy_static
+				reinterpret_cast<PVOID*>(&copy_static)
 			);
 
 			if (!AurieSuccess(last_status))
@@ -191,7 +191,7 @@ namespace YYTK
 
 	AurieStatus YYTKInterfaceImpl::GetNamedRoutinePointer(
 		IN const char* FunctionName, 
-		OUT TRoutine* FunctionPointer
+		OUT PVOID* FunctionPointer
 	)
 	{
 		// Make sure we have what we need
@@ -213,8 +213,22 @@ namespace YYTK
 		// Values greater or equal to 100k are reserved for scripts.
 		// Values greater or equal to 500k are reserved for extension functions.
 		// Until we can deal with those, just deny access.
+
 		if (function_index >= 100000)
-			return AURIE_ACCESS_DENIED;
+		{
+			// If we don't have access to scripts, deny access to both scripts and Extension functions
+			// If we do have access to scripts, we deny access only to Extension Functions
+			if (function_index >= 500000 || !m_GetScriptData)
+			{
+				return AURIE_ACCESS_DENIED;
+			}
+			
+			// Get the script
+			*FunctionPointer = m_GetScriptData(function_index - 100000);
+			assert(*FunctionPointer);
+
+			return AURIE_SUCCESS;
+		}
 
 		// Make sure we got one
 		if (!AurieSuccess(last_status))
@@ -320,7 +334,7 @@ namespace YYTK
 		// Query for the function pointer
 		last_status = this->GetNamedRoutinePointer(
 			FunctionName,
-			&function
+			reinterpret_cast<PVOID*>(&function)
 		);
 
 		// Make sure we found a function
