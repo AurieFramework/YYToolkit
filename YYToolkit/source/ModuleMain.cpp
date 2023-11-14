@@ -96,6 +96,32 @@ EXPORTED AurieStatus ModuleInitialize(
 		index
 	);
 
+	YYTK::YYRunnerInterface& runner_interface = YYTK::g_ModuleInterface.m_RunnerInterface;
+	
+	YYTK::CInstance* instance = nullptr;
+	YYTK::g_ModuleInterface.GetGlobalInstance(&instance);
+
+
+	YYTK::RValue global_instance; 
+	global_instance.m_Pointer = instance; 
+	global_instance.m_Kind = YYTK::VALUE_OBJECT;
+
+	int num_keys = runner_interface.StructGetKeys(
+		&global_instance,
+		nullptr,
+		nullptr
+	);
+	
+	std::vector<const char*> keys(num_keys);
+	runner_interface.StructGetKeys(&global_instance, keys.data(), &num_keys);
+
+	for (int i = 0; i < num_keys; i++)
+	{
+		YYTK::RValue* member = runner_interface.StructGetMember(&global_instance, keys[i]);
+
+		YYTK::CmWriteOutput(YYTK::CM_LIGHTPURPLE, "%s", runner_interface.YYGetString(member, 0));
+	}
+
 	return AURIE_SUCCESS;
 }
 

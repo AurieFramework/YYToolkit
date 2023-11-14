@@ -1,10 +1,11 @@
 #include "../Module Internals.hpp"
 #include <cinttypes>
 
+using namespace Aurie;
+
 namespace YYTK
 {
-
-	Aurie::AurieStatus GmpGetRunnerInterface(
+	AurieStatus GmpGetRunnerInterface(
 		OUT YYRunnerInterface& Interface
 	)
 	{
@@ -56,7 +57,7 @@ namespace YYTK
 		size_t text_section_size = 0;
 
 		// Get the .text section address for the game executable
-		last_status = Aurie::Internal::PpiGetModuleSectionBounds(
+		last_status = Internal::PpiGetModuleSectionBounds(
 			GetModuleHandleW(nullptr),
 			".text",
 			text_section_base,
@@ -429,13 +430,13 @@ namespace YYTK
 		return count;
 	}
 	
-	Aurie::AurieStatus GmpFindFunctionsArray(
+	AurieStatus GmpFindFunctionsArray(
 		IN const YYRunnerInterface& Interface, 
 		OUT RFunction*** FunctionsArray
 	)
 	{
 		if (!Interface.Code_Function_Find)
-			return Aurie::AURIE_MODULE_INTERNAL_ERROR;
+			return AURIE_MODULE_INTERNAL_ERROR;
 
 		// Disassemble this function
 		std::vector<TargettedInstruction> instructions = GmpDisassemble(
@@ -503,13 +504,13 @@ namespace YYTK
 			// It's a pointer to a pointer, we dereference it once to   
 			// get the actual pointer to the first element in the array
 			*FunctionsArray = reinterpret_cast<RFunction**>(call_address);
-			return Aurie::AURIE_SUCCESS;
+			return AURIE_SUCCESS;
 		}
 
-		return Aurie::AURIE_OBJECT_NOT_FOUND;
+		return AURIE_OBJECT_NOT_FOUND;
 	}
 
-	Aurie::AurieStatus GmpFindFunctionsArrayEntrySize(
+	AurieStatus GmpFindFunctionsArrayEntrySize(
 		IN const YYRunnerInterface& Interface, 
 		IN const ZydisDisassembledInstruction& FunctionsArrayReference,
 		OUT int* FunctionEntrySize
@@ -605,7 +606,7 @@ namespace YYTK
 		return AURIE_SUCCESS;
 	}
 
-	Aurie::AurieStatus GmpSigscanRegionEx(
+	AurieStatus GmpSigscanRegionEx(
 		IN const unsigned char* RegionBase,
 		IN const size_t RegionSize,
 		IN const unsigned char* Pattern,
@@ -622,7 +623,7 @@ namespace YYTK
 		while (true)
 		{
 			// Scan for the pattern
-			size_t current_match = Aurie::MmSigscanRegion(
+			size_t current_match = MmSigscanRegion(
 				reinterpret_cast<const unsigned char*>(region_base),
 				region_size_left,
 				Pattern,
@@ -642,6 +643,6 @@ namespace YYTK
 			region_base = current_match + pattern_size;
 		}
 
-		return Aurie::AURIE_SUCCESS;
+		return AURIE_SUCCESS;
 	}
 }

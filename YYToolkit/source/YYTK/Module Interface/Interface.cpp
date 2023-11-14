@@ -1,9 +1,9 @@
 #include "Interface.hpp"
+using namespace Aurie;
 
 namespace YYTK
 {
-
-	void YYTKInterfaceImpl::InternalExtractFunctionEntry(
+	void YYTKInterfaceImpl::YkExtractFunctionEntry(
 		IN size_t Index, 
 		OUT std::string& FunctionName, 
 		OUT TRoutine& FunctionRoutine, 
@@ -36,7 +36,7 @@ namespace YYTK
 		}
 	}
 
-	size_t YYTKInterfaceImpl::InternalDetermineFunctionEntrySize()
+	size_t YYTKInterfaceImpl::YkDetermineFunctionEntrySize()
 	{
 		RFunction* first_entry = *m_FunctionsArray;
 		if (!first_entry)
@@ -74,6 +74,70 @@ namespace YYTK
 			return sizeof(RFunctionStringRef);
 
 		return sizeof(RFunctionStringFull);
+	}
+
+	void YYTKInterfaceImpl::YkRemoveCallbackFromList(
+		IN Aurie::AurieModule* Module, 
+		IN PVOID Routine
+	)
+	{
+		if (!YkCallbackExists(Module, Routine))
+			return;
+
+		std::vector<ModuleCallbackDescriptor>& module_callbacks = m_RegisteredCallbacks.at(Module);
+
+		std::remove_if(
+			module_callbacks.begin(),
+			module_callbacks.end(),
+			[Routine](const ModuleCallbackDescriptor& Descriptor) -> bool
+			{
+				return Descriptor.Routine == Routine;
+			}
+		);
+	}
+
+	bool YYTKInterfaceImpl::YkCallbackExists(
+		IN Aurie::AurieModule* Module, 
+		IN PVOID Routine
+	)
+	{
+		if (!m_RegisteredCallbacks.contains(Module))
+			return false;
+
+		std::vector<ModuleCallbackDescriptor>& module_callbacks = m_RegisteredCallbacks.at(Module);
+
+		return std::find_if(
+			module_callbacks.begin(),
+			module_callbacks.end(),
+			[Routine](const ModuleCallbackDescriptor& Descriptor) -> bool
+			{
+				return Descriptor.Routine == Routine;
+			}
+		) != std::end(module_callbacks);
+	}
+
+	ModuleCallbackDescriptor YYTKInterfaceImpl::YkCreateCallbackDescriptor(
+		IN Aurie::AurieModule* Module,
+		IN EventTriggers Trigger,
+		IN PVOID Routine,
+		IN int32_t Priority
+	)
+	{
+		ModuleCallbackDescriptor descriptor = {};
+		descriptor.OwnerModule = Module;
+		descriptor.Trigger = Trigger;
+		descriptor.Routine = Routine;
+		descriptor.Priority = Priority;
+
+		return descriptor;
+	}
+
+	ModuleCallbackDescriptor* YYTKInterfaceImpl::YkAddToCallbackList(
+		IN AurieModule* Module,
+		IN ModuleCallbackDescriptor& Descriptor
+	)
+	{
+		return &m_RegisteredCallbacks[Module].emplace_back(Descriptor);
 	}
 
 	AurieStatus YYTKInterfaceImpl::Create()
@@ -121,7 +185,7 @@ namespace YYTK
 		{
 			// First up, we need to determine the RFunction entry size 
 			// now that it's populated by the game.
-			m_FunctionEntrySize = this->InternalDetermineFunctionEntrySize();
+			m_FunctionEntrySize = this->YkDetermineFunctionEntrySize();
 
 			TRoutine copy_static = nullptr;
 			last_status = this->GetNamedRoutinePointer(
@@ -149,10 +213,7 @@ namespace YYTK
 		return Aurie::AURIE_SUCCESS;
 	}
 
-	void YYTKInterfaceImpl::Destroy()
-	{
-
-	}
+	void YYTKInterfaceImpl::Destroy() { }
 
 	void YYTKInterfaceImpl::QueryVersion(
 		OUT short& Major, 
@@ -241,7 +302,7 @@ namespace YYTK
 		int32_t function_argument_count = 0;
 		TRoutine function_routine = nullptr;
 
-		this->InternalExtractFunctionEntry(
+		this->YkExtractFunctionEntry(
 			function_index,
 			function_name,
 			function_routine,
@@ -264,14 +325,28 @@ namespace YYTK
 		OUT CInstance** Instance
 	)
 	{
+		AurieStatus last_status = AURIE_SUCCESS;
+
 		if (!m_RunnerInterface.YYGetPtr)
 			return AURIE_MODULE_INTERNAL_ERROR;
 
 		if (!Instance)
 			return AURIE_INVALID_PARAMETER;
 
-		RValue global_scope = CallBuiltin("@@GlobalScope@@", {});
-		*Instance = reinterpret_cast<CInstance*>(m_RunnerInterface.YYGetPtr(&global_scope, 0));
+		RValue global_scope;
+
+		last_status = CallBuiltinEx(
+			global_scope, 
+			"@@GlobalScope@@",
+			nullptr,
+			nullptr,
+			{}
+		);
+
+		if (!AurieSuccess(last_status))
+			return last_status;
+
+		*Instance = reinterpret_cast<CInstance*>(m_RunnerInterface.PTR_RValue(&global_scope));
 
 		return AURIE_SUCCESS;
 	}
@@ -362,59 +437,99 @@ namespace YYTK
 
 	void YYTKInterfaceImpl::Print(
 		IN CmColor Color, 
-		IN const char* Format, 
+		IN std::string_view Format, 
 		IN ...
 	)
 	{
+		// Parse the VA arguments
+		va_list va_args;
+		va_start(va_args, Format);
+		std::string formatted_output = CmpParseVa(Format.data(), va_args);
+		va_end(va_args);
 
+		return CmWriteOutput(
+			Color,
+			formatted_output
+		);
 	}
 
 	void YYTKInterfaceImpl::PrintInfo(
-		IN const char* Format, 
+		IN std::string_view Format,
 		IN ...
 	)
 	{
+		// Parse the VA arguments
+		va_list va_args;
+		va_start(va_args, Format);
+		std::string formatted_output = CmpParseVa(Format.data(), va_args);
+		va_end(va_args);
 
+		return CmWriteInfo(
+			formatted_output
+		);
 	}
 
 	void YYTKInterfaceImpl::PrintWarning(
-		IN const char* Format, 
+		IN std::string_view Format,
 		IN ...
 	)
 	{
+		// Parse the VA arguments
+		va_list va_args;
+		va_start(va_args, Format);
+		std::string formatted_output = CmpParseVa(Format.data(), va_args);
+		va_end(va_args);
 
+		return CmWriteWarning(
+			formatted_output
+		);
 	}
 
 	void YYTKInterfaceImpl::PrintError(
-		IN const char* Function, 
+		IN std::string_view Filepath,
 		IN const int Line, 
-		IN const char* Format, 
+		IN std::string_view Format,
 		IN ...
 	)
 	{
+		// Parse the VA arguments
+		va_list va_args;
+		va_start(va_args, Format);
+		std::string formatted_output = CmpParseVa(Format.data(), va_args);
+		va_end(va_args);
 
+		return CmWriteError(
+			Filepath,
+			Line,
+			formatted_output
+		);
 	}
 
 	AurieStatus YYTKInterfaceImpl::CreateCallback(
-		IN const Aurie::AurieModule* Module, 
+		IN Aurie::AurieModule* Module, 
 		IN EventTriggers Trigger, 
-		IN PVOID Routine
+		IN PVOID Routine,
+		IN int32_t Priority
 	)
 	{
-		return AurieStatus();
+		return AURIE_NOT_IMPLEMENTED;
 	}
 
 	AurieStatus YYTKInterfaceImpl::RemoveCallback(
-		IN const Aurie::AurieModule* Module, 
+		IN Aurie::AurieModule* Module, 
 		IN PVOID Routine
 	)
 	{
-		return AurieStatus();
+		return AURIE_NOT_IMPLEMENTED;
 	}
 
-	AurieStatus YYTKInterfaceImpl::InvalidateAllCaches()
+	const YYRunnerInterface& YYTKInterfaceImpl::GetRunnerInterface()
+	{
+		return m_RunnerInterface;
+	}
+
+	void YYTKInterfaceImpl::InvalidateAllCaches()
 	{
 		m_FunctionCache.clear();
-		return AURIE_SUCCESS;
 	}
 }
