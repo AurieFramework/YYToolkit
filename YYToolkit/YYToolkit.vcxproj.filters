@@ -30,6 +30,12 @@
     <ClCompile Include="source\YYTK\Module Interface\Interface.cpp">
       <Filter>Zdrojové soubory</Filter>
     </ClCompile>
+    <ClCompile Include="source\YYTK\Module Internals\Hooks\Hooks.cpp">
+      <Filter>Zdrojové soubory</Filter>
+    </ClCompile>
+    <ClCompile Include="source\YYTK\Shared.cpp">
+      <Filter>Zdrojové soubory</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\Aurie\shared.hpp">

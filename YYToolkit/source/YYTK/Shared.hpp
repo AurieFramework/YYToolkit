@@ -10,6 +10,7 @@
 #include <Aurie/shared.hpp>
 #include <FunctionWrapper/FunctionWrapper.hpp>
 #include <d3d11.h>
+#include <functional>
 
 #include <cstdint>
 #include <string>
@@ -86,6 +87,7 @@ namespace YYTK
 	struct CInstance;
 	struct YYObjectBase;
 	struct YYRunnerInterface;
+	class YYTKInterface;
 	struct RValue;
 
 	struct YYGMLException
@@ -125,18 +127,36 @@ namespace YYTK
 			int64_t m_i64;
 			double m_Real;
 
+			CInstance* m_Object;
 			PVOID m_Pointer;
 		};
 
 		unsigned int m_Flags;
 		RValueType m_Kind;
 
-		RValue()
-		{
-			this->m_Real = 0;
-			this->m_Flags = 0;
-			this->m_Kind = VALUE_UNSET;
-		}
+		// Constructors
+		RValue();
+
+		RValue(
+			IN double Value
+		);
+
+		RValue(
+			IN int64_t Value
+		);
+
+		RValue(
+			IN int32_t Value
+		);
+
+		RValue(
+			IN CInstance* Object
+		);
+
+		RValue(
+			IN std::string_view Value,
+			IN YYTKInterface* Interface
+		);
 	};
 #pragma pack(pop)
 
@@ -390,6 +410,17 @@ namespace YYTK
 	class YYTKInterface : public Aurie::AurieInterfaceBase
 	{
 	public:
+		// === Interface Functions ===
+		virtual Aurie::AurieStatus Create() = 0;
+
+		virtual void Destroy() = 0;
+
+		virtual void QueryVersion(
+			OUT short& Major,
+			OUT short& Minor,
+			OUT short& Patch
+		) = 0;
+
 		virtual Aurie::AurieStatus GetNamedRoutineIndex(
 			IN const char* FunctionName,
 			OUT int* FunctionIndex
@@ -443,13 +474,34 @@ namespace YYTK
 		virtual Aurie::AurieStatus CreateCallback(
 			IN Aurie::AurieModule* Module,
 			IN EventTriggers Trigger,
-			IN PVOID Routine, 
+			IN PVOID Routine,
 			IN int32_t Priority
 		) = 0;
 
 		virtual Aurie::AurieStatus RemoveCallback(
 			IN Aurie::AurieModule* Module,
 			IN PVOID Routine
+		) = 0;
+
+		virtual Aurie::AurieStatus GetInstanceMember(
+			IN RValue Instance,
+			IN const char* MemberName,
+			OUT RValue*& Member
+		) = 0;
+
+		virtual Aurie::AurieStatus EnumInstanceMembers(
+			IN RValue Instance,
+			IN std::function<bool(IN const char* MemberName, RValue* Value)> EnumFunction
+		) = 0;
+
+		virtual Aurie::AurieStatus RValueToString(
+			IN const RValue& Value,
+			OUT std::string& String
+		) = 0;
+
+		virtual Aurie::AurieStatus StringToRValue(
+			IN const std::string_view String,
+			OUT RValue& Value
 		) = 0;
 
 		virtual const YYRunnerInterface& GetRunnerInterface() = 0;

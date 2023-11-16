@@ -144,6 +144,8 @@
     <ClCompile Include="source\YYTK\Module Interface\Interface.cpp" />
     <ClCompile Include="source\YYTK\Module Internals\Console\Console.cpp" />
     <ClCompile Include="source\YYTK\Module Internals\GameMaker\GameMaker.cpp" />
+    <ClCompile Include="source\YYTK\Module Internals\Hooks\Hooks.cpp" />
+    <ClCompile Include="source\YYTK\Shared.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\Aurie\shared.hpp" />

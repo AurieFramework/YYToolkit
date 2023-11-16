@@ -85,7 +85,6 @@ namespace YYTK
 			pattern_matches
 		);
 
-
 		// Loop through all the matches, and check if they have a long function chain
 		std::vector<TargettedInstruction> instructions = {};
 		for (const size_t& match : pattern_matches)

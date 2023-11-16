@@ -30,6 +30,11 @@ namespace YYTK
 		// Stores plugin callbacks
 		std::map<Aurie::AurieModule*, std::vector<ModuleCallbackDescriptor>> m_RegisteredCallbacks;
 
+		// D3D11 stuff
+		IDXGISwapChain* m_EngineSwapchain = nullptr;
+		ID3D11Device* m_EngineDevice = nullptr;
+		ID3D11DeviceContext* m_EngineDeviceContext = nullptr;
+
 		// The size of one entry in the RFunction array
 		// GameMaker LTS still uses a 64-byte char array in the RFunction struct directly
 		// New runners (2023.8) use a const char* in the array
@@ -76,7 +81,7 @@ namespace YYTK
 			OUT short& Major,
 			OUT short& Minor,
 			OUT short& Patch
-		);
+		) override final;
 
 		virtual Aurie::AurieStatus GetNamedRoutineIndex(
 			IN const char* FunctionName,
@@ -138,6 +143,27 @@ namespace YYTK
 		virtual Aurie::AurieStatus RemoveCallback(
 			IN Aurie::AurieModule* Module,
 			IN PVOID Routine
+		) override final;
+
+		virtual Aurie::AurieStatus GetInstanceMember(
+			IN RValue Instance,
+			IN const char* MemberName,
+			OUT RValue*& Member
+		) override final;
+
+		virtual Aurie::AurieStatus EnumInstanceMembers(
+			IN RValue Instance,
+			IN std::function<bool(IN const char* MemberName, RValue* Value)> EnumFunction
+		) override final;
+
+		virtual Aurie::AurieStatus RValueToString(
+			IN const RValue& Value,
+			OUT std::string& String
+		) override final;
+
+		virtual Aurie::AurieStatus StringToRValue(
+			IN const std::string_view String,
+			OUT RValue& Value
 		) override final;
 
 		virtual const YYRunnerInterface& GetRunnerInterface() override final;

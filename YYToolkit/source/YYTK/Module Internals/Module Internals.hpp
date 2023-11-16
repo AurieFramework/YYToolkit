@@ -74,6 +74,38 @@ namespace YYTK
 		IN const char* PatternMask,
 		OUT std::vector<size_t>& Matches
 	);
+
+	namespace Hooks
+	{
+		HRESULT WINAPI HkPresent(
+			IN IDXGISwapChain* _this,
+			IN unsigned int Sync,
+			IN unsigned int Flags
+		);
+
+		bool HkExecuteIt(
+			IN CInstance* SelfInstance,
+			IN CInstance* OtherInstance,
+			IN CCode* CodeObject,
+			IN RValue* Arguments,
+			IN INT Flags
+		);
+
+		PVOID HkDoCallScript(
+			IN CScript* Script,
+			IN int ArgumentCount,
+			IN char* VmStackPointer,
+			IN PVOID VmInstance,
+			IN CInstance* Locals,
+			IN CInstance* Arguments
+		);
+
+		// Meant for Stage 1 of loading in g_ModuleInterface
+		Aurie::AurieStatus HkPreinitialize();
+
+		// Meant for Stage 2 of loading in g_ModuleInterface
+		Aurie::AurieStatus HkInitialize();
+	}
 }
 
 

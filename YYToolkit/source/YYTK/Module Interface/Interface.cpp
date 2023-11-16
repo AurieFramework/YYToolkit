@@ -86,9 +86,8 @@ namespace YYTK
 
 		std::vector<ModuleCallbackDescriptor>& module_callbacks = m_RegisteredCallbacks.at(Module);
 
-		std::remove_if(
-			module_callbacks.begin(),
-			module_callbacks.end(),
+		std::erase_if(
+			module_callbacks,
 			[Routine](const ModuleCallbackDescriptor& Descriptor) -> bool
 			{
 				return Descriptor.Routine == Routine;
@@ -174,6 +173,11 @@ namespace YYTK
 			if (!AurieSuccess(last_status))
 				return AURIE_MODULE_INTERNAL_ERROR;
 
+			last_status = Hooks::HkPreinitialize();
+
+			if (!AurieSuccess(last_status))
+				return AURIE_MODULE_INTERNAL_ERROR;
+
 			YYTK::CmWriteOutput(CM_LIGHTBLUE, "Welcome to YYTK Next!");
 			YYTK::CmWriteOutput(CM_LIGHTBLUE, "m_Functions at %p!", m_FunctionsArray);
 
@@ -205,6 +209,61 @@ namespace YYTK
 			if (!AurieSuccess(last_status))
 				return Aurie::AURIE_MODULE_INTERNAL_ERROR;
 
+			RValue os_info_ds_map;
+			last_status = CallBuiltinEx(
+				os_info_ds_map,
+				"os_get_info",
+				nullptr,
+				nullptr,
+				{}
+			);
+
+			if (!AurieSuccess(last_status))
+				return Aurie::AURIE_MODULE_INTERNAL_ERROR;
+
+			// Pull everything needed from the DS List
+			RValue dx_device, dx_context, dx_swapchain;
+			last_status = CallBuiltinEx(
+				dx_device,
+				"ds_map_find_value",
+				nullptr,
+				nullptr,
+				{ os_info_ds_map, RValue("video_d3d11_device", this) }
+			);
+
+			if (!AurieSuccess(last_status))
+				return Aurie::AURIE_MODULE_INTERNAL_ERROR;
+
+			last_status = CallBuiltinEx(
+				dx_context,
+				"ds_map_find_value",
+				nullptr,
+				nullptr,
+				{ os_info_ds_map, RValue("video_d3d11_context", this) }
+			);
+
+			if (!AurieSuccess(last_status))
+				return Aurie::AURIE_MODULE_INTERNAL_ERROR;
+
+			last_status = CallBuiltinEx(
+				dx_swapchain,
+				"ds_map_find_value",
+				nullptr,
+				nullptr,
+				{ os_info_ds_map, RValue("video_d3d11_swapchain", this) }
+			);
+
+			if (!AurieSuccess(last_status))
+				return Aurie::AURIE_MODULE_INTERNAL_ERROR;
+
+			m_EngineDevice = reinterpret_cast<ID3D11Device*>(dx_device.m_Pointer);
+			m_EngineDeviceContext = reinterpret_cast<ID3D11DeviceContext*>(dx_context.m_Pointer);
+			m_EngineSwapchain = reinterpret_cast<IDXGISwapChain*>(dx_swapchain.m_Pointer);
+
+			assert(m_EngineDevice != nullptr);
+			assert(m_EngineDeviceContext != nullptr);
+			assert(m_EngineSwapchain != nullptr);
+
 			m_SecondInitComplete = true;
 			return AURIE_SUCCESS;
 		}
@@ -221,7 +280,7 @@ namespace YYTK
 		OUT short& Patch
 	)
 	{
-		Major = 0;
+		Major = 3;
 		Minor = 0;
 		Patch = 0;
 	}
@@ -516,11 +575,99 @@ namespace YYTK
 	}
 
 	AurieStatus YYTKInterfaceImpl::RemoveCallback(
-		IN Aurie::AurieModule* Module, 
+		IN AurieModule* Module, 
 		IN PVOID Routine
 	)
 	{
 		return AURIE_NOT_IMPLEMENTED;
+	}
+
+	AurieStatus YYTKInterfaceImpl::GetInstanceMember(
+		IN RValue Instance,
+		IN const char* MemberName, 
+		OUT RValue*& Member
+	)
+	{
+		if (!m_RunnerInterface.StructGetMember)
+			return AURIE_MODULE_INTERNAL_ERROR;
+
+		if (Instance.m_Kind != VALUE_OBJECT)
+			return AURIE_INVALID_PARAMETER;
+
+		Member = m_RunnerInterface.StructGetMember(&Instance, MemberName);
+		return AURIE_SUCCESS;
+	}
+
+	Aurie::AurieStatus YYTKInterfaceImpl::EnumInstanceMembers(
+		IN RValue Instance, 
+		IN std::function<bool(IN const char* MemberName, RValue* Value)> EnumFunction
+	)
+	{
+		// Get the variable count in the instance, so we know what size vector to preallocate
+		if (Instance.m_Kind != VALUE_OBJECT)
+			return AURIE_INVALID_PARAMETER;
+
+		int instance_variable_count = m_RunnerInterface.StructGetKeys(
+			&Instance,
+			nullptr,
+			nullptr
+		);
+
+		assert(instance_variable_count > 0);
+
+		// Get the names of all 
+		std::vector<const char*> instance_variable_names(instance_variable_count);
+		m_RunnerInterface.StructGetKeys(
+			&Instance, 
+			instance_variable_names.data(),
+			&instance_variable_count
+		);
+
+		for (int i = 0; i < instance_variable_count; i++)
+		{
+			const char* variable_name = instance_variable_names.at(i);
+
+			if (EnumFunction(variable_name, m_RunnerInterface.StructGetMember(&Instance, variable_name)))
+				return AURIE_SUCCESS;
+		}
+
+		return AURIE_OBJECT_NOT_FOUND;
+	}
+
+	Aurie::AurieStatus YYTKInterfaceImpl::RValueToString(
+		IN const RValue& Value,
+		OUT std::string& String
+	)
+	{
+		if (!m_RunnerInterface.YYGetString)
+			return AURIE_MODULE_INTERNAL_ERROR;
+
+		String = m_RunnerInterface.YYGetString(&Value, 0);
+		return AURIE_SUCCESS;
+	}
+
+	Aurie::AurieStatus YYTKInterfaceImpl::StringToRValue(
+		IN const std::string_view String,
+		OUT RValue& Value
+	)
+	{
+		if (!m_RunnerInterface.YYCreateString)
+			return AURIE_MODULE_INTERNAL_ERROR;
+
+		if (!m_RunnerInterface.YYStrDup)
+			return AURIE_MODULE_INTERNAL_ERROR;
+
+		// Duplicate the string using the runner. If you assign the string directly
+		// to the RValue, which then goes out of use, the runner will try to free
+		// memory that doesn't belong to it, which will cause a segfault.
+		const char* duplicated_string = m_RunnerInterface.YYStrDup(String.data());
+		
+		// At no point should we try to create a null string?
+		assert(duplicated_string != nullptr);
+
+		m_RunnerInterface.YYCreateString(&Value, duplicated_string);
+
+		return AURIE_SUCCESS;
 	}
 
 	const YYRunnerInterface& YYTKInterfaceImpl::GetRunnerInterface()
