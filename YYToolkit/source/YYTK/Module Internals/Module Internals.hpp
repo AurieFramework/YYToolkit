@@ -66,6 +66,10 @@ namespace YYTK
 		OUT FNScriptData* ScriptData
 	);
 
+	Aurie::AurieStatus GmpFindDoCallScript(
+		OUT PVOID* DoCallScript
+	);
+
 	// Allows for multiple matches in a scanned region
 	Aurie::AurieStatus GmpSigscanRegionEx(
 		IN const unsigned char* RegionBase,
@@ -104,7 +108,10 @@ namespace YYTK
 		Aurie::AurieStatus HkPreinitialize();
 
 		// Meant for Stage 2 of loading in g_ModuleInterface
-		Aurie::AurieStatus HkInitialize();
+		Aurie::AurieStatus HkInitialize(
+			IN HWND WindowHandle,
+			IN IDXGISwapChain* EngineSwapChain
+		);
 	}
 }
 

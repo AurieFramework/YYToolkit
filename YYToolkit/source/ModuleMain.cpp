@@ -9,6 +9,8 @@ void ModuleCallbackRoutine(
 	IN const bool IsFutureCall
 )
 {
+	UNREFERENCED_PARAMETER(AffectedModule);
+
 	// We're only interested in future calls (ie. calls that didn't yet happen)
 	if (!IsFutureCall)
 		return;
@@ -29,6 +31,8 @@ EXPORTED AurieStatus ModulePreinitialize(
 	IN const fs::path& ModulePath
 )
 {
+	UNREFERENCED_PARAMETER(ModulePath);
+
 	CmpCreateConsole();
 
 	AurieStatus last_status = AURIE_SUCCESS;
@@ -78,6 +82,9 @@ EXPORTED AurieStatus ModuleInitialize(
 	IN const fs::path& ModulePath
 )
 {
+	UNREFERENCED_PARAMETER(Module);
+	UNREFERENCED_PARAMETER(ModulePath);
+
 	if (!g_ModuleInterface.m_FirstInitComplete)
 		return AURIE_MODULE_INITIALIZATION_FAILED;
 
@@ -108,6 +115,8 @@ EXPORTED AurieStatus ModuleUnload(
 	IN const fs::path& ModulePath
 )
 {
+	UNREFERENCED_PARAMETER(Module);
+	UNREFERENCED_PARAMETER(ModulePath);
 
 	return AURIE_SUCCESS;
 }

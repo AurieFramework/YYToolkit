@@ -34,6 +34,7 @@ namespace YYTK
 		IDXGISwapChain* m_EngineSwapchain = nullptr;
 		ID3D11Device* m_EngineDevice = nullptr;
 		ID3D11DeviceContext* m_EngineDeviceContext = nullptr;
+		HWND m_WindowHandle = nullptr;
 
 		// The size of one entry in the RFunction array
 		// GameMaker LTS still uses a 64-byte char array in the RFunction struct directly

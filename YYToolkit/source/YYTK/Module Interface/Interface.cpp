@@ -222,7 +222,7 @@ namespace YYTK
 				return Aurie::AURIE_MODULE_INTERNAL_ERROR;
 
 			// Pull everything needed from the DS List
-			RValue dx_device, dx_context, dx_swapchain;
+			RValue dx_device, dx_context, dx_swapchain, window_handle;
 			last_status = CallBuiltinEx(
 				dx_device,
 				"ds_map_find_value",
@@ -256,13 +256,30 @@ namespace YYTK
 			if (!AurieSuccess(last_status))
 				return Aurie::AURIE_MODULE_INTERNAL_ERROR;
 
+			last_status = CallBuiltinEx(
+				window_handle,
+				"window_handle",
+				nullptr,
+				nullptr,
+				{ }
+			);
+
+			if (!AurieSuccess(last_status))
+				return Aurie::AURIE_MODULE_INTERNAL_ERROR;
+
 			m_EngineDevice = reinterpret_cast<ID3D11Device*>(dx_device.m_Pointer);
 			m_EngineDeviceContext = reinterpret_cast<ID3D11DeviceContext*>(dx_context.m_Pointer);
 			m_EngineSwapchain = reinterpret_cast<IDXGISwapChain*>(dx_swapchain.m_Pointer);
+			m_WindowHandle = reinterpret_cast<HWND>(window_handle.m_Pointer);
 
 			assert(m_EngineDevice != nullptr);
 			assert(m_EngineDeviceContext != nullptr);
 			assert(m_EngineSwapchain != nullptr);
+
+			Hooks::HkInitialize(
+				m_WindowHandle,
+				m_EngineSwapchain
+			);
 
 			m_SecondInitComplete = true;
 			return AURIE_SUCCESS;

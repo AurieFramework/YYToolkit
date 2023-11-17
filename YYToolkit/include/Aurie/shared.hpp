@@ -179,6 +179,10 @@ namespace Aurie
 			LPVOID lpvReserved   // reserved
 		)
 		{
+			UNREFERENCED_PARAMETER(hinstDLL);
+			UNREFERENCED_PARAMETER(fdwReason);
+			UNREFERENCED_PARAMETER(lpvReserved);
+
 			return TRUE;
 		}
 

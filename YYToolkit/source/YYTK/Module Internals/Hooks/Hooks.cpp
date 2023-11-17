@@ -17,7 +17,30 @@ namespace YYTK
 			IN unsigned int Flags
 		)
 		{
-			return E_NOTIMPL;
+			return GetHookTrampoline<decltype(&HkPresent)>("Present")(
+				_this,
+				Sync,
+				Flags
+			);
+		}
+
+		HRESULT WINAPI HkResizeBuffers(
+			IN IDXGISwapChain* _this,
+			IN UINT BufferCount,
+			IN UINT Width,
+			IN UINT Height,
+			IN DXGI_FORMAT NewFormat,
+			IN UINT SwapChainFlags
+		)
+		{
+			return GetHookTrampoline<decltype(&HkResizeBuffers)>("ResizeBuffers")(
+				_this,
+				BufferCount,
+				Width,
+				Height,
+				NewFormat,
+				SwapChainFlags
+			);
 		}
 
 		bool HkExecuteIt(
@@ -28,12 +51,6 @@ namespace YYTK
 			IN INT Flags
 		)
 		{
-			g_ModuleInterface.GetRunnerInterface().YYError(
-				"Archie was here. Welcome YYToolkit Next.\n"
-				"Huge shoutout to the HoloCure and Risk of Rain Returns modding community\n\n"
-				"and everyone else that's ever used YYTK.\n\nYou guys (and gals) are awesome.\n\n\n\nReleasing next week.\n\n"
-			);
-
 			return GetHookTrampoline<decltype(&HkExecuteIt)>("ExecuteIt")(
 				SelfInstance,
 				OtherInstance,
@@ -65,8 +82,8 @@ namespace YYTK
 		AurieStatus HkPreinitialize()
 		{
 			/*
-				how 2 DoCallScript:
-					Find DoCallGML, 2nd call
+				How hooks are done:
+
 				how 2 CodeExecute:
 					*reusing old YYTK v2 code*
 					scan for AOB:
@@ -142,19 +159,87 @@ namespace YYTK
 				g_ArSelfModule,
 				"ExecuteIt",
 				reinterpret_cast<PVOID>(execute_it_address),
-				reinterpret_cast<PVOID>(HkExecuteIt),
+				HkExecuteIt,
 				nullptr
 			);
 
 			if (!AurieSuccess(last_status))
 				return last_status;
 
+			// Now find DoCallScript
+
+			PVOID do_call_script = nullptr;
+			last_status = GmpFindDoCallScript(
+				&do_call_script
+			);
+
+			if (!AurieSuccess(last_status))
+				return AURIE_MODULE_INITIALIZATION_FAILED;
+
+			last_status = MmCreateHook(
+				g_ArSelfModule,
+				"DoCallScript",
+				do_call_script,
+				HkDoCallScript,
+				nullptr
+			);
+
+			if (!AurieSuccess(last_status))
+				return AURIE_MODULE_INITIALIZATION_FAILED;
+
 			return AURIE_SUCCESS;
 		}
 
-		Aurie::AurieStatus HkInitialize()
+		Aurie::AurieStatus HkInitialize(
+			IN HWND WindowHandle,
+			IN IDXGISwapChain* EngineSwapChain
+		)
 		{
-			return AURIE_NOT_IMPLEMENTED;
+
+			/*
+			* This function hooks methods based off information gathered in stage 2 of YYTK's init.
+			* 
+				- D3D11 hooks
+					Simple manual VMT hooks. Nothing special.
+					IDXGISwapChain::Present is VMT entry 8
+					IDXGISwapChain::ResizeBuffers is VMT entry 13
+				- WindowProc hooks
+					Just use SetWindowLongW
+			*/
+
+			AurieStatus last_status = AURIE_SUCCESS;
+
+			if (!EngineSwapChain)
+				return AURIE_MODULE_INITIALIZATION_FAILED;
+
+			PVOID* swapchain_vtable = *reinterpret_cast<PVOID**>(EngineSwapChain);
+			
+			if (!swapchain_vtable)
+				return AURIE_MODULE_INITIALIZATION_FAILED;
+
+			last_status = MmCreateHook(
+				g_ArSelfModule,
+				"Present",
+				swapchain_vtable[8],
+				HkPresent,
+				nullptr
+			);
+
+			if (!AurieSuccess(last_status))
+				return AURIE_MODULE_INITIALIZATION_FAILED;
+
+			last_status = MmCreateHook(
+				g_ArSelfModule,
+				"ResizeBuffers",
+				swapchain_vtable[13],
+				HkResizeBuffers,
+				nullptr
+			);
+
+			if (!AurieSuccess(last_status))
+				return AURIE_MODULE_INITIALIZATION_FAILED;
+
+			return AURIE_SUCCESS;
 		}
 	}
 }
