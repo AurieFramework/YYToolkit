@@ -22,6 +22,7 @@ public:
 		m_Function = Function;
 		m_Arguments = std::make_tuple(Arguments...);
 		m_CalledOriginal = false;
+		m_Result = {};
 	}
 	 
 	TRet Call()

@@ -5,10 +5,38 @@ namespace YYTK
 {
 	namespace Hooks
 	{
+		inline WNDPROC g_OriginalWindowProc = nullptr;
+
 		template <typename T>
 		T GetHookTrampoline(const char* Name)
 		{
 			return reinterpret_cast<T>(MmGetHookTrampoline(g_ArSelfModule, Name));
+		}
+
+		LRESULT WINAPI HkWndProc(
+			IN HWND WindowHandle,
+			IN UINT Message,
+			IN WPARAM WP,
+			IN LPARAM LP
+		)
+		{
+			auto original_function = g_OriginalWindowProc;
+
+			FunctionWrapper<decltype(HkWndProc)> func_wrapper(
+				original_function,
+				WindowHandle,
+				Message,
+				WP,
+				LP
+			);
+
+			return CallWindowProcW(
+				original_function,
+				WindowHandle, 
+				Message, 
+				WP, 
+				LP
+			);
 		}
 
 		HRESULT WINAPI HkPresent(
@@ -17,7 +45,16 @@ namespace YYTK
 			IN unsigned int Flags
 		)
 		{
-			return GetHookTrampoline<decltype(&HkPresent)>("Present")(
+			auto original_function = GetHookTrampoline<decltype(&HkPresent)>("Present");
+
+			FunctionWrapper<decltype(HkPresent)> func_wrapper(
+				original_function,
+				_this,
+				Sync,
+				Flags
+			);
+
+			return original_function(
 				_this,
 				Sync,
 				Flags
@@ -33,7 +70,19 @@ namespace YYTK
 			IN UINT SwapChainFlags
 		)
 		{
-			return GetHookTrampoline<decltype(&HkResizeBuffers)>("ResizeBuffers")(
+			auto original_function = GetHookTrampoline<decltype(&HkResizeBuffers)>("ResizeBuffers");
+
+			FunctionWrapper<decltype(HkResizeBuffers)> func_wrapper(
+				original_function,
+				_this,
+				BufferCount,
+				Width,
+				Height,
+				NewFormat,
+				SwapChainFlags
+			);
+
+			return original_function(
 				_this,
 				BufferCount,
 				Width,
@@ -51,7 +100,18 @@ namespace YYTK
 			IN INT Flags
 		)
 		{
-			return GetHookTrampoline<decltype(&HkExecuteIt)>("ExecuteIt")(
+			auto original_function = GetHookTrampoline<decltype(&HkExecuteIt)>("ExecuteIt");
+
+			FunctionWrapper<decltype(HkExecuteIt)> func_wrapper(
+				original_function,
+				SelfInstance,
+				OtherInstance,
+				CodeObject,
+				Arguments,
+				Flags
+			);
+
+			return original_function(
 				SelfInstance,
 				OtherInstance,
 				CodeObject,
@@ -69,7 +129,9 @@ namespace YYTK
 			IN CInstance* Arguments
 		)
 		{
-			return GetHookTrampoline<decltype(&HkDoCallScript)>("DoCallScript")(
+			auto original_function = GetHookTrampoline<decltype(&HkDoCallScript)>("DoCallScript");
+
+			return original_function(
 				Script,
 				ArgumentCount,
 				VmStackPointer,
@@ -238,6 +300,14 @@ namespace YYTK
 
 			if (!AurieSuccess(last_status))
 				return AURIE_MODULE_INITIALIZATION_FAILED;
+
+			g_OriginalWindowProc = reinterpret_cast<WNDPROC>(SetWindowLongPtr(
+				WindowHandle,
+				GWLP_WNDPROC,
+				reinterpret_cast<LONG_PTR>(HkWndProc)
+			));
+
+			assert(g_OriginalWindowProc != nullptr);
 
 			return AURIE_SUCCESS;
 		}

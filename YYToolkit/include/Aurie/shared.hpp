@@ -174,15 +174,11 @@ namespace Aurie
 			);
 
 		EXPORTED inline int WINAPI DllMain(
-			HINSTANCE hinstDLL,  // handle to DLL module
-			DWORD fdwReason,     // reason for calling function
-			LPVOID lpvReserved   // reserved
+			HINSTANCE,  // handle to DLL module
+			DWORD,		// reason for calling function
+			LPVOID		// reserved
 		)
 		{
-			UNREFERENCED_PARAMETER(hinstDLL);
-			UNREFERENCED_PARAMETER(fdwReason);
-			UNREFERENCED_PARAMETER(lpvReserved);
-
 			return TRUE;
 		}
 
@@ -257,9 +253,11 @@ namespace Aurie
 
 namespace Aurie
 {
-	inline bool ElIsProcessSuspended()
+	inline AurieStatus ElIsProcessSuspended(
+		OUT bool& Suspended
+	)
 	{
-		return AURIE_API_CALL(ElIsProcessSuspended);
+		return AURIE_API_CALL(ElIsProcessSuspended, Suspended);
 	}
 
 	inline PVOID MmAllocatePersistentMemory(
