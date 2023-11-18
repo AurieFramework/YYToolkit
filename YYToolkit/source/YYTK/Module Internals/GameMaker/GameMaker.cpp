@@ -314,11 +314,13 @@ namespace YYTK
 			if (mov_displacement >= sizeof(YYRunnerInterface))
 				continue;
 
+			/*
 			CmWriteWarning(
 				"YYRunnerInterface+0x%04llx = 0x%p",
 				mov_displacement,
 				lea.FunctionTarget
 			);
+			*/
 
 			memcpy(
 				interface_base + mov_displacement,

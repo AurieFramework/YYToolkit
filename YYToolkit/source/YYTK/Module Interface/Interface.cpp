@@ -76,6 +76,28 @@ namespace YYTK
 		return sizeof(RFunctionStringFull);
 	}
 
+	ModuleCallbackDescriptor* YYTKInterfaceImpl::YkFindDescriptor(
+		IN const ModuleCallbackDescriptor& Descriptor
+	)
+	{
+		auto iterator = std::find_if(
+			m_RegisteredCallbacks.begin(),
+			m_RegisteredCallbacks.end(),
+			[Descriptor](const ModuleCallbackDescriptor& Element) -> bool
+			{
+				return Descriptor.OwnerModule == Element.OwnerModule &&
+					Descriptor.Routine == Element.Routine &&
+					Descriptor.Trigger == Element.Trigger &&
+					Descriptor.Priority == Element.Priority;
+			}
+		);
+
+		if (iterator == std::end(m_RegisteredCallbacks))
+			return nullptr;
+
+		return &(*iterator);
+	}
+
 	void YYTKInterfaceImpl::YkRemoveCallbackFromList(
 		IN Aurie::AurieModule* Module, 
 		IN PVOID Routine
@@ -84,10 +106,8 @@ namespace YYTK
 		if (!YkCallbackExists(Module, Routine))
 			return;
 
-		std::vector<ModuleCallbackDescriptor>& module_callbacks = m_RegisteredCallbacks.at(Module);
-
 		std::erase_if(
-			module_callbacks,
+			m_RegisteredCallbacks,
 			[Routine](const ModuleCallbackDescriptor& Descriptor) -> bool
 			{
 				return Descriptor.Routine == Routine;
@@ -100,19 +120,14 @@ namespace YYTK
 		IN PVOID Routine
 	)
 	{
-		if (!m_RegisteredCallbacks.contains(Module))
-			return false;
-
-		std::vector<ModuleCallbackDescriptor>& module_callbacks = m_RegisteredCallbacks.at(Module);
-
 		return std::find_if(
-			module_callbacks.begin(),
-			module_callbacks.end(),
-			[Routine](const ModuleCallbackDescriptor& Descriptor) -> bool
+			m_RegisteredCallbacks.begin(),
+			m_RegisteredCallbacks.end(),
+			[Module, Routine](const ModuleCallbackDescriptor& Descriptor) -> bool
 			{
-				return Descriptor.Routine == Routine;
+				return Descriptor.Routine == Routine && Descriptor.OwnerModule == Module;
 			}
-		) != std::end(module_callbacks);
+		) != std::end(m_RegisteredCallbacks);
 	}
 
 	ModuleCallbackDescriptor YYTKInterfaceImpl::YkCreateCallbackDescriptor(
@@ -132,11 +147,23 @@ namespace YYTK
 	}
 
 	ModuleCallbackDescriptor* YYTKInterfaceImpl::YkAddToCallbackList(
-		IN AurieModule* Module,
 		IN ModuleCallbackDescriptor& Descriptor
 	)
 	{
-		return &m_RegisteredCallbacks[Module].emplace_back(Descriptor);
+		m_RegisteredCallbacks.emplace_back(Descriptor);
+
+		// Make sure the descriptors are sorted by priority, so that when
+		// YkDispatchCallbacks runs, they're sorted
+		std::sort(
+			m_RegisteredCallbacks.begin(),
+			m_RegisteredCallbacks.end(),
+			[](const ModuleCallbackDescriptor& First, const ModuleCallbackDescriptor& Second) -> bool
+			{
+				return First.Priority > Second.Priority;
+			}
+		);
+
+		return YkFindDescriptor(Descriptor);
 	}
 
 	AurieStatus YYTKInterfaceImpl::Create()
@@ -585,13 +612,25 @@ namespace YYTK
 	}
 
 	AurieStatus YYTKInterfaceImpl::CreateCallback(
-		IN Aurie::AurieModule* Module, 
+		IN AurieModule* Module, 
 		IN EventTriggers Trigger, 
 		IN PVOID Routine,
 		IN int32_t Priority
 	)
 	{
-		return AURIE_NOT_IMPLEMENTED;
+		if (YkCallbackExists(Module, Routine))
+			return AURIE_OBJECT_ALREADY_EXISTS;
+
+		ModuleCallbackDescriptor callback_descriptor = YkCreateCallbackDescriptor(
+			Module,
+			Trigger,
+			Routine,
+			Priority
+		);
+
+		YkAddToCallbackList(callback_descriptor);
+
+		return AURIE_SUCCESS;
 	}
 
 	AurieStatus YYTKInterfaceImpl::RemoveCallback(
@@ -599,7 +638,11 @@ namespace YYTK
 		IN PVOID Routine
 	)
 	{
-		return AURIE_NOT_IMPLEMENTED;
+		if (!YkCallbackExists(Module, Routine))
+			return AURIE_OBJECT_NOT_FOUND;
+
+		YkRemoveCallbackFromList(Module, Routine);
+		return AURIE_SUCCESS;
 	}
 
 	AurieStatus YYTKInterfaceImpl::GetInstanceMember(

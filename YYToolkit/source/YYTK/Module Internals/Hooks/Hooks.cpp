@@ -30,6 +30,14 @@ namespace YYTK
 				LP
 			);
 
+			g_ModuleInterface.YkDispatchCallbacks(
+				EVENT_WNDPROC,
+				func_wrapper
+			);
+
+			if (func_wrapper.CalledOriginal())
+				return func_wrapper.Result();
+
 			return CallWindowProcW(
 				original_function,
 				WindowHandle, 
@@ -53,6 +61,14 @@ namespace YYTK
 				Sync,
 				Flags
 			);
+
+			g_ModuleInterface.YkDispatchCallbacks(
+				EVENT_FRAME,
+				func_wrapper
+			);
+
+			if (func_wrapper.CalledOriginal())
+				return func_wrapper.Result();
 
 			return original_function(
 				_this,
@@ -81,6 +97,14 @@ namespace YYTK
 				NewFormat,
 				SwapChainFlags
 			);
+
+			g_ModuleInterface.YkDispatchCallbacks(
+				EVENT_RESIZE,
+				func_wrapper
+			);
+
+			if (func_wrapper.CalledOriginal())
+				return func_wrapper.Result();
 
 			return original_function(
 				_this,
@@ -111,6 +135,14 @@ namespace YYTK
 				Flags
 			);
 
+			g_ModuleInterface.YkDispatchCallbacks(
+				EVENT_OBJECT_CALL,
+				func_wrapper
+			);
+
+			if (func_wrapper.CalledOriginal())
+				return func_wrapper.Result();
+
 			return original_function(
 				SelfInstance,
 				OtherInstance,
@@ -130,6 +162,24 @@ namespace YYTK
 		)
 		{
 			auto original_function = GetHookTrampoline<decltype(&HkDoCallScript)>("DoCallScript");
+
+			FunctionWrapper<decltype(HkDoCallScript)> func_wrapper(
+				original_function,
+				Script,
+				ArgumentCount,
+				VmStackPointer,
+				VmInstance,
+				Locals,
+				Arguments
+			);
+
+			g_ModuleInterface.YkDispatchCallbacks(
+				EVENT_SCRIPT_CALL,
+				func_wrapper
+			);
+
+			if (func_wrapper.CalledOriginal())
+				return func_wrapper.Result();
 
 			return original_function(
 				Script,

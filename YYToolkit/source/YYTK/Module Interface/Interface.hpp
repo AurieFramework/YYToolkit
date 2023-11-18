@@ -27,9 +27,6 @@ namespace YYTK
 		// The function cache used for faster lookups
 		std::map<std::string, TRoutine> m_FunctionCache = {};
 
-		// Stores plugin callbacks
-		std::map<Aurie::AurieModule*, std::vector<ModuleCallbackDescriptor>> m_RegisteredCallbacks;
-
 		// D3D11 stuff
 		IDXGISwapChain* m_EngineSwapchain = nullptr;
 		ID3D11Device* m_EngineDevice = nullptr;
@@ -41,6 +38,11 @@ namespace YYTK
 		// New runners (2023.8) use a const char* in the array
 		size_t m_FunctionEntrySize = 0;
 
+	public:
+		// Stores plugin callbacks
+		std::vector<ModuleCallbackDescriptor> m_RegisteredCallbacks;
+
+		// === Internal functions ===
 		void YkExtractFunctionEntry(
 			IN size_t Index,
 			OUT std::string& FunctionName,
@@ -56,8 +58,11 @@ namespace YYTK
 		);
 
 		ModuleCallbackDescriptor* YkAddToCallbackList(
-			IN Aurie::AurieModule* Module,
 			IN ModuleCallbackDescriptor& Descriptor
+		);
+
+		ModuleCallbackDescriptor* YkFindDescriptor(
+			IN const ModuleCallbackDescriptor& Descriptor
 		);
 
 		void YkRemoveCallbackFromList(
@@ -70,9 +75,23 @@ namespace YYTK
 			IN PVOID Routine
 		);
 
+		template <typename T>
+		void YkDispatchCallbacks(
+			IN EventTriggers Trigger,
+			IN OUT FunctionWrapper<T>& Function
+		)
+		{
+			// Calls all callbacks matching the Trigger
+
+			for (auto& callback_descriptor : m_RegisteredCallbacks)
+			{
+				if (callback_descriptor.Trigger == Trigger)
+					reinterpret_cast<void(*)(FunctionWrapper<T>&)>(callback_descriptor.Routine)(Function);
+			}
+		}
+
 		size_t YkDetermineFunctionEntrySize();
 
-	public:
 		// === Interface Functions ===
 		virtual Aurie::AurieStatus Create() override final;
 

@@ -4,9 +4,9 @@ using namespace Aurie;
 using namespace YYTK;
 
 void ModuleCallbackRoutine(
-	IN const AurieModule* const AffectedModule,
-	IN const AurieModuleOperationType OperationType,
-	IN const bool IsFutureCall
+	IN AurieModule* AffectedModule,
+	IN AurieModuleOperationType OperationType,
+	IN bool IsFutureCall
 )
 {
 	UNREFERENCED_PARAMETER(AffectedModule);
@@ -15,15 +15,24 @@ void ModuleCallbackRoutine(
 	if (!IsFutureCall)
 		return;
 
-	// We're waiting for ModuleInitialize calls
-	if (OperationType != AURIE_OPERATION_INITIALIZE)
-		return;
+	// If we didn't run through the 2nd stage interface init yet, 
+	if (OperationType == AURIE_OPERATION_INITIALIZE)
+	{
+		if (!g_ModuleInterface.m_SecondInitComplete)
+			g_ModuleInterface.Create();
+	}
 
-	// Call the interface's Create function again, to make sure 
-	g_ModuleInterface.Create();
-
-	// Disable any future callbacks
-	Internal::ObpSetModuleOperationCallback(g_ArSelfModule, nullptr);
+	// Before any plugin unloading happens, we want to remove the callbacks for that plugin (if it has any)
+	else if (OperationType == AURIE_OPERATION_UNLOAD)
+	{
+		std::erase_if(
+			g_ModuleInterface.m_RegisteredCallbacks,
+			[AffectedModule](const ModuleCallbackDescriptor& Descriptor)
+			{
+				return Descriptor.OwnerModule == AffectedModule;
+			}
+		);
+	}
 }
 
 EXPORTED AurieStatus ModulePreinitialize(
@@ -56,19 +65,6 @@ EXPORTED AurieStatus ModulePreinitialize(
 		"YYTK_Main"
 	);
 
-	int index = 0;
-	AurieStatus status = g_ModuleInterface.GetNamedRoutineIndex(
-		"@@GlobalScope@@",
-		&index
-	);
-
-	CmWriteOutput(
-		CM_LIGHTAQUA, 
-		"[Preload] GetNamedRoutineIndex(\"@@GlobalScope@@\") returns status %d and function ID %d!",
-		status, 
-		index
-	);
-	
 	Internal::ObpSetModuleOperationCallback(
 		g_ArSelfModule,
 		ModuleCallbackRoutine
@@ -90,22 +86,6 @@ EXPORTED AurieStatus ModuleInitialize(
 
 	if (!g_ModuleInterface.m_SecondInitComplete)
 		return AURIE_MODULE_INITIALIZATION_FAILED;
-
-	int index = 0;
-	AurieStatus status = g_ModuleInterface.GetNamedRoutineIndex(
-		"gml_Script_input_player_verify",
-		&index
-	);
-
-	CmWriteOutput(
-		CM_LIGHTAQUA,
-		"[Initialize] GetNamedRoutineIndex() returns status %d and function ID %d!",
-		status,
-		index
-	);
-
-	RValue test("hi", &g_ModuleInterface);
-	assert(test.m_Kind == VALUE_STRING);
 
 	return AURIE_SUCCESS;
 }
