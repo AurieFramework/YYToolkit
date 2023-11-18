@@ -70,6 +70,10 @@ namespace YYTK
 		OUT PVOID* DoCallScript
 	);
 
+	Aurie::AurieStatus GmpFindCodeExecute(
+		OUT PVOID* CodeExecute
+	);
+
 	// Allows for multiple matches in a scanned region
 	Aurie::AurieStatus GmpSigscanRegionEx(
 		IN const unsigned char* RegionBase,

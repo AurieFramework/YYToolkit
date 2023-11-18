@@ -276,10 +276,13 @@ namespace YYTK
 			assert(m_EngineDeviceContext != nullptr);
 			assert(m_EngineSwapchain != nullptr);
 
-			Hooks::HkInitialize(
+			last_status = Hooks::HkInitialize(
 				m_WindowHandle,
 				m_EngineSwapchain
 			);
+
+			if (!AurieSuccess(last_status))
+				return Aurie::AURIE_MODULE_INTERNAL_ERROR;
 
 			m_SecondInitComplete = true;
 			return AURIE_SUCCESS;
