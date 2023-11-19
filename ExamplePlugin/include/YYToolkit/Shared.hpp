@@ -140,6 +140,10 @@ namespace YYTK
 		RValue();
 
 		RValue(
+			IN bool Value
+		);
+
+		RValue(
 			IN double Value
 		);
 
@@ -157,6 +161,14 @@ namespace YYTK
 
 		RValue(
 			IN std::string_view Value,
+			IN YYTKInterface* Interface
+		);
+
+		bool AsBool() const;
+
+		double AsReal() const;
+
+		std::string_view AsString(
 			IN YYTKInterface* Interface
 		);
 	};
@@ -508,6 +520,11 @@ namespace YYTK
 		virtual const YYRunnerInterface& GetRunnerInterface() = 0;
 
 		virtual void InvalidateAllCaches() = 0;
+
+		virtual Aurie::AurieStatus GetScriptData(
+			IN int Index,
+			OUT CScript*& Script
+		) = 0;
 	};
 }
 
