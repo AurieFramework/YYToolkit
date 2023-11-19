@@ -45,25 +45,15 @@ EXPORTED AurieStatus ModulePreinitialize(
 	CmpCreateConsole();
 
 	AurieStatus last_status = AURIE_SUCCESS;
-	fs::path plugin_folder;
 
-	// Get the game folder 
-	last_status = Internal::MdpGetImageFolder(
-		g_ArInitialImage,
-		plugin_folder
-	);
-
-	if (!AurieSuccess(last_status))
-		return last_status;
-
-	// Craft the path %GAMEDIR%\\mods\\yytk
-	plugin_folder = plugin_folder / "mods" / "yytk";
-
-	ObCreateInterface(
+	last_status = ObCreateInterface(
 		Module,
 		&g_ModuleInterface,
 		"YYTK_Main"
 	);
+
+	if (!AurieSuccess(last_status))
+		return last_status;
 
 	Internal::ObpSetModuleOperationCallback(
 		g_ArSelfModule,
