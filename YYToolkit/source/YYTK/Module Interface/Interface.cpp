@@ -329,7 +329,7 @@ namespace YYTK
 	{
 		Major = 3;
 		Minor = 0;
-		Patch = 0;
+		Patch = 1;
 	}
 
 	AurieStatus YYTKInterfaceImpl::GetNamedRoutineIndex(
@@ -433,7 +433,7 @@ namespace YYTK
 	{
 		AurieStatus last_status = AURIE_SUCCESS;
 
-		if (!m_RunnerInterface.YYGetPtr)
+		if (!m_RunnerInterface.PTR_RValue)
 			return AURIE_MODULE_INTERNAL_ERROR;
 
 		if (!Instance)
