@@ -377,6 +377,10 @@ namespace YYTK
 			&function_index
 		);
 
+		// Make sure we got one
+		if (!AurieSuccess(last_status))
+			return last_status;
+
 		// Values greater or equal to 100k are reserved for scripts.
 		// Values greater or equal to 500k are reserved for extension functions.
 		// Until we can deal with those, just deny access.
@@ -396,10 +400,6 @@ namespace YYTK
 
 			return AURIE_SUCCESS;
 		}
-
-		// Make sure we got one
-		if (!AurieSuccess(last_status))
-			return last_status;
 
 		// Previous check should've tripped if the value is -1
 		assert(function_index > 0);
@@ -741,5 +741,17 @@ namespace YYTK
 	void YYTKInterfaceImpl::InvalidateAllCaches()
 	{
 		m_FunctionCache.clear();
+	}
+
+	Aurie::AurieStatus YYTKInterfaceImpl::GetScriptData(
+		IN int Index, 
+		OUT CScript*& Script
+	)
+	{
+		if (!m_GetScriptData)
+			return AURIE_MODULE_INTERNAL_ERROR;
+
+		Script = m_GetScriptData(Index);
+		return AURIE_SUCCESS;
 	}
 }

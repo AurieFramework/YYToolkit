@@ -164,9 +164,9 @@ namespace YYTK
 			IN YYTKInterface* Interface
 		);
 
-		bool AsBool();
+		bool AsBool() const;
 
-		double AsReal();
+		double AsReal() const;
 
 		std::string_view AsString(
 			IN YYTKInterface* Interface
@@ -520,6 +520,11 @@ namespace YYTK
 		virtual const YYRunnerInterface& GetRunnerInterface() = 0;
 
 		virtual void InvalidateAllCaches() = 0;
+
+		virtual Aurie::AurieStatus GetScriptData(
+			IN int Index,
+			OUT CScript*& Script
+		) = 0;
 	};
 }
 

@@ -74,7 +74,7 @@ RValue::RValue(
 	);
 }
 
-bool RValue::AsBool()
+bool RValue::AsBool() const
 {
 	switch (this->m_Kind)
 	{
@@ -99,7 +99,7 @@ bool RValue::AsBool()
 	return false;
 }
 
-double RValue::AsReal()
+double RValue::AsReal() const
 {
 	switch (this->m_Kind)
 	{

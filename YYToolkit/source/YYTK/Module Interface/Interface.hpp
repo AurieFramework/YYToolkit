@@ -189,6 +189,11 @@ namespace YYTK
 		virtual const YYRunnerInterface& GetRunnerInterface() override final;
 
 		virtual void InvalidateAllCaches() override final;
+
+		virtual Aurie::AurieStatus GetScriptData(
+			IN int Index,
+			OUT CScript*& Script
+		) override final;
 	};
 
 	inline YYTKInterfaceImpl g_ModuleInterface;
