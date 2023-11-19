@@ -1,15 +1,16 @@
 #include "Shared.hpp"
 #include <cassert>
 using namespace Aurie;
+using namespace YYTK;
 
-YYTK::RValue::RValue()
+RValue::RValue()
 {
 	this->m_Real = 0;
 	this->m_Flags = 0;
 	this->m_Kind = VALUE_UNSET;
 }
 
-YYTK::RValue::RValue(
+RValue::RValue(
 	IN bool Value
 )
 {
@@ -18,7 +19,7 @@ YYTK::RValue::RValue(
 	this->m_Kind = VALUE_BOOL;
 }
 
-YYTK::RValue::RValue(
+RValue::RValue(
 	IN double Value
 )
 {
@@ -27,7 +28,7 @@ YYTK::RValue::RValue(
 	this->m_Kind = VALUE_REAL;
 }
 
-YYTK::RValue::RValue(
+RValue::RValue(
 	IN int64_t Value
 )
 {
@@ -36,7 +37,7 @@ YYTK::RValue::RValue(
 	this->m_Kind = VALUE_INT64;
 }
 
-YYTK::RValue::RValue(
+RValue::RValue(
 	IN int32_t Value
 )
 {
@@ -45,7 +46,7 @@ YYTK::RValue::RValue(
 	this->m_Kind = VALUE_INT32;
 }
 
-YYTK::RValue::RValue(
+RValue::RValue(
 	IN CInstance* Object
 )
 {
@@ -54,7 +55,7 @@ YYTK::RValue::RValue(
 	this->m_Kind = VALUE_OBJECT;
 }
 
-YYTK::RValue::RValue(
+RValue::RValue(
 	IN std::string_view Value,
 	IN YYTKInterface* Interface
 )
@@ -73,7 +74,7 @@ YYTK::RValue::RValue(
 	);
 }
 
-bool YYTK::RValue::AsBool()
+bool RValue::AsBool()
 {
 	switch (this->m_Kind)
 	{
@@ -98,7 +99,7 @@ bool YYTK::RValue::AsBool()
 	return false;
 }
 
-double YYTK::RValue::AsReal()
+double RValue::AsReal()
 {
 	switch (this->m_Kind)
 	{
@@ -118,7 +119,7 @@ double YYTK::RValue::AsReal()
 	return 0.0;
 }
 
-std::string_view YYTK::RValue::AsString(
+std::string_view RValue::AsString(
 	IN YYTKInterface* Interface
 )
 {

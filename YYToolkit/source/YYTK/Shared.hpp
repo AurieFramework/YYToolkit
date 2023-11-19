@@ -140,6 +140,10 @@ namespace YYTK
 		RValue();
 
 		RValue(
+			IN bool Value
+		);
+
+		RValue(
 			IN double Value
 		);
 
@@ -157,6 +161,14 @@ namespace YYTK
 
 		RValue(
 			IN std::string_view Value,
+			IN YYTKInterface* Interface
+		);
+
+		bool AsBool();
+
+		double AsReal();
+
+		std::string_view AsString(
 			IN YYTKInterface* Interface
 		);
 	};
