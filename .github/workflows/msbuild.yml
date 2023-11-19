@@ -49,9 +49,11 @@ jobs:
       with:
         name: YYToolkit Module (x64, Debug)
         path: .\x64\Debug\YYToolkit.dll
+              .\x64\Debug\YYToolkit.pdb
         
     - name: Create release artifact
       uses: actions/upload-artifact@v3
       with:
         name: YYToolkit Module (x64, Release)
         path: .\x64\Release\YYToolkit.dll
+              .\x64\Release\YYToolkit.pdb
