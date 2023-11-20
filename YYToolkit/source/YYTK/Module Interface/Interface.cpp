@@ -751,7 +751,14 @@ namespace YYTK
 		if (!m_GetScriptData)
 			return AURIE_MODULE_INTERNAL_ERROR;
 
-		Script = m_GetScriptData(Index);
+		CScript* possible_script = nullptr;
+		possible_script = m_GetScriptData(Index);
+
+		// If we didn't retrieve a valid script, that means the index is invalid.
+		if (!possible_script)
+			return AURIE_OBJECT_NOT_FOUND;
+
+		Script = possible_script;
 		return AURIE_SUCCESS;
 	}
 }
