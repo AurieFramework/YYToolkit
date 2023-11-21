@@ -310,5 +310,18 @@ namespace YYTK
 
 			return AURIE_SUCCESS;
 		}
+
+		Aurie::AurieStatus HkUninitialize(
+			IN HWND WindowHandle
+		)
+		{
+			SetWindowLongPtr(
+				WindowHandle,
+				GWLP_WNDPROC,
+				reinterpret_cast<LONG_PTR>(g_OriginalWindowProc)
+			);
+
+			return AURIE_SUCCESS;
+		}
 	}
 }

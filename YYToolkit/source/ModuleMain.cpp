@@ -3,35 +3,39 @@
 using namespace Aurie;
 using namespace YYTK;
 
-void ModuleCallbackRoutine(
+EXPORTED void ModuleOperationCallback(
 	IN AurieModule* AffectedModule,
 	IN AurieModuleOperationType OperationType,
-	IN bool IsFutureCall
+	OPTIONAL IN OUT AurieOperationInfo* OperationInfo
 )
 {
-	UNREFERENCED_PARAMETER(AffectedModule);
-
-	// We're only interested in future calls (ie. calls that didn't yet happen)
-	if (!IsFutureCall)
+	// If we didn't get a valid operation info struct, we bail
+	if (!OperationInfo)
 		return;
 
-	// If we didn't run through the 2nd stage interface init yet, 
-	if (OperationType == AURIE_OPERATION_INITIALIZE)
-	{
-		if (!g_ModuleInterface.m_SecondInitComplete)
-			g_ModuleInterface.Create();
-	}
+	// We're only interested in future calls (ie. calls that didn't yet happen)
+	if (!OperationInfo->IsFutureCall)
+		return;
 
-	// Before any plugin unloading happens, we want to remove the callbacks for that plugin (if it has any)
-	else if (OperationType == AURIE_OPERATION_UNLOAD)
+	switch (OperationType)
 	{
-		std::erase_if(
-			g_ModuleInterface.m_RegisteredCallbacks,
-			[AffectedModule](const ModuleCallbackDescriptor& Descriptor)
-			{
-				return Descriptor.OwnerModule == AffectedModule;
-			}
-		);
+	case AURIE_OPERATION_INITIALIZE:
+		{
+			if (!g_ModuleInterface.m_SecondInitComplete)
+				g_ModuleInterface.Create();
+			break;
+		}
+	case AURIE_OPERATION_UNLOAD:
+		{
+			// Before any plugin unloading happens, we want to remove the callbacks for that plugin (if it has any)
+			std::erase_if(
+				g_ModuleInterface.m_RegisteredCallbacks,
+				[AffectedModule](const ModuleCallbackDescriptor& Descriptor)
+				{
+					return Descriptor.OwnerModule == AffectedModule;
+				}
+			);
+		}
 	}
 }
 
@@ -54,11 +58,6 @@ EXPORTED AurieStatus ModulePreinitialize(
 
 	if (!AurieSuccess(last_status))
 		return last_status;
-
-	Internal::ObpSetModuleOperationCallback(
-		g_ArSelfModule,
-		ModuleCallbackRoutine
-	);
 
 	return AURIE_SUCCESS;
 }

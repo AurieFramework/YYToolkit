@@ -319,7 +319,12 @@ namespace YYTK
 		return Aurie::AURIE_SUCCESS;
 	}
 
-	void YYTKInterfaceImpl::Destroy() { }
+	void YYTKInterfaceImpl::Destroy() 
+	{
+		Hooks::HkUninitialize(
+			m_WindowHandle
+		);
+	}
 
 	void YYTKInterfaceImpl::QueryVersion(
 		OUT short& Major, 
@@ -329,7 +334,7 @@ namespace YYTK
 	{
 		Major = 3;
 		Minor = 0;
-		Patch = 1;
+		Patch = 2;
 	}
 
 	AurieStatus YYTKInterfaceImpl::GetNamedRoutineIndex(

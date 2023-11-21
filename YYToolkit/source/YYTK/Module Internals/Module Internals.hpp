@@ -116,6 +116,10 @@ namespace YYTK
 			IN HWND WindowHandle,
 			IN IDXGISwapChain* EngineSwapChain
 		);
+
+		Aurie::AurieStatus HkUninitialize(
+			IN HWND WindowHandle
+		);
 	}
 }
 
