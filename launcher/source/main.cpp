@@ -61,7 +61,7 @@ int main()
 	GLFWwindow* ui_window = glfwCreateWindow(
 		window_x, 
 		window_y, 
-		"Archway beta",
+		"YYTK Legacy Launcher",
 		nullptr, 
 		nullptr
 	);

@@ -118,6 +118,10 @@ CURLcode network::fetch_releases(CURL* easy_handle, std::string_view author_name
 		current_release.tag_name = release.at("tag_name").get<std::string>();
 		current_release.title_name = release.at("name").get<std::string>();
 
+		// Ignore YYTK Next releases
+		if (current_release.tag_name._Starts_with("v3"))
+			continue;
+
 		if (!release.contains("assets"))
 			continue;
 
