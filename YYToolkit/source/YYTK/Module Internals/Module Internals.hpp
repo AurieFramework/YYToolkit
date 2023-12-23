@@ -45,6 +45,11 @@ namespace YYTK
 		OUT YYRunnerInterface& Interface
 	);
 
+	Aurie::AurieStatus GmpGetBuiltinInformation(
+		OUT int32_t*& BuiltinCount,
+		OUT RVariableRoutine*& RoutineArray
+	);
+
 	std::vector<TargettedInstruction> GmpDisassemble(
 		IN PVOID Address,
 		IN size_t MaximumSize,

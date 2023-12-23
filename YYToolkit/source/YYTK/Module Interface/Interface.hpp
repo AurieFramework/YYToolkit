@@ -38,6 +38,9 @@ namespace YYTK
 		// New runners (2023.8) use a const char* in the array
 		size_t m_FunctionEntrySize = 0;
 
+		// Array of up to 500 builtins
+		RVariableRoutine* m_BuiltinArray = nullptr;
+		int* m_BuiltinCount = nullptr;
 	public:
 		// Stores plugin callbacks
 		std::vector<ModuleCallbackDescriptor> m_RegisteredCallbacks;
@@ -194,6 +197,16 @@ namespace YYTK
 			IN int Index,
 			OUT CScript*& Script
 		) override final;
+
+		virtual Aurie::AurieStatus GetBuiltin(
+			IN std::string_view Name,
+			OUT RValue& Value
+		);
+
+		virtual Aurie::AurieStatus SetBuiltin(
+			IN std::string_view Name,
+			OUT RValue& Value
+		);
 	};
 
 	inline YYTKInterfaceImpl g_ModuleInterface;

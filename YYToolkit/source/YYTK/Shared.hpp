@@ -91,6 +91,7 @@ namespace YYTK
 	struct YYRunnerInterface;
 	class YYTKInterface;
 	struct RValue;
+	struct RVariableRoutine;
 
 	struct YYGMLException
 	{

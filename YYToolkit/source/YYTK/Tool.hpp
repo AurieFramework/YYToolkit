@@ -6,8 +6,22 @@
 
 namespace YYTK
 {
-	using FNScriptData = CScript * (*)(int Index);
-	
+	using FNScriptData = CScript*(*)(
+		IN int Index
+	);
+
+	using FNGetVariable = bool(*)(
+		OPTIONAL IN CInstance* Instance,
+		OPTIONAL IN int Index, 
+		OUT RValue* Value
+	);
+
+	using FNSetVariable = bool(*)(
+		OPTIONAL IN CInstance* Instance,
+		OPTIONAL IN int Index, 
+		IN RValue* Value
+	);
+
 	struct RFunctionStringFull
 	{
 		char m_Name[64];
@@ -45,6 +59,15 @@ namespace YYTK
 		}
 	};
 	static_assert(sizeof(RFunction) == 80);
+
+	struct RVariableRoutine
+	{
+		const char* m_Name;
+		FNGetVariable m_GetVariable;
+		FNSetVariable m_SetVariable;
+		bool m_CanBeSet;
+	};
+	static_assert(sizeof(RVariableRoutine) == 32);
 
 	struct TargettedInstruction
 	{

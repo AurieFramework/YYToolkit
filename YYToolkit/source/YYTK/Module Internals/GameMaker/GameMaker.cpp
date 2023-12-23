@@ -332,6 +332,70 @@ namespace YYTK
 		return AURIE_SUCCESS;
 	}
 
+	Aurie::AurieStatus GmpGetBuiltinInformation(
+		OUT int32_t*& BuiltinCount, 
+		OUT RVariableRoutine*& RoutineArray
+	)
+	{
+		AurieStatus last_status = AURIE_SUCCESS;
+		std::wstring game_name;
+
+		last_status = MdGetImageFilename(
+			g_ArInitialImage,
+			game_name
+		);
+
+		if (!AurieSuccess(last_status))
+			return last_status;
+
+		// We're looking for a pattern in Variable_BuiltIn_Add
+		size_t pattern_match = MmSigscanModule(
+			game_name.c_str(),
+			UTEXT(
+				"\x3D\xF4\x01\x00\x00"	// cmp (r/e)ax, 0x1F4
+				"\x75\x00"				// jnz short ??
+			),
+			"xxxxxx?"
+		);
+
+		if (!pattern_match)
+			return AURIE_MODULE_INITIALIZATION_FAILED;
+
+		std::vector<TargettedInstruction> instructions = GmpDisassemble(
+			reinterpret_cast<PVOID>(pattern_match),
+			0xFF,
+			0xFF
+		);
+
+		for (auto& instruction : instructions)
+		{
+			if (instruction.RawForm.info.mnemonic != ZYDIS_MNEMONIC_LEA)
+				continue;
+
+			if (instruction.RawForm.operands[0].type != ZYDIS_OPERAND_TYPE_REGISTER)
+				continue;
+
+			// Fix for holocure, this is dumb
+			if (instruction.RawForm.operands[0].reg.value != ZYDIS_REGISTER_R14)
+				continue;
+
+			// Calculate the absolute address
+			ZyanU64 call_address = 0;
+			ZydisCalcAbsoluteAddress(
+				&instruction.RawForm.info,
+				&instruction.RawForm.operands[1],
+				instruction.RawForm.runtime_address,
+				&call_address
+			);
+
+			RoutineArray = reinterpret_cast<RVariableRoutine*>(call_address);
+
+			return AURIE_SUCCESS;
+		}
+		
+		return AURIE_MODULE_INITIALIZATION_FAILED;
+	}
+
 	std::vector<TargettedInstruction> GmpDisassemble(
 		IN PVOID Address,
 		IN size_t MaximumSize,

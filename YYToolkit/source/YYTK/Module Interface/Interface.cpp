@@ -205,6 +205,17 @@ namespace YYTK
 			if (!AurieSuccess(last_status))
 				return AURIE_MODULE_INTERNAL_ERROR;
 
+			// Get the array of builtins
+			last_status = GmpGetBuiltinInformation(
+				this->m_BuiltinCount,
+				this->m_BuiltinArray
+			);
+
+			// Make sure we got that. While this isn't critical to YYTK,
+			// it makes mod development way easier.
+			if (!AurieSuccess(last_status))
+				return AURIE_MODULE_INTERNAL_ERROR;
+
 			YYTK::CmWriteOutput(CM_LIGHTBLUE, "Welcome to YYTK Next!");
 			YYTK::CmWriteOutput(CM_LIGHTBLUE, "m_Functions at %p!", m_FunctionsArray);
 
@@ -765,5 +776,15 @@ namespace YYTK
 
 		Script = possible_script;
 		return AURIE_SUCCESS;
+	}
+
+	Aurie::AurieStatus YYTKInterfaceImpl::GetBuiltin(IN std::string_view Name, OUT RValue& Value)
+	{
+		return Aurie::AurieStatus();
+	}
+
+	Aurie::AurieStatus YYTKInterfaceImpl::SetBuiltin(IN std::string_view Name, OUT RValue& Value)
+	{
+		return Aurie::AurieStatus();
 	}
 }
