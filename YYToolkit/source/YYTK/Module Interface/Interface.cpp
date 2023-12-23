@@ -216,8 +216,10 @@ namespace YYTK
 			if (!AurieSuccess(last_status))
 				return AURIE_MODULE_INTERNAL_ERROR;
 
-			YYTK::CmWriteOutput(CM_LIGHTBLUE, "Welcome to YYTK Next!");
-			YYTK::CmWriteOutput(CM_LIGHTBLUE, "m_Functions at %p!", m_FunctionsArray);
+			YYTK::CmWriteOutput(CM_LIGHTAQUA, "YYTK Next - Early initialization complete.");
+			YYTK::CmWriteOutput(CM_GRAY, "- m_FunctionsArray at 0x%p", m_FunctionsArray);
+			YYTK::CmWriteOutput(CM_GRAY, "- m_BuiltinCount at 0x%p", m_BuiltinCount);
+			YYTK::CmWriteOutput(CM_GRAY, "- m_BuiltinArray at 0x%p", m_BuiltinArray);
 
 			m_FirstInitComplete = true;
 			return AURIE_SUCCESS;
@@ -321,6 +323,25 @@ namespace YYTK
 
 			if (!AurieSuccess(last_status))
 				return Aurie::AURIE_MODULE_INTERNAL_ERROR;
+
+			YYTK::CmWriteOutput(CM_LIGHTAQUA, "YYTK Next - Late initialization complete.");
+
+			YYTK::CmWriteOutput(
+				CM_GRAY, 
+				"- RFunction Entry Type: %s", 
+				m_FunctionEntrySize == sizeof(RFunctionStringRef) ? "Referential" : "Embedded"
+			);
+
+			YYTK::CmWriteOutput(CM_GRAY, "- m_GetScriptData at 0x%p", m_GetScriptData);
+			YYTK::CmWriteOutput(CM_GRAY, "- m_BuiltinArray at 0x%p", m_BuiltinArray);
+			YYTK::CmWriteOutput(CM_GRAY, "- m_EngineDevice at 0x%p", m_EngineDevice);
+			YYTK::CmWriteOutput(CM_GRAY, "- m_EngineDeviceContext at 0x%p", m_EngineDeviceContext);
+			YYTK::CmWriteOutput(CM_GRAY, "- m_EngineSwapchain at 0x%p", m_EngineSwapchain);
+
+			for (size_t i = 0; i < *m_BuiltinCount; i++)
+			{
+				YYTK::CmWriteInfo("%s (writable: %d)", m_BuiltinArray[i].m_Name, m_BuiltinArray[i].m_CanBeSet);
+			}
 
 			m_SecondInitComplete = true;
 			return AURIE_SUCCESS;
@@ -778,13 +799,19 @@ namespace YYTK
 		return AURIE_SUCCESS;
 	}
 
-	Aurie::AurieStatus YYTKInterfaceImpl::GetBuiltin(IN std::string_view Name, OUT RValue& Value)
+	Aurie::AurieStatus YYTKInterfaceImpl::GetBuiltin(
+		IN std::string_view Name, 
+		OUT RValue& Value
+	)
 	{
-		return Aurie::AurieStatus();
+		return AURIE_NOT_IMPLEMENTED;
 	}
 
-	Aurie::AurieStatus YYTKInterfaceImpl::SetBuiltin(IN std::string_view Name, OUT RValue& Value)
+	Aurie::AurieStatus YYTKInterfaceImpl::SetBuiltin(
+		IN std::string_view Name, 
+		OUT RValue& Value
+	)
 	{
-		return Aurie::AurieStatus();
+		return AURIE_NOT_IMPLEMENTED;
 	}
 }

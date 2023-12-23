@@ -47,7 +47,7 @@ namespace YYTK
 
 	Aurie::AurieStatus GmpGetBuiltinInformation(
 		OUT int32_t*& BuiltinCount,
-		OUT RVariableRoutine*& RoutineArray
+		OUT RVariableRoutine*& BuiltinArray
 	);
 
 	std::vector<TargettedInstruction> GmpDisassemble(

@@ -333,8 +333,8 @@ namespace YYTK
 	}
 
 	Aurie::AurieStatus GmpGetBuiltinInformation(
-		OUT int32_t*& BuiltinCount, 
-		OUT RVariableRoutine*& RoutineArray
+		OUT int32_t*& BuiltinCount,
+		OUT RVariableRoutine*& BuiltinArray
 	)
 	{
 		AurieStatus last_status = AURIE_SUCCESS;
@@ -352,7 +352,7 @@ namespace YYTK
 		size_t pattern_match = MmSigscanModule(
 			game_name.c_str(),
 			UTEXT(
-				"\x3D\xF4\x01\x00\x00"	// cmp (r/e)ax, 0x1F4
+				"\x3D\xF4\x01\x00\x00"	// cmp eax, 0x1F4
 				"\x75\x00"				// jnz short ??
 			),
 			"xxxxxx?"
@@ -361,39 +361,117 @@ namespace YYTK
 		if (!pattern_match)
 			return AURIE_MODULE_INITIALIZATION_FAILED;
 
+		// We disassemble the function starting at the pattern
 		std::vector<TargettedInstruction> instructions = GmpDisassemble(
 			reinterpret_cast<PVOID>(pattern_match),
-			0xFF,
+			0x20,
 			0xFF
 		);
 
-		for (auto& instruction : instructions)
+		// Now, scan for the first jnz instruction
+		// This should be the second one (instructions[1]),
+		// but I don't want to hardcode it...
+
+		int64_t jnz_instruction_index = -1;
+		for (size_t i = 0; i < instructions.size(); i++)
 		{
-			if (instruction.RawForm.info.mnemonic != ZYDIS_MNEMONIC_LEA)
+			const auto& instruction = instructions.at(i).RawForm;
+
+			if (instruction.info.mnemonic != ZYDIS_MNEMONIC_JNZ)
 				continue;
 
-			if (instruction.RawForm.operands[0].type != ZYDIS_OPERAND_TYPE_REGISTER)
-				continue;
-
-			// Fix for holocure, this is dumb
-			if (instruction.RawForm.operands[0].reg.value != ZYDIS_REGISTER_R14)
-				continue;
-
-			// Calculate the absolute address
-			ZyanU64 call_address = 0;
-			ZydisCalcAbsoluteAddress(
-				&instruction.RawForm.info,
-				&instruction.RawForm.operands[1],
-				instruction.RawForm.runtime_address,
-				&call_address
-			);
-
-			RoutineArray = reinterpret_cast<RVariableRoutine*>(call_address);
-
-			return AURIE_SUCCESS;
+			jnz_instruction_index = i;
 		}
+
+		ZyanU64 jnz_target = 0;
+
+		// Follow the jnz instruction (ie. we "pass" the check for eax < 500)
+		ZyanStatus zyan_status = ZydisCalcAbsoluteAddress(
+			&instructions[jnz_instruction_index].RawForm.info,
+			&instructions[jnz_instruction_index].RawForm.operands[0],
+			instructions[jnz_instruction_index].RawForm.runtime_address,
+			&jnz_target
+		);
 		
-		return AURIE_MODULE_INITIALIZATION_FAILED;
+		// Translation failed? This shouldn't happen.
+		if (!ZYAN_SUCCESS(zyan_status) || !jnz_target)
+			return AURIE_MODULE_INITIALIZATION_FAILED;
+
+		// Now we disassemble again, but this time at the target of the jnz
+		// ie. where the CPU jumps to if we pass the bounds check
+		instructions = GmpDisassemble(
+			reinterpret_cast<PVOID>(jnz_target),
+			0x40,
+			0xFF
+		);
+
+		ZyanU64 array_base_address = 0;
+		ZyanU64 array_numb_address = 0;
+
+		for (const auto& instruction : instructions)
+		{
+			const auto& raw_instruction = instruction.RawForm;
+
+			// Until we have the base address of the array, we have to check for LEA instructions
+			// TODO: 2023-newer-IDA.i64 seems to use different format?
+			// 48 89 83 00 FC 06 01		mov qword ptr ds:builtin_variables.f_name[rbx], rax
+
+			// We're searching for two instructions that have the same format:
+			// Instruction 1: lea register, memory
+			// Instruction 2: movsxd register, memory
+			// 
+			// We can therefore check for this format up front, reducing code duplication
+			if (raw_instruction.info.operand_count != 2)
+			{
+				continue;
+			}
+
+			// Check that the operand types match
+			if (raw_instruction.operands[0].type != ZYDIS_OPERAND_TYPE_REGISTER)
+			{
+				continue;
+			}
+
+			// Check that the operand types match (part 2)
+			if (raw_instruction.operands[1].type != ZYDIS_OPERAND_TYPE_MEMORY)
+			{
+				continue;
+			}
+
+			// Until we find the base address of the builtin variable array,
+			// we check any LEA instruction we encounter.
+			if ((raw_instruction.info.mnemonic == ZYDIS_MNEMONIC_LEA) && (array_base_address == 0))
+			{
+				// Try to calculate the absolute address of the target
+				// It doesn't matter if we fail here - if we do, we try the next LEA.
+				ZydisCalcAbsoluteAddress(
+					&raw_instruction.info,
+					&raw_instruction.operands[1],
+					raw_instruction.runtime_address,
+					&array_base_address
+				);
+			}
+
+			// Until we have the address of the array "numb" (ie. the amount of elements used up)
+			// we have to check for MOVSXD instructions. It's the first one we encounter after the initial jmp
+			if ((raw_instruction.info.mnemonic == ZYDIS_MNEMONIC_MOVSXD) && (array_numb_address == 0))
+			{
+				ZydisCalcAbsoluteAddress(
+					&raw_instruction.info,
+					&raw_instruction.operands[1],
+					raw_instruction.runtime_address,
+					&array_numb_address
+				);
+			}
+		}
+
+		if (!array_base_address || !array_numb_address)
+			return AURIE_MODULE_INITIALIZATION_FAILED;
+
+		BuiltinCount = reinterpret_cast<int32_t*>(array_numb_address);
+		BuiltinArray = reinterpret_cast<RVariableRoutine*>(array_base_address);
+
+		return AURIE_SUCCESS;
 	}
 
 	std::vector<TargettedInstruction> GmpDisassemble(
