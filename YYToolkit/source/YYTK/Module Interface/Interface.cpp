@@ -333,15 +333,9 @@ namespace YYTK
 			);
 
 			YYTK::CmWriteOutput(CM_GRAY, "- m_GetScriptData at 0x%p", m_GetScriptData);
-			YYTK::CmWriteOutput(CM_GRAY, "- m_BuiltinArray at 0x%p", m_BuiltinArray);
 			YYTK::CmWriteOutput(CM_GRAY, "- m_EngineDevice at 0x%p", m_EngineDevice);
 			YYTK::CmWriteOutput(CM_GRAY, "- m_EngineDeviceContext at 0x%p", m_EngineDeviceContext);
 			YYTK::CmWriteOutput(CM_GRAY, "- m_EngineSwapchain at 0x%p", m_EngineSwapchain);
-
-			for (size_t i = 0; i < *m_BuiltinCount; i++)
-			{
-				YYTK::CmWriteInfo("%s (writable: %d)", m_BuiltinArray[i].m_Name, m_BuiltinArray[i].m_CanBeSet);
-			}
 
 			m_SecondInitComplete = true;
 			return AURIE_SUCCESS;
@@ -366,7 +360,7 @@ namespace YYTK
 	{
 		Major = 3;
 		Minor = 0;
-		Patch = 2;
+		Patch = 3;
 	}
 
 	AurieStatus YYTKInterfaceImpl::GetNamedRoutineIndex(
@@ -532,9 +526,9 @@ namespace YYTK
 	)
 	{
 		// Use the cached result if possible
-		if (m_FunctionCache.contains(FunctionName))
+		if (m_BuiltinFunctionCache.contains(FunctionName))
 		{
-			m_FunctionCache.at(FunctionName)(
+			m_BuiltinFunctionCache.at(FunctionName)(
 				&Result,
 				SelfInstance,
 				OtherInstance,
@@ -563,7 +557,7 @@ namespace YYTK
 		assert(function != nullptr);
 
 		// Cache the result
-		m_FunctionCache.insert(
+		m_BuiltinFunctionCache.insert(
 			std::make_pair(FunctionName, function)
 		);
 
@@ -777,7 +771,8 @@ namespace YYTK
 
 	void YYTKInterfaceImpl::InvalidateAllCaches()
 	{
-		m_FunctionCache.clear();
+		m_BuiltinFunctionCache.clear();
+		m_BuiltinVariableCache.clear();
 	}
 
 	Aurie::AurieStatus YYTKInterfaceImpl::GetScriptData(
@@ -799,19 +794,140 @@ namespace YYTK
 		return AURIE_SUCCESS;
 	}
 
-	Aurie::AurieStatus YYTKInterfaceImpl::GetBuiltin(
+	Aurie::AurieStatus YYTKInterfaceImpl::GetBuiltinVariableIndex(
 		IN std::string_view Name, 
+		OUT size_t& Index
+	)
+	{
+		if (!m_BuiltinArray || !m_BuiltinCount)
+			return AURIE_MODULE_INTERNAL_ERROR;
+
+		// If the entry is already cached, we fetch from there
+		if (m_BuiltinVariableCache.contains(Name.data()))
+		{
+			Index = m_BuiltinVariableCache.at(Name.data());
+			return AURIE_SUCCESS;
+		}
+
+		// Loop all builtin entries
+		for (size_t i = 0; i < *m_BuiltinCount; i++)
+		{
+			// If we have a match with the name, we cache the index and return
+			if (!_stricmp(Name.data(), m_BuiltinArray[i].m_Name))
+			{
+				m_BuiltinVariableCache[Name.data()] = i;
+				Index = i;
+
+				return AURIE_SUCCESS;
+			}
+		}
+
+		// We didn't return yet? That must mean the name isn't in the array...
+		return AURIE_OBJECT_NOT_FOUND;
+	}
+
+	Aurie::AurieStatus YYTKInterfaceImpl::GetBuiltinVariableInformation(
+		IN size_t Index,
+		OUT RVariableRoutine*& VariableInformation
+	)
+	{
+		if (!m_BuiltinArray || !m_BuiltinCount)
+			return AURIE_MODULE_INTERNAL_ERROR;
+
+		// Prevent ourselves from reading out-of-bounds
+		if (Index >= *m_BuiltinCount)
+			return AURIE_INVALID_PARAMETER;
+
+		VariableInformation = &m_BuiltinArray[Index];
+		return AURIE_SUCCESS;
+	}
+
+	Aurie::AurieStatus YYTKInterfaceImpl::GetBuiltin(
+		IN std::string_view Name,
+		IN CInstance* TargetInstance,
+		OPTIONAL IN int ArrayIndex,
 		OUT RValue& Value
 	)
 	{
-		return AURIE_NOT_IMPLEMENTED;
+		if (!m_BuiltinArray || !m_BuiltinCount)
+			return AURIE_MODULE_INTERNAL_ERROR;
+
+		AurieStatus last_status = AURIE_SUCCESS;
+		size_t variable_index = 0;
+
+		// Get the index for the builtin variable
+		// This function internally uses the builtin variable cache
+		last_status = GetBuiltinVariableIndex(Name, variable_index);
+
+		// Make sure we succeeded in that
+		if (!AurieSuccess(last_status))
+			return last_status;
+
+		// Get the variable information
+		RVariableRoutine* variable_information = nullptr;
+		last_status = GetBuiltinVariableInformation(
+			variable_index,
+			variable_information
+		);
+
+		if (!AurieSuccess(last_status))
+			return last_status;
+
+		// Deny access to variables that can't be read
+		if (!variable_information->m_GetVariable)
+			return AURIE_ACCESS_DENIED;
+
+		variable_information->m_GetVariable(
+			TargetInstance,
+			ArrayIndex,
+			&Value
+		);
+
+		return AURIE_SUCCESS;
 	}
 
 	Aurie::AurieStatus YYTKInterfaceImpl::SetBuiltin(
 		IN std::string_view Name, 
-		OUT RValue& Value
+		IN CInstance* TargetInstance,
+		OPTIONAL IN int ArrayIndex,
+		IN RValue& Value
 	)
 	{
-		return AURIE_NOT_IMPLEMENTED;
+		if (!m_BuiltinArray || !m_BuiltinCount)
+			return AURIE_MODULE_INTERNAL_ERROR;
+
+		AurieStatus last_status = AURIE_SUCCESS;
+		size_t variable_index = 0;
+
+		// Get the index for the builtin variable
+		// This function internally uses the builtin variable cache
+		last_status = GetBuiltinVariableIndex(Name, variable_index);
+
+		// Make sure we succeeded in that
+		if (!AurieSuccess(last_status))
+			return last_status;
+
+		// Get the variable information
+		RVariableRoutine* variable_information = nullptr;
+		last_status = GetBuiltinVariableInformation(
+			variable_index,
+			variable_information
+		);
+
+		if (!AurieSuccess(last_status))
+			return last_status;
+
+		// We ignore the "can be set" element - only time we can't 
+		// set the variable is when a setter literally doesn't exist.
+		if (!variable_information->m_SetVariable)
+			return AURIE_ACCESS_DENIED;
+
+		variable_information->m_SetVariable(
+			TargetInstance,
+			ArrayIndex,
+			&Value
+		);
+
+		return AURIE_SUCCESS;
 	}
 }

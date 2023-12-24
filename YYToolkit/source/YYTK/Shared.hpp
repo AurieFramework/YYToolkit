@@ -19,6 +19,10 @@
 #define UTEXT(x) ((const unsigned char*)(x))
 #endif // UTEXT
 
+#ifndef NULL_INDEX
+#define NULL_INDEX INT_MIN
+#endif
+
 namespace YYTK
 {
 	enum CmColor : uint8_t

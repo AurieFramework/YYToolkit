@@ -24,8 +24,13 @@ namespace YYTK
 		// A pointer to the Script_Data() engine function.
 		FNScriptData m_GetScriptData = nullptr;
 
-		// The function cache used for faster lookups
-		std::map<std::string, TRoutine> m_FunctionCache = {};
+		// Cache used for lookups of builtin functions (room_goto, etc.)
+		// key = name, value = function pointer
+		std::map<std::string, TRoutine> m_BuiltinFunctionCache = {};
+
+		// Cache used for lookups of builtin variables (xprevious, etc.)
+		// key = name, value = index in the m_BuiltinArray
+		std::map<std::string, size_t> m_BuiltinVariableCache = {};
 
 		// D3D11 stuff
 		IDXGISwapChain* m_EngineSwapchain = nullptr;
@@ -198,14 +203,28 @@ namespace YYTK
 			OUT CScript*& Script
 		) override final;
 
+		virtual Aurie::AurieStatus GetBuiltinVariableIndex(
+			IN std::string_view Name,
+			OUT size_t& Index
+		);
+
+		virtual Aurie::AurieStatus GetBuiltinVariableInformation(
+			IN size_t Index,
+			OUT RVariableRoutine*& VariableInformation
+		);
+
 		virtual Aurie::AurieStatus GetBuiltin(
 			IN std::string_view Name,
+			IN CInstance* TargetInstance,
+			OPTIONAL IN int ArrayIndex,
 			OUT RValue& Value
 		);
 
 		virtual Aurie::AurieStatus SetBuiltin(
 			IN std::string_view Name,
-			OUT RValue& Value
+			IN CInstance* TargetInstance,
+			OPTIONAL IN int ArrayIndex,
+			IN RValue& Value
 		);
 	};
 
