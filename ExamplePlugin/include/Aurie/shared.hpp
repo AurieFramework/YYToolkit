@@ -48,7 +48,7 @@
 #endif // AURIE_FWK_MINOR
 
 #ifndef AURIE_FWK_PATCH
-#define AURIE_FWK_PATCH 0
+#define AURIE_FWK_PATCH 2
 #endif // AURIE_FWK_PATCH
 
 
@@ -145,6 +145,21 @@ namespace Aurie
 		) = 0;
 	};
 
+	struct AurieOperationInfo
+	{
+		union
+		{
+			uint8_t Flags;
+			struct
+			{
+				bool IsFutureCall : 1;
+				bool Reserved : 7;
+			};
+		};
+
+		PVOID ModuleBaseAddress;
+	};
+
 	// Always points to the initial Aurie image
 	// Initialized in either ArProcessAttach or __aurie_fwk_init
 	inline AurieModule* g_ArInitialImage = nullptr;
@@ -163,9 +178,9 @@ namespace Aurie
 		);
 
 	using AurieModuleCallback = void(*)(
-		IN const AurieModule* const AffectedModule,
-		IN const AurieModuleOperationType OperationType,
-		IN const bool IsFutureCall
+		IN AurieModule* AffectedModule,
+		IN AurieModuleOperationType OperationType,
+		OPTIONAL IN OUT AurieOperationInfo* OperationInfo
 		);
 }
 
