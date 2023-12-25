@@ -813,7 +813,7 @@ namespace YYTK
 		for (size_t i = 0; i < *m_BuiltinCount; i++)
 		{
 			// If we have a match with the name, we cache the index and return
-			if (!_stricmp(Name.data(), m_BuiltinArray[i].m_Name))
+			if (!strcmp(Name.data(), m_BuiltinArray[i].m_Name))
 			{
 				m_BuiltinVariableCache[Name.data()] = i;
 				Index = i;
