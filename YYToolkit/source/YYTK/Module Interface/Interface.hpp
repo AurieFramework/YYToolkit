@@ -206,26 +206,26 @@ namespace YYTK
 		virtual Aurie::AurieStatus GetBuiltinVariableIndex(
 			IN std::string_view Name,
 			OUT size_t& Index
-		);
+		) override final;
 
 		virtual Aurie::AurieStatus GetBuiltinVariableInformation(
 			IN size_t Index,
 			OUT RVariableRoutine*& VariableInformation
-		);
+		) override final;
 
 		virtual Aurie::AurieStatus GetBuiltin(
 			IN std::string_view Name,
 			IN CInstance* TargetInstance,
 			OPTIONAL IN int ArrayIndex,
 			OUT RValue& Value
-		);
+		) override final;
 
 		virtual Aurie::AurieStatus SetBuiltin(
 			IN std::string_view Name,
 			IN CInstance* TargetInstance,
 			OPTIONAL IN int ArrayIndex,
 			IN RValue& Value
-		);
+		) override final;
 	};
 
 	inline YYTKInterfaceImpl g_ModuleInterface;
