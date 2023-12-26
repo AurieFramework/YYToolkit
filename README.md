@@ -1,25 +1,39 @@
 # YYToolkit
-YYToolkit is a tool for creating mods and altering GameMaker games.
+YYToolkit is a tool for creating mods and altering GameMaker games, supported on Windows 8.1 → Windows 11.
 
-Currently, only Windows is supported.
+The project is split in two branches based on the supported GameMaker runtime versions:
+  - YYTK Next
+    - Versions supported: 2022.4 → 2023.11
+    - Actively maintained
+    - Built on the [Aurie Framework](https://github.com/Archie-osu/Aurie)
+    - x64 only
+  - YYTK Legacy
+    - Versions supported: 1.4.9999 → 2022.3
+    - No longer maintained
+    - Self-contained
+    - x86 and x64
 
 ## Features
 - Plugin Support
-  - Allows for easily extending YYToolkit functionality
-  - Gives you the ability to make mods in YYC environments
+  - Run custom code in the game's context via a robust callback system
+  - Detour game functions to your plugin to implement custom functionality
 - Well-documented
-  - Most APIs are documented on the Wiki, including a full guide on making plugins.
-- Basic built-in GML function caller
-  - Allows for calling any built-in GML function just by pressing F10.
-- Full compatibility with existing tools like UndertaleModTool or Dogscepter.
+  - The wiki has most API functions documented for both YYTK Legacy and YYTK Next
+- Full access to GameMaker functions, scripts, and variables
+- Full compatibility with existing tools like UndertaleModTool or Dogscepter
 - Runtime loading / unloading
-  - Mods and even the tool itself can be (un)loaded while the game is running, seamlessly.
+  - Mods can be managed seamlessly while the game is running
 
 ## Getting help
-- For general game modding questions - [Underminers Server](https://discord.gg/3ESNF4QPrh)
-- For extended help with YYToolkit - [YYToolkit Server](https://discord.gg/vbT8Ed4cpq)
+- Help with YYToolkit or Aurie Framework - [Arch Wizards Server](https://discord.gg/vbT8Ed4cpq)
+- General game modding questions - [Underminers Server](https://discord.gg/3ESNF4QPrh)
 
 ## Contributors
-- [MousieDev](https://github.com/MousieDev) for creating makefiles (which I'm not sure even work at this point)
-- [Miepee](https://github.com/Miepee) for the awesome icon!
-- [TheEternalShine](https://github.com/TheEternalShine) for testing and giving feedback on in-development versions of the tool.
+- YYTK Legacy
+  - [MousieDev](https://github.com/MousieDev) for creating makefiles (which probably don't work at this point)
+  - [Miepee](https://github.com/Miepee) for the awesome icon!
+  - [TheEternalShine](https://github.com/TheEternalShine) for testing and giving feedback on in-development versions of the tool.
+- YYTK Next
+  - [mashirochan](https://github.com/mashirochan) for the awesome work on streamlining the installation process
+  - [PippleCultist](https://github.com/PippleCultist) for reporting bugs
+  - [ramennnoodle](https://github.com/liraymond04) for creating how-to guides on getting YYToolkit and Aurie running on Linux
