@@ -348,7 +348,33 @@ namespace YYTK
 		if (!AurieSuccess(last_status))
 			return last_status;
 
-		// We're looking for a pattern in Variable_BuiltIn_Add
+		// We're looking for a pattern in Variable_BuiltIn_Add.
+
+		// The rough decompilation of this function is as follows:
+		/*
+			void Variable_BuiltIn_Add(
+				IN const char* Name,
+				IN FNGetVariable GetVariable
+				IN FNSetVariable SetVariable
+			)
+			{
+				if (g_BuiltinVariableCount == 500)
+				{
+					ShowMessage("INTERNAL ERROR: Adding too many variables"); // <=== Good string xref!
+					return;
+				}
+
+				const char* builtin_name = YYStrDup(Name);
+				g_BuiltinVariables[g_BuiltinVariableCount].m_GetVariable = GetVariable;
+				g_BuiltinVariables[g_BuiltinVariableCount].m_SetVariable = SetVariable;
+				g_BuiltinVariables[g_BuiltinVariableCount].m_CanBeSet = SetVariable != nullptr;
+
+				g_BuiltinVarLookup->Insert(Name);
+				++g_BuiltinVariableCount;
+			}
+		*/
+
+		// We scan for the "if (g_BuiltinVariableCount == 500)" check
 		size_t pattern_match = MmSigscanModule(
 			game_name.c_str(),
 			UTEXT(
@@ -371,7 +397,6 @@ namespace YYTK
 		// Now, scan for the first jnz instruction
 		// This should be the second one (instructions[1]),
 		// but I don't want to hardcode it...
-
 		int64_t jnz_instruction_index = -1;
 		for (size_t i = 0; i < instructions.size(); i++)
 		{
