@@ -117,12 +117,12 @@ namespace YYTK
 
 	using PFUNC_RAW = void(*)();
 
-	using PFUNC_YYGMLScript = RValue * (*)(
+	using PFUNC_YYGMLScript = RValue & (*)(
 		IN CInstance* Self,
 		IN CInstance* Other,
-		OUT RValue* ReturnValue,
+		OUT RValue& Result,
 		IN int ArgumentCount,
-		IN RValue** Arguments
+		IN RValue** Arguments // Array of RValue pointers
 		);
 
 #pragma pack(push, 4)
