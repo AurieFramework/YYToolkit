@@ -3,11 +3,28 @@
 using namespace Aurie;
 using namespace YYTK;
 
+static YYTKInterface* GetYYTKInterface()
+{
+	static YYTKInterface* module_interface = nullptr;
+
+	// Try getting the interface
+	// If we error, we return nullptr.
+	if (!module_interface)
+	{
+		ObGetInterface(
+			"YYTK_Main",
+			reinterpret_cast<AurieInterfaceBase*&>(module_interface)
+		);
+	}
+
+	return module_interface;
+}
+
 RValue::RValue()
 {
 	this->m_Real = 0;
 	this->m_Flags = 0;
-	this->m_Kind = VALUE_UNSET;
+	this->m_Kind = VALUE_UNDEFINED;
 }
 
 RValue::RValue(
@@ -55,9 +72,35 @@ RValue::RValue(
 	this->m_Kind = VALUE_OBJECT;
 }
 
+YYTK::RValue::RValue(
+	IN const char* Value
+)
+{
+	// Init to empty
+	*this = std::string_view(Value);
+}
+
+RValue::RValue(
+	IN std::string_view Value
+)
+{
+	// Initialize it to just empty stuff
+	*this = RValue();
+
+	// Let's not crash on invalid interfaces provided
+	if (!GetYYTKInterface())
+		return;
+
+	// We can ignore this, because if it fails, we're just initialized to UNSET
+	GetYYTKInterface()->StringToRValue(
+		Value,
+		*this
+	);
+}
+
 RValue::RValue(
 	IN std::string_view Value,
-	IN YYTKInterface* Interface
+	IN class YYTKInterface* Interface
 )
 {
 	// Initialize it to just empty stuff
@@ -119,6 +162,19 @@ double RValue::AsReal() const
 	return 0.0;
 }
 
+std::string_view RValue::AsString()
+{
+	// Let's not crash on invalid interfaces provided
+	if (!GetYYTKInterface())
+		return "";
+
+	if (!GetYYTKInterface()->GetRunnerInterface().YYGetString)
+		return "";
+
+	// Reason I don't use RValueToString is because that duplicates the string
+	return GetYYTKInterface()->GetRunnerInterface().YYGetString(this, 0);
+}
+
 std::string_view RValue::AsString(
 	IN YYTKInterface* Interface
 )
@@ -131,4 +187,24 @@ std::string_view RValue::AsString(
 		return "";
 
 	return Interface->GetRunnerInterface().YYGetString(this, 0);
+}
+
+RValue& YYTK::RValue::operator[](
+	IN size_t Index
+)
+{
+	if (!GetYYTKInterface())
+		return *this;
+
+	RValue* result = nullptr;
+	if (!AurieSuccess(GetYYTKInterface()->GetArrayEntry(
+		*this,
+		Index,
+		result
+	)))
+	{
+		return *this;
+	}
+
+	return *result;
 }

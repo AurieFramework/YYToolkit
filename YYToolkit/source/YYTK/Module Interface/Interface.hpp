@@ -46,6 +46,10 @@ namespace YYTK
 		// Array of up to 500 builtins
 		RVariableRoutine* m_BuiltinArray = nullptr;
 		int* m_BuiltinCount = nullptr;
+
+		// Needed for RValue array access
+		// RValue* actual_array = (RValue**)(RValue.m_Pointer)[this_value / sizeof(RValue*)];
+		int64_t m_RValueArrayOffset = 0;
 	public:
 		// Stores plugin callbacks
 		std::vector<ModuleCallbackDescriptor> m_RegisteredCallbacks;
@@ -225,6 +229,12 @@ namespace YYTK
 			IN CInstance* TargetInstance,
 			OPTIONAL IN int ArrayIndex,
 			IN RValue& Value
+		) override final;
+
+		virtual Aurie::AurieStatus GetArrayEntry(
+			IN RValue& Value,
+			IN size_t ArrayIndex,
+			OUT RValue*& ArrayElement
 		) override final;
 	};
 

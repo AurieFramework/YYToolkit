@@ -71,6 +71,11 @@ namespace YYTK
 		OUT FNScriptData* ScriptData
 	);
 
+	Aurie::AurieStatus GmpFindRVArrayOffset(
+		IN TRoutine F_ArrayEquals,
+		OUT int64_t* ArrayOffset
+	);
+
 	Aurie::AurieStatus GmpFindDoCallScript(
 		OUT PVOID* DoCallScript
 	);
@@ -86,6 +91,13 @@ namespace YYTK
 		IN const unsigned char* Pattern,
 		IN const char* PatternMask,
 		OUT std::vector<size_t>& Matches
+	);
+
+	// Not game specific, kinda like MmSigscan* but for instructions
+	Aurie::AurieStatus GmpFindMnemonicPattern(
+		IN const std::vector<TargettedInstruction>& Instructions,
+		IN const std::vector<ZydisMnemonic>& Mnemonics,
+		OUT size_t& StartIndex
 	);
 
 	namespace Hooks

@@ -165,16 +165,32 @@ namespace YYTK
 		);
 
 		RValue(
+			IN const char* Value
+		);
+
+		RValue(
+			IN std::string_view Value
+		);
+
+		RValue(
 			IN std::string_view Value,
 			IN YYTKInterface* Interface
 		);
 
+		// Custom getters
 		bool AsBool() const;
 
 		double AsReal() const;
 
+		std::string_view AsString();
+
 		std::string_view AsString(
 			IN YYTKInterface* Interface
+		);
+
+		// Overloaded operators
+		RValue& operator[](
+			IN size_t Index
 		);
 	};
 #pragma pack(pop)
@@ -553,6 +569,12 @@ namespace YYTK
 			IN CInstance* TargetInstance,
 			OPTIONAL IN int ArrayIndex,
 			IN RValue& Value
+		) = 0;
+
+		virtual Aurie::AurieStatus GetArrayEntry(
+			IN RValue& Value,
+			IN size_t ArrayIndex,
+			OUT RValue*& ArrayElement
 		) = 0;
 	};
 }

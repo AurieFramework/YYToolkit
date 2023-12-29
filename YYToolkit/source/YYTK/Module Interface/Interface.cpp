@@ -182,16 +182,16 @@ namespace YYTK
 		if (!m_FirstInitComplete)
 		{
 			// Get the runner interface by reading assembly
-			last_status = YYTK::GmpGetRunnerInterface(
+			last_status = GmpGetRunnerInterface(
 				m_RunnerInterface
 			);
 
 			// If we didn't get that, there's no chance in hell we're doing anything with the runner
 			if (!AurieSuccess(last_status))
-				return Aurie::AURIE_MODULE_INTERNAL_ERROR;
+				return AURIE_MODULE_INTERNAL_ERROR;
 
 			// Use the runner interface to find the (currently empty) the_functions array in memory
-			last_status = YYTK::GmpFindFunctionsArray(
+			last_status = GmpFindFunctionsArray(
 				m_RunnerInterface,
 				&m_FunctionsArray
 			);
@@ -216,10 +216,10 @@ namespace YYTK
 			if (!AurieSuccess(last_status))
 				return AURIE_MODULE_INTERNAL_ERROR;
 
-			YYTK::CmWriteOutput(CM_LIGHTAQUA, "YYTK Next - Early initialization complete.");
-			YYTK::CmWriteOutput(CM_GRAY, "- m_FunctionsArray at 0x%p", m_FunctionsArray);
-			YYTK::CmWriteOutput(CM_GRAY, "- m_BuiltinCount at 0x%p", m_BuiltinCount);
-			YYTK::CmWriteOutput(CM_GRAY, "- m_BuiltinArray at 0x%p", m_BuiltinArray);
+			CmWriteOutput(CM_LIGHTAQUA, "YYTK Next - Early initialization complete.");
+			CmWriteOutput(CM_GRAY, "- m_FunctionsArray at 0x%p", m_FunctionsArray);
+			CmWriteOutput(CM_GRAY, "- m_BuiltinCount at 0x%p", m_BuiltinCount);
+			CmWriteOutput(CM_GRAY, "- m_BuiltinArray at 0x%p", m_BuiltinArray);
 
 			m_FirstInitComplete = true;
 			return AURIE_SUCCESS;
@@ -231,6 +231,20 @@ namespace YYTK
 			// now that it's populated by the game.
 			m_FunctionEntrySize = this->YkDetermineFunctionEntrySize();
 
+			TRoutine array_equals = nullptr;
+			last_status = this->GetNamedRoutinePointer(
+				"array_equals",
+				reinterpret_cast<PVOID*>(&array_equals)
+			);
+
+			if (!AurieSuccess(last_status))
+				return AURIE_MODULE_INTERNAL_ERROR;
+
+			GmpFindRVArrayOffset(
+				array_equals,
+				&m_RValueArrayOffset
+			);
+
 			TRoutine copy_static = nullptr;
 			last_status = this->GetNamedRoutinePointer(
 				"@@CopyStatic@@",
@@ -238,16 +252,16 @@ namespace YYTK
 			);
 
 			if (!AurieSuccess(last_status))
-				return Aurie::AURIE_MODULE_INTERNAL_ERROR;
+				return AURIE_MODULE_INTERNAL_ERROR;
 
-			last_status = YYTK::GmpFindScriptData(
+			last_status = GmpFindScriptData(
 				m_RunnerInterface,
 				copy_static,
 				&m_GetScriptData
 			);
 
 			if (!AurieSuccess(last_status))
-				return Aurie::AURIE_MODULE_INTERNAL_ERROR;
+				return AURIE_MODULE_INTERNAL_ERROR;
 
 			RValue os_info_ds_map;
 			last_status = CallBuiltinEx(
@@ -259,9 +273,12 @@ namespace YYTK
 			);
 
 			if (!AurieSuccess(last_status))
-				return Aurie::AURIE_MODULE_INTERNAL_ERROR;
+				return AURIE_MODULE_INTERNAL_ERROR;
 
 			// Pull everything needed from the DS List
+			// We need to pass the pointer to the interface into the RValue initializer
+			// here, because Aurie didn't yet put our interface in its array, therefore
+			// the hidden ObGetInterface calls within the RValue would fail.
 			RValue dx_device, dx_context, dx_swapchain, window_handle;
 			last_status = CallBuiltinEx(
 				dx_device,
@@ -272,7 +289,7 @@ namespace YYTK
 			);
 
 			if (!AurieSuccess(last_status))
-				return Aurie::AURIE_MODULE_INTERNAL_ERROR;
+				return AURIE_MODULE_INTERNAL_ERROR;
 
 			last_status = CallBuiltinEx(
 				dx_context,
@@ -283,7 +300,7 @@ namespace YYTK
 			);
 
 			if (!AurieSuccess(last_status))
-				return Aurie::AURIE_MODULE_INTERNAL_ERROR;
+				return AURIE_MODULE_INTERNAL_ERROR;
 
 			last_status = CallBuiltinEx(
 				dx_swapchain,
@@ -294,7 +311,7 @@ namespace YYTK
 			);
 
 			if (!AurieSuccess(last_status))
-				return Aurie::AURIE_MODULE_INTERNAL_ERROR;
+				return AURIE_MODULE_INTERNAL_ERROR;
 
 			last_status = CallBuiltinEx(
 				window_handle,
@@ -305,7 +322,7 @@ namespace YYTK
 			);
 
 			if (!AurieSuccess(last_status))
-				return Aurie::AURIE_MODULE_INTERNAL_ERROR;
+				return AURIE_MODULE_INTERNAL_ERROR;
 
 			m_EngineDevice = reinterpret_cast<ID3D11Device*>(dx_device.m_Pointer);
 			m_EngineDeviceContext = reinterpret_cast<ID3D11DeviceContext*>(dx_context.m_Pointer);
@@ -322,20 +339,21 @@ namespace YYTK
 			);
 
 			if (!AurieSuccess(last_status))
-				return Aurie::AURIE_MODULE_INTERNAL_ERROR;
+				return AURIE_MODULE_INTERNAL_ERROR;
 
-			YYTK::CmWriteOutput(CM_LIGHTAQUA, "YYTK Next - Late initialization complete.");
+			CmWriteOutput(CM_LIGHTAQUA, "YYTK Next - Late initialization complete.");
 
-			YYTK::CmWriteOutput(
+			CmWriteOutput(
 				CM_GRAY, 
 				"- RFunction Entry Type: %s", 
 				m_FunctionEntrySize == sizeof(RFunctionStringRef) ? "Referential" : "Embedded"
 			);
 
-			YYTK::CmWriteOutput(CM_GRAY, "- m_GetScriptData at 0x%p", m_GetScriptData);
-			YYTK::CmWriteOutput(CM_GRAY, "- m_EngineDevice at 0x%p", m_EngineDevice);
-			YYTK::CmWriteOutput(CM_GRAY, "- m_EngineDeviceContext at 0x%p", m_EngineDeviceContext);
-			YYTK::CmWriteOutput(CM_GRAY, "- m_EngineSwapchain at 0x%p", m_EngineSwapchain);
+			CmWriteOutput(CM_GRAY, "- m_GetScriptData at 0x%p", m_GetScriptData);
+			CmWriteOutput(CM_GRAY, "- m_EngineDevice at 0x%p", m_EngineDevice);
+			CmWriteOutput(CM_GRAY, "- m_EngineDeviceContext at 0x%p", m_EngineDeviceContext);
+			CmWriteOutput(CM_GRAY, "- m_EngineSwapchain at 0x%p", m_EngineSwapchain);
+			CmWriteOutput(CM_GRAY, "- m_RValueArrayOffset at 0x%llx", m_RValueArrayOffset);
 
 			m_SecondInitComplete = true;
 			return AURIE_SUCCESS;
@@ -692,7 +710,7 @@ namespace YYTK
 		return AURIE_SUCCESS;
 	}
 
-	Aurie::AurieStatus YYTKInterfaceImpl::EnumInstanceMembers(
+	AurieStatus YYTKInterfaceImpl::EnumInstanceMembers(
 		IN RValue Instance, 
 		IN std::function<bool(IN const char* MemberName, RValue* Value)> EnumFunction
 	)
@@ -728,7 +746,7 @@ namespace YYTK
 		return AURIE_OBJECT_NOT_FOUND;
 	}
 
-	Aurie::AurieStatus YYTKInterfaceImpl::RValueToString(
+	AurieStatus YYTKInterfaceImpl::RValueToString(
 		IN const RValue& Value,
 		OUT std::string& String
 	)
@@ -740,7 +758,7 @@ namespace YYTK
 		return AURIE_SUCCESS;
 	}
 
-	Aurie::AurieStatus YYTKInterfaceImpl::StringToRValue(
+	AurieStatus YYTKInterfaceImpl::StringToRValue(
 		IN const std::string_view String,
 		OUT RValue& Value
 	)
@@ -775,7 +793,7 @@ namespace YYTK
 		m_BuiltinVariableCache.clear();
 	}
 
-	Aurie::AurieStatus YYTKInterfaceImpl::GetScriptData(
+	AurieStatus YYTKInterfaceImpl::GetScriptData(
 		IN int Index, 
 		OUT CScript*& Script
 	)
@@ -794,7 +812,7 @@ namespace YYTK
 		return AURIE_SUCCESS;
 	}
 
-	Aurie::AurieStatus YYTKInterfaceImpl::GetBuiltinVariableIndex(
+	AurieStatus YYTKInterfaceImpl::GetBuiltinVariableIndex(
 		IN std::string_view Name, 
 		OUT size_t& Index
 	)
@@ -826,7 +844,7 @@ namespace YYTK
 		return AURIE_OBJECT_NOT_FOUND;
 	}
 
-	Aurie::AurieStatus YYTKInterfaceImpl::GetBuiltinVariableInformation(
+	AurieStatus YYTKInterfaceImpl::GetBuiltinVariableInformation(
 		IN size_t Index,
 		OUT RVariableRoutine*& VariableInformation
 	)
@@ -842,7 +860,7 @@ namespace YYTK
 		return AURIE_SUCCESS;
 	}
 
-	Aurie::AurieStatus YYTKInterfaceImpl::GetBuiltin(
+	AurieStatus YYTKInterfaceImpl::GetBuiltin(
 		IN std::string_view Name,
 		IN CInstance* TargetInstance,
 		OPTIONAL IN int ArrayIndex,
@@ -886,7 +904,7 @@ namespace YYTK
 		return AURIE_SUCCESS;
 	}
 
-	Aurie::AurieStatus YYTKInterfaceImpl::SetBuiltin(
+	AurieStatus YYTKInterfaceImpl::SetBuiltin(
 		IN std::string_view Name, 
 		IN CInstance* TargetInstance,
 		OPTIONAL IN int ArrayIndex,
@@ -928,6 +946,27 @@ namespace YYTK
 			&Value
 		);
 
+		return AURIE_SUCCESS;
+	}
+
+	AurieStatus YYTKInterfaceImpl::GetArrayEntry(
+		IN RValue& Value, 
+		IN size_t ArrayIndex, 
+		OUT RValue*& IndexedValue
+	)
+	{
+		if (!m_RValueArrayOffset)
+			return AURIE_MODULE_INTERNAL_ERROR;
+
+		// Can't treat values that aren't arrays as arrays
+		if (Value.m_Kind != VALUE_ARRAY)
+			return AURIE_INVALID_PARAMETER;
+
+		RValue* actual_array = reinterpret_cast<RValue*>(
+			reinterpret_cast<char**>(Value.m_Pointer)[m_RValueArrayOffset]
+		);
+
+		IndexedValue = &(actual_array[ArrayIndex]);
 		return AURIE_SUCCESS;
 	}
 }
