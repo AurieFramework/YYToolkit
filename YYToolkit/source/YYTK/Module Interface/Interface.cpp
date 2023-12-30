@@ -376,9 +376,9 @@ namespace YYTK
 		OUT short& Patch
 	)
 	{
-		Major = 3;
-		Minor = 1;
-		Patch = 0;
+		Major = YYTK_MAJOR;
+		Minor = YYTK_MINOR;
+		Patch = YYTK_PATCH;
 	}
 
 	AurieStatus YYTKInterfaceImpl::GetNamedRoutineIndex(

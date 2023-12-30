@@ -7,6 +7,10 @@
 #ifndef YYTK_SHARED_H_
 #define YYTK_SHARED_H_
 
+#define YYTK_MAJOR 3
+#define YYTK_MINOR 1
+#define YYTK_PATCH 0
+
 #include <Aurie/shared.hpp>
 #include <FunctionWrapper/FunctionWrapper.hpp>
 #include <d3d11.h>
