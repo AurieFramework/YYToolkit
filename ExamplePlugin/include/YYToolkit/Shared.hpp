@@ -7,6 +7,10 @@
 #ifndef YYTK_SHARED_H_
 #define YYTK_SHARED_H_
 
+#define YYTK_MAJOR 3
+#define YYTK_MINOR 1
+#define YYTK_PATCH 0
+
 #include <Aurie/shared.hpp>
 #include <FunctionWrapper/FunctionWrapper.hpp>
 #include <d3d11.h>
@@ -18,6 +22,10 @@
 #ifndef UTEXT
 #define UTEXT(x) ((const unsigned char*)(x))
 #endif // UTEXT
+
+#ifndef NULL_INDEX
+#define NULL_INDEX INT_MIN
+#endif
 
 namespace YYTK
 {
@@ -91,6 +99,7 @@ namespace YYTK
 	struct YYRunnerInterface;
 	class YYTKInterface;
 	struct RValue;
+	struct RVariableRoutine;
 
 	struct YYGMLException
 	{
@@ -112,12 +121,12 @@ namespace YYTK
 
 	using PFUNC_RAW = void(*)();
 
-	using PFUNC_YYGMLScript = RValue * (*)(
+	using PFUNC_YYGMLScript = RValue & (*)(
 		IN CInstance* Self,
 		IN CInstance* Other,
-		OUT RValue* ReturnValue,
+		OUT RValue& Result,
 		IN int ArgumentCount,
-		IN RValue** Arguments
+		IN RValue** Arguments // Array of RValue pointers
 		);
 
 #pragma pack(push, 4)
@@ -140,6 +149,10 @@ namespace YYTK
 		RValue();
 
 		RValue(
+			IN std::initializer_list<RValue> Values
+		);
+
+		RValue(
 			IN bool Value
 		);
 
@@ -160,16 +173,45 @@ namespace YYTK
 		);
 
 		RValue(
+			IN const char* Value
+		);
+
+		RValue(
+			IN std::string_view Value
+		);
+
+		RValue(
 			IN std::string_view Value,
 			IN YYTKInterface* Interface
 		);
 
+		// Custom getters
 		bool AsBool() const;
 
 		double AsReal() const;
 
+		std::string_view AsString();
+
 		std::string_view AsString(
 			IN YYTKInterface* Interface
+		);
+
+		// Overloaded operators
+		RValue& operator[](
+			IN size_t Index
+			);
+
+		RValue& operator[](
+			IN std::string_view Element
+			);
+
+		// STL-like access
+		RValue& at(
+			IN size_t Index
+		);
+
+		RValue& at(
+			IN std::string_view Element
 		);
 	};
 #pragma pack(pop)
@@ -409,6 +451,19 @@ namespace YYTK
 		bool (*isRunningFromIDE)();
 	};
 
+	struct CInstance
+	{
+		// Overloaded operators
+		RValue& operator[](
+			IN std::string_view Element
+			);
+
+		// STL-like access
+		RValue& at(
+			IN std::string_view Element
+		);
+	};
+
 	// ExecuteIt
 	using FWCodeEvent = FunctionWrapper<bool(CInstance*, CInstance*, CCode*, int, RValue*)>;
 	// IDXGISwapChain::Present
@@ -524,6 +579,36 @@ namespace YYTK
 		virtual Aurie::AurieStatus GetScriptData(
 			IN int Index,
 			OUT CScript*& Script
+		) = 0;
+
+		virtual Aurie::AurieStatus GetBuiltinVariableIndex(
+			IN std::string_view Name,
+			OUT size_t& Index
+		) = 0;
+
+		virtual Aurie::AurieStatus GetBuiltinVariableInformation(
+			IN size_t Index,
+			OUT RVariableRoutine*& VariableInformation
+		) = 0;
+
+		virtual Aurie::AurieStatus GetBuiltin(
+			IN std::string_view Name,
+			IN CInstance* TargetInstance,
+			OPTIONAL IN int ArrayIndex,
+			OUT RValue& Value
+		) = 0;
+
+		virtual Aurie::AurieStatus SetBuiltin(
+			IN std::string_view Name,
+			IN CInstance* TargetInstance,
+			OPTIONAL IN int ArrayIndex,
+			IN RValue& Value
+		) = 0;
+
+		virtual Aurie::AurieStatus GetArrayEntry(
+			IN RValue& Value,
+			IN size_t ArrayIndex,
+			OUT RValue*& ArrayElement
 		) = 0;
 	};
 }
