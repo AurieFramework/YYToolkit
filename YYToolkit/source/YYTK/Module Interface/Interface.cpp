@@ -377,8 +377,8 @@ namespace YYTK
 	)
 	{
 		Major = 3;
-		Minor = 0;
-		Patch = 3;
+		Minor = 1;
+		Patch = 0;
 	}
 
 	AurieStatus YYTKInterfaceImpl::GetNamedRoutineIndex(
@@ -706,7 +706,12 @@ namespace YYTK
 		if (Instance.m_Kind != VALUE_OBJECT)
 			return AURIE_INVALID_PARAMETER;
 
-		Member = m_RunnerInterface.StructGetMember(&Instance, MemberName);
+		RValue* member_value = m_RunnerInterface.StructGetMember(&Instance, MemberName);
+
+		if (!member_value)
+			return AURIE_OBJECT_NOT_FOUND;
+
+		Member = member_value;
 		return AURIE_SUCCESS;
 	}
 
@@ -962,8 +967,13 @@ namespace YYTK
 		if (Value.m_Kind != VALUE_ARRAY)
 			return AURIE_INVALID_PARAMETER;
 
-		RValue* actual_array = reinterpret_cast<RValue*>(
-			reinterpret_cast<char**>(Value.m_Pointer)[m_RValueArrayOffset]
+		// Check the length of the array to deny out-of-bounds access
+		size_t array_length = static_cast<size_t>(CallBuiltin("array_length", { Value }).AsReal());
+		if (ArrayIndex >= array_length)
+			return AURIE_INVALID_PARAMETER;
+
+		RValue* actual_array = *reinterpret_cast<RValue**>(
+			&reinterpret_cast<char*>(Value.m_Pointer)[m_RValueArrayOffset]
 		);
 
 		IndexedValue = &(actual_array[ArrayIndex]);

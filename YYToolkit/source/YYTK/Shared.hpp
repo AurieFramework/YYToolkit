@@ -145,6 +145,10 @@ namespace YYTK
 		RValue();
 
 		RValue(
+			IN std::initializer_list<RValue> Values
+		);
+
+		RValue(
 			IN bool Value
 		);
 
@@ -191,6 +195,19 @@ namespace YYTK
 		// Overloaded operators
 		RValue& operator[](
 			IN size_t Index
+		);
+
+		RValue& operator[](
+			IN std::string_view Element
+		);
+
+		// STL-like access
+		RValue& at(
+			IN size_t Index
+		);
+
+		RValue& at(
+			IN std::string_view Element
 		);
 	};
 #pragma pack(pop)
@@ -428,6 +445,19 @@ namespace YYTK
 		double (*extOptGetReal)(const char* _ext, const char* _opt);
 
 		bool (*isRunningFromIDE)();
+	};
+
+	struct CInstance
+	{
+		// Overloaded operators
+		RValue& operator[](
+			IN std::string_view Element
+		);
+
+		// STL-like access
+		RValue& at(
+			IN std::string_view Element
+		);
 	};
 
 	// ExecuteIt

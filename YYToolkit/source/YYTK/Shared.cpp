@@ -27,6 +27,47 @@ RValue::RValue()
 	this->m_Kind = VALUE_UNDEFINED;
 }
 
+YYTK::RValue::RValue(
+	IN std::initializer_list<RValue> Values
+)
+{
+	// Initialize to undefined
+	*this = RValue();
+
+	if (!GetYYTKInterface())
+		return;
+
+	if (!GetYYTKInterface()->GetRunnerInterface().YYCreateArray)
+		return;
+
+	// Create a dummy array with the size of Values.size(), and initialize all members to 0
+	std::vector<double> dummy_array(Values.size(), 0.0);
+
+	// Initialize this RValue as an array
+	GetYYTKInterface()->GetRunnerInterface().YYCreateArray(
+		this,
+		static_cast<int>(dummy_array.size()),
+		dummy_array.data()
+	);
+
+	// Use direct object manipulation to set the actual values
+	for (size_t index = 0; index < Values.size(); index++)
+	{
+		RValue* member_value = nullptr;
+		AurieStatus last_status = GetYYTKInterface()->GetArrayEntry(
+			*this,
+			index,
+			member_value
+		);
+
+		// Make sure we got a valid pointer
+		if (!AurieSuccess(last_status))
+			continue;
+
+		*member_value = std::data(Values)[index];
+	}
+}
+
 RValue::RValue(
 	IN bool Value
 )
@@ -189,7 +230,7 @@ std::string_view RValue::AsString(
 	return Interface->GetRunnerInterface().YYGetString(this, 0);
 }
 
-RValue& YYTK::RValue::operator[](
+RValue& RValue::operator[](
 	IN size_t Index
 )
 {
@@ -207,4 +248,55 @@ RValue& YYTK::RValue::operator[](
 	}
 
 	return *result;
+}
+
+RValue& RValue::operator[](
+	IN std::string_view Element
+)
+{
+	if (!GetYYTKInterface())
+		return *this;
+
+	RValue* instance_member = nullptr;
+	AurieStatus last_status = GetYYTKInterface()->GetInstanceMember(
+		*this,
+		Element.data(),
+		instance_member
+	);
+
+	// Prevents access violations, null references are undefined behavior in the C++ standard
+	if (!AurieSuccess(last_status) || !instance_member)
+	{
+		return *this;
+	}
+
+	return *instance_member;
+}
+
+RValue& RValue::at(
+	IN size_t Index
+)
+{
+	return this->operator[](Index);
+}
+
+RValue& RValue::at(
+	IN std::string_view Element
+)
+{
+	return this->operator[](Element);
+}
+
+RValue& CInstance::operator[](
+	IN std::string_view Element
+)
+{
+	return RValue(this).at(Element);
+}
+
+RValue& YYTK::CInstance::at(
+	IN std::string_view Element
+)
+{
+	return RValue(this).at(Element);
 }
