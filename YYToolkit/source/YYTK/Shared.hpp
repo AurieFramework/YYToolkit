@@ -145,6 +145,10 @@ namespace YYTK
 		RValue();
 
 		RValue(
+			IN std::initializer_list<RValue> Values
+		);
+
+		RValue(
 			IN bool Value
 		);
 
@@ -165,16 +169,45 @@ namespace YYTK
 		);
 
 		RValue(
+			IN const char* Value
+		);
+
+		RValue(
+			IN std::string_view Value
+		);
+
+		RValue(
 			IN std::string_view Value,
 			IN YYTKInterface* Interface
 		);
 
+		// Custom getters
 		bool AsBool() const;
 
 		double AsReal() const;
 
+		std::string_view AsString();
+
 		std::string_view AsString(
 			IN YYTKInterface* Interface
+		);
+
+		// Overloaded operators
+		RValue& operator[](
+			IN size_t Index
+		);
+
+		RValue& operator[](
+			IN std::string_view Element
+		);
+
+		// STL-like access
+		RValue& at(
+			IN size_t Index
+		);
+
+		RValue& at(
+			IN std::string_view Element
 		);
 	};
 #pragma pack(pop)
@@ -414,6 +447,19 @@ namespace YYTK
 		bool (*isRunningFromIDE)();
 	};
 
+	struct CInstance
+	{
+		// Overloaded operators
+		RValue& operator[](
+			IN std::string_view Element
+		);
+
+		// STL-like access
+		RValue& at(
+			IN std::string_view Element
+		);
+	};
+
 	// ExecuteIt
 	using FWCodeEvent = FunctionWrapper<bool(CInstance*, CInstance*, CCode*, int, RValue*)>;
 	// IDXGISwapChain::Present
@@ -553,6 +599,12 @@ namespace YYTK
 			IN CInstance* TargetInstance,
 			OPTIONAL IN int ArrayIndex,
 			IN RValue& Value
+		) = 0;
+
+		virtual Aurie::AurieStatus GetArrayEntry(
+			IN RValue& Value,
+			IN size_t ArrayIndex,
+			OUT RValue*& ArrayElement
 		) = 0;
 	};
 }
