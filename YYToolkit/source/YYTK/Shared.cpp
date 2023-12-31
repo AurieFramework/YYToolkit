@@ -121,6 +121,13 @@ YYTK::RValue::RValue(
 	*this = std::string_view(Value);
 }
 
+YYTK::RValue::RValue(
+	IN const char8_t* Value
+)
+{
+	*this = std::u8string_view(Value);
+}
+
 RValue::RValue(
 	IN std::string_view Value
 )
@@ -137,6 +144,27 @@ RValue::RValue(
 		Value,
 		*this
 	);
+}
+
+YYTK::RValue::RValue(
+	IN std::u8string_view Value
+)
+{
+	*this = std::string(Value.cbegin(), Value.cend());
+}
+
+YYTK::RValue::RValue(
+	IN const std::string& Value
+)
+{
+	*this = std::string_view(Value);
+}
+
+YYTK::RValue::RValue(
+	IN const std::u8string& Value
+)
+{
+	*this = std::u8string_view(Value);
 }
 
 RValue::RValue(

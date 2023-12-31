@@ -9,7 +9,7 @@
 
 #define YYTK_MAJOR 3
 #define YYTK_MINOR 1
-#define YYTK_PATCH 0
+#define YYTK_PATCH 1
 
 #include <Aurie/shared.hpp>
 #include <FunctionWrapper/FunctionWrapper.hpp>
@@ -177,7 +177,23 @@ namespace YYTK
 		);
 
 		RValue(
+			IN const char8_t* Value
+		);
+
+		RValue(
 			IN std::string_view Value
+		);
+
+		RValue(
+			IN std::u8string_view Value
+		);
+
+		RValue(
+			IN const std::string& Value
+		);
+
+		RValue(
+			IN const std::u8string& Value
 		);
 
 		RValue(
