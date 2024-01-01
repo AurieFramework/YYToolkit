@@ -968,7 +968,18 @@ namespace YYTK
 			return AURIE_INVALID_PARAMETER;
 
 		// Check the length of the array to deny out-of-bounds access
-		size_t array_length = static_cast<size_t>(CallBuiltin("array_length", { Value }).AsReal());
+		size_t array_length = 0;
+
+		AurieStatus last_status = GetArraySize(
+			Value,
+			array_length
+		);
+
+		// Make sure we got the array length
+		if (!AurieSuccess(last_status))
+			return last_status;
+		
+		// Prevent out-of-bounds access
 		if (ArrayIndex >= array_length)
 			return AURIE_INVALID_PARAMETER;
 
@@ -977,6 +988,45 @@ namespace YYTK
 		);
 
 		IndexedValue = &(actual_array[ArrayIndex]);
+		return AURIE_SUCCESS;
+	}
+
+	AurieStatus YYTKInterfaceImpl::GetArraySize(
+		IN RValue& Value,
+		OUT size_t& Size
+	)
+	{
+		// Can't treat values that aren't arrays as arrays
+		if (Value.m_Kind != VALUE_ARRAY)
+			return AURIE_INVALID_PARAMETER;
+
+		if (m_RunnerInterface.YYArrayGetLength)
+		{
+			int possible_array_size = m_RunnerInterface.YYArrayGetLength(&Value);
+
+			// The runner returns -1 on a failure condition
+			if (possible_array_size == -1)
+				return AURIE_EXTERNAL_ERROR;
+
+			Size = possible_array_size;
+			return AURIE_SUCCESS;
+		}
+
+		RValue possible_size;
+		AurieStatus last_status = AURIE_SUCCESS;
+
+		last_status = CallBuiltinEx(
+			possible_size,
+			"array_length",
+			nullptr,
+			nullptr,
+			{ Value }
+		);
+
+		if (!AurieSuccess(last_status))
+			return last_status;
+
+		Size = static_cast<size_t>(possible_size.AsReal());
 		return AURIE_SUCCESS;
 	}
 }

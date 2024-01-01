@@ -236,6 +236,11 @@ namespace YYTK
 			IN size_t ArrayIndex,
 			OUT RValue*& ArrayElement
 		) override final;
+
+		virtual Aurie::AurieStatus GetArraySize(
+			IN RValue& Value,
+			OUT size_t& Size
+		) override final;
 	};
 
 	inline YYTKInterfaceImpl g_ModuleInterface;

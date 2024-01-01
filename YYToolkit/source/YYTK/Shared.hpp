@@ -9,7 +9,7 @@
 
 #define YYTK_MAJOR 3
 #define YYTK_MINOR 1
-#define YYTK_PATCH 1
+#define YYTK_PATCH 2
 
 #include <Aurie/shared.hpp>
 #include <FunctionWrapper/FunctionWrapper.hpp>
@@ -229,6 +229,10 @@ namespace YYTK
 		RValue& at(
 			IN std::string_view Element
 		);
+
+		RValue* data();
+
+		size_t length();
 	};
 #pragma pack(pop)
 
@@ -465,6 +469,13 @@ namespace YYTK
 		double (*extOptGetReal)(const char* _ext, const char* _opt);
 
 		bool (*isRunningFromIDE)();
+
+		int (*YYArrayGetLength)(RValue* _pArray);
+
+		YYRunnerInterface()
+		{
+			memset(this, 0, sizeof(*this));
+		}
 	};
 
 	struct CInstance
@@ -625,6 +636,11 @@ namespace YYTK
 			IN RValue& Value,
 			IN size_t ArrayIndex,
 			OUT RValue*& ArrayElement
+		) = 0;
+
+		virtual Aurie::AurieStatus GetArraySize(
+			IN RValue& Value,
+			OUT size_t& Size
 		) = 0;
 	};
 }
