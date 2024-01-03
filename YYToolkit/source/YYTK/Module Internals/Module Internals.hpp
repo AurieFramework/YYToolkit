@@ -71,6 +71,11 @@ namespace YYTK
 		OUT FNScriptData* ScriptData
 	);
 
+	Aurie::AurieStatus GmpFindRoomData(
+		IN TRoutine RoomInstanceClear,
+		OUT FNRoomData* RoomData
+	);
+
 	Aurie::AurieStatus GmpFindRVArrayOffset(
 		IN TRoutine F_ArrayEquals,
 		OUT int64_t* ArrayOffset

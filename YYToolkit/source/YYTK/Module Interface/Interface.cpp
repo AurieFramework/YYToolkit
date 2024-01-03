@@ -254,6 +254,23 @@ namespace YYTK
 			if (!AurieSuccess(last_status))
 				return AURIE_MODULE_INTERNAL_ERROR;
 
+			TRoutine room_instance_clear = nullptr;
+			last_status = this->GetNamedRoutinePointer(
+				"room_instance_clear",
+				reinterpret_cast<PVOID*>(&room_instance_clear)
+			);
+
+			if (!AurieSuccess(last_status))
+				return AURIE_MODULE_INTERNAL_ERROR;
+
+			last_status = GmpFindRoomData(
+				room_instance_clear,
+				&m_GetRoomData
+			);
+
+			if (!AurieSuccess(last_status))
+				return AURIE_MODULE_INTERNAL_ERROR;
+
 			last_status = GmpFindScriptData(
 				m_RunnerInterface,
 				copy_static,
@@ -354,6 +371,7 @@ namespace YYTK
 			CmWriteOutput(CM_GRAY, "- m_EngineDeviceContext at 0x%p", m_EngineDeviceContext);
 			CmWriteOutput(CM_GRAY, "- m_EngineSwapchain at 0x%p", m_EngineSwapchain);
 			CmWriteOutput(CM_GRAY, "- m_RValueArrayOffset at 0x%llx", m_RValueArrayOffset);
+			CmWriteOutput(CM_GRAY, "- m_GetRoomData at 0x%p", m_GetRoomData);
 
 			m_SecondInitComplete = true;
 			return AURIE_SUCCESS;
@@ -1028,5 +1046,61 @@ namespace YYTK
 
 		Size = static_cast<size_t>(possible_size.AsReal());
 		return AURIE_SUCCESS;
+	}
+
+	AurieStatus YYTKInterfaceImpl::GetRoomData(
+		IN int32_t RoomID,
+		OUT CRoom*& Room
+	)
+	{
+		if (!m_GetRoomData)
+			return AURIE_MODULE_INTERNAL_ERROR;
+
+		CRoom* potential_room = m_GetRoomData(RoomID);
+
+		// The runner returns nullptr if the room doesn't exist
+		if (!potential_room)
+			return AURIE_OBJECT_NOT_FOUND;
+
+		Room = potential_room;
+		return AURIE_SUCCESS;
+	}
+
+	AurieStatus YYTKInterfaceImpl::GetCurrentRoomData(
+		OUT CRoom*& CurrentRoom
+	)
+	{
+		if (!m_GetRoomData)
+			return AURIE_MODULE_INTERNAL_ERROR;
+
+		// Get the value of the "room" built-in global
+		// This variable (VALUE_REAL) contains the current room index
+		AurieStatus last_status = AURIE_SUCCESS;
+		RValue current_room;
+
+		last_status = GetBuiltin(
+			"room",
+			nullptr,
+			NULL_INDEX,
+			current_room
+		);
+
+		if (!AurieSuccess(last_status))
+			return last_status;
+
+		int32_t room_number = static_cast<int32_t>(current_room.AsReal());
+
+		return GetRoomData(
+			room_number,
+			CurrentRoom
+		);
+	}
+
+	AurieStatus YYTKInterfaceImpl::GetInstanceObject(
+		IN RValue InstanceID,
+		OUT CInstance*& Instance
+	)
+	{
+		return AURIE_NOT_IMPLEMENTED;
 	}
 }

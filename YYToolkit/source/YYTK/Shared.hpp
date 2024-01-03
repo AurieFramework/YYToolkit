@@ -9,7 +9,7 @@
 
 #define YYTK_MAJOR 3
 #define YYTK_MINOR 1
-#define YYTK_PATCH 2
+#define YYTK_PATCH 3
 
 #include <Aurie/shared.hpp>
 #include <FunctionWrapper/FunctionWrapper.hpp>
@@ -100,6 +100,20 @@ namespace YYTK
 	class YYTKInterface;
 	struct RValue;
 	struct RVariableRoutine;
+	struct CRoom;
+	struct CBackGM;
+	struct CViewGM;
+	struct CPhysicsWorld;
+	struct RTile;
+	struct YYRoomTiles;
+	struct YYRoomInstances;
+	struct CLayer;
+	struct CLayerEffectInfo;
+	struct CLayerElementBase;
+	struct CLayerInstanceElement;
+	struct CLayerSpriteElement;
+	struct CInstanceBase;
+	struct CWeakRef;
 
 	struct YYGMLException
 	{
@@ -642,7 +656,291 @@ namespace YYTK
 			IN RValue& Value,
 			OUT size_t& Size
 		) = 0;
+
+		virtual Aurie::AurieStatus GetRoomData(
+			IN int32_t RoomID,
+			OUT CRoom*& Room
+		) = 0;
+
+		virtual Aurie::AurieStatus GetCurrentRoomData(
+			OUT CRoom*& CurrentRoom
+		) = 0;
+
+		virtual Aurie::AurieStatus GetInstanceObject(
+			IN RValue InstanceID,
+			OUT CInstance*& Instance
+		) = 0;
 	};
+
+#if YYTK_DEFINE_INTERNAL
+	template <typename T>
+	struct LinkedList
+	{
+		T* m_First;
+		T* m_Last;
+		int32_t m_Count;
+	};
+	static_assert(sizeof(LinkedList<CInstance>) == 0x18);
+
+	struct CLayerElementBase
+	{
+		int32_t m_Type;
+		int32_t m_ID;
+		bool m_RuntimeDataInitialized;
+		const char* m_Name;
+		CLayer* m_Layer;
+		union
+		{
+			CLayerInstanceElement* m_InstanceFlink;
+			CLayerSpriteElement* m_SpriteFlink;
+			CLayerElementBase* m_Flink;
+		};
+		union
+		{
+			CLayerInstanceElement* m_InstanceBlink;
+			CLayerSpriteElement* m_SpriteBlink;
+			CLayerElementBase* m_Blink;
+		};
+	};
+	static_assert(sizeof(CLayerElementBase) == 0x30);
+
+	struct CLayerInstanceElement : CLayerElementBase
+	{
+		int32_t m_InstanceID;
+		CInstance* m_Instance;
+	};
+	static_assert(sizeof(CLayerInstanceElement) == 0x40);
+
+	struct CLayerSpriteElement : CLayerElementBase
+	{
+		int32_t m_SpriteIndex;
+		float m_SequencePosition;
+		float m_SequenceDirection;
+		float m_ImageIndex;
+		float m_ImageSpeed;
+		int32_t m_SpeedType;
+		float m_ImageScaleX;
+		float m_ImageScaleY;
+		float m_ImageAngle;
+		uint32_t m_ImageBlend;
+		float m_ImageAlpha;
+		float m_X;
+		float m_Y;
+	};
+	static_assert(sizeof(CLayerSpriteElement) == 0x68);
+
+	struct CLayer
+	{
+		int32_t m_Id;
+		int32_t m_Depth;
+		float m_XOffset;
+		float m_YOffset;
+		float m_HorizontalSpeed;
+		float m_VerticalSpeed;
+		bool m_Visible;
+		bool m_Deleting;
+		bool m_Dynamic;
+		const char* m_Name;
+		RValue m_BeginScript;
+		RValue m_EndScript;
+		bool m_EffectEnabled;
+		bool m_EffectPendingEnabled;
+		RValue m_Effect;
+		CLayerEffectInfo* m_InitialEffectInfo;
+		int32_t m_ShaderID;
+		LinkedList<CLayerElementBase> m_Elements;
+		CLayer* m_Flink;
+		CLayer* m_Blink;
+		PVOID m_GCProxy;
+	};
+	static_assert(sizeof(CLayer) == 0xA0);
+
+	// A representation of a room, as from the data.win file
+	struct YYRoom
+	{
+		// The name of the room
+		uint32_t m_NameOffset;
+		// The caption of the room, legacy variable, used pre-GMS
+		uint32_t m_Caption;
+		// The width of the room
+		int32_t m_Width;
+		// The height of the room
+		int32_t m_Height;
+		// Speed of the room
+		int32_t m_Speed;
+		// Whether the room is persistent (UMT marks it as a bool, but it seems to be int32_t)
+		int32_t m_Persistent;
+		// The background color
+		int32_t m_Color;
+		// Whether to show the background color
+		int32_t m_ShowColor;
+		// Creation code of the room
+		uint32_t m_CreationCode;
+		int32_t m_EnableViews;
+		uint32_t pBackgrounds;
+		uint32_t pViews;
+		uint32_t pInstances;
+		uint32_t pTiles;
+		int32_t m_PhysicsWorld;
+		int32_t m_PhysicsWorldTop;
+		int32_t m_PhysicsWorldLeft;
+		int32_t m_PhysicsWorldRight;
+		int32_t m_PhysicsWorldBottom;
+		float m_PhysicsGravityX;
+		float m_PhysicsGravityY;
+		float m_PhysicsPixelToMeters;
+	};
+	static_assert(sizeof(YYRoom) == 0x58);
+
+	// Note: this is not how RValues store arrays
+	template <typename T>
+	struct CArrayStructure
+	{
+		int32_t Length;
+		T* Array;
+	};
+	static_assert(sizeof(CArrayStructure<int>) == 0x10);
+
+	// Seems to be mostly stable, some elements at the end are however omitted
+	struct CRoom
+	{
+		int32_t m_LastTile;
+		CRoom* m_InstanceHandle;
+		const char* m_Caption;
+		int32_t m_Speed;
+		int32_t m_Width;
+		int32_t m_Height;
+		bool m_Persistent;
+		uint32_t m_Color;
+		bool m_ShowColor;
+		CBackGM* m_Backgrounds[8];
+		bool m_EnableViews;
+		bool m_ClearScreen;
+		bool m_ClearDisplayBuffer;
+		CViewGM* m_Views[8];
+		const char* m_LegacyCode;
+		CCode* m_CodeObject;
+		bool m_HasPhysicsWorld;
+		int32_t m_PhysicsGravityX;
+		int32_t m_PhysicsGravityY;
+		float m_PhysicsPixelToMeters;
+		LinkedList<CInstance> m_ActiveInstances;
+		LinkedList<CInstance> m_InactiveInstances;
+		CInstance* m_MarkedFirst;
+		CInstance* m_MarkedLast;
+		int32_t* m_CreationOrderList;
+		int32_t m_CreationOrderListSize;
+		YYRoom* m_WadRoom;
+		PVOID m_WadBaseAddress;
+		CPhysicsWorld* m_PhysicsWorld;
+		int32_t m_TileCount;
+		CArrayStructure<RTile> m_Tiles;
+		YYRoomTiles* m_WadTiles;
+		YYRoomInstances* m_WadInstances;
+		const char* m_Name;
+		bool m_IsDuplicate;
+		LinkedList<CLayer> m_Layers;
+	};
+
+	struct CInstanceBase
+	{
+		virtual ~CInstanceBase() = 0;
+
+		virtual RValue& InternalGetYYVarRef(
+			IN int Index
+		) = 0;
+
+		virtual RValue& InternalGetYYVarRefL(
+			IN int Index
+		) = 0;
+
+		RValue* m_YYVars;
+	};
+	static_assert(sizeof(CInstanceBase) == 0x10);
+
+	enum EJSRetValBool : int
+	{
+		EJSRVB_FALSE,
+		EJSRVB_TRUE,
+		EJSRVB_TYPE_ERROR
+	};
+
+	using FNGetOwnProperty = void(*)(
+		IN YYObjectBase* Object,
+		OUT RValue& Result,
+		IN const char* Name
+	);
+
+	using FNDeleteProperty = void(*)(
+		IN YYObjectBase* Object,
+		OUT RValue& Result,
+		IN const char* Name,
+		IN bool ThrowOnError
+	);
+
+	using FNDefineOwnProperty = EJSRetValBool(*)(
+		IN YYObjectBase* Object,
+		IN const char* Name,
+		OUT RValue& Result,
+		IN bool ThrowOnError
+	);
+
+	enum YYObjectKind : int32_t
+	{
+		OBJECT_KIND_YYOBJECTBASE = 0,
+		OBJECT_KIND_CINSTANCE,
+		OBJECT_KIND_ACCESSOR,
+		OBJECT_KIND_SCRIPTREF,
+		OBJECT_KIND_PROPERTY,
+		OBJECT_KIND_ARRAY,
+		OBJECT_KIND_WEAKREF,
+		OBJECT_KIND_CONTAINER,
+		OBJECT_KIND_SEQUENCE,
+		OBJECT_KIND_SEQUENCEINSTANCE,
+		OBJECT_KIND_SEQUENCETRACK,
+		OBJECT_KIND_SEQUENCECURVE,
+		OBJECT_KIND_SEQUENCECURVECHANNEL,
+		OBJECT_KIND_SEQUENCECURVEPOINT,
+		OBJECT_KIND_SEQUENCEKEYFRAMESTORE,
+		OBJECT_KIND_SEQUENCEKEYFRAME,
+		OBJECT_KIND_SEQUENCEKEYFRAMEDATA,
+		OBJECT_KIND_SEQUENCEEVALTREE,
+		OBJECT_KIND_SEQUENCEEVALNODE,
+		OBJECT_KIND_SEQUENCEEVENT,
+		OBJECT_KIND_NINESLICE,
+		OBJECT_KIND_FILTERHOST,
+		OBJECT_KIND_EFFECTINSTANCE,
+		OBJECT_KIND_SKELETON_SKIN,
+		OBJECT_KIND_AUDIOBUS,
+		OBJECT_KIND_AUDIOEFFECT,
+		OBJECT_KIND_MAX
+	};
+
+	struct YYObjectBase : CInstanceBase
+	{
+		YYObjectBase* m_Flink;
+		YYObjectBase* m_Blink;
+		YYObjectBase* m_Prototype;
+		const char* m_Class;
+		FNGetOwnProperty m_GetOwnProperty;
+		FNDeleteProperty m_DeleteProperty;
+		FNDefineOwnProperty m_DefineOwnProperty;
+		PVOID m_YYVarsMap;
+		CWeakRef** m_WeakRef;
+		uint32_t m_WeakRefCount;
+		uint32_t m_VariableCount;
+		uint32_t m_Capacity;
+		uint32_t m_Visited;
+		uint32_t m_VisitedGC;
+		int32_t m_GCGeneration;
+		int32_t m_GCCreationFrame;
+		int32_t m_Slot;
+		YYObjectKind m_ObjectKind;
+		int32_t m_RValueInitType;
+		int32_t m_CurrentSlot;
+	};
+
+#endif // YYTK_DEFINE_INTERNAL
 }
 
 #endif // YYTK_SHARED_H_

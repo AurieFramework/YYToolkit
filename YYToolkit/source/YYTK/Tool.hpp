@@ -10,6 +10,10 @@ namespace YYTK
 		IN int Index
 	);
 
+	using FNRoomData = CRoom*(*)(
+		IN int Index
+	);
+
 	using FNGetVariable = bool(*)(
 		OPTIONAL IN CInstance* Instance,
 		OPTIONAL IN int Index, 

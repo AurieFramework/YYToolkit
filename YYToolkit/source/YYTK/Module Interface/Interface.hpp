@@ -24,6 +24,9 @@ namespace YYTK
 		// A pointer to the Script_Data() engine function.
 		FNScriptData m_GetScriptData = nullptr;
 
+		// A pointer to the Room_Data() engine function.
+		FNRoomData m_GetRoomData = nullptr;
+
 		// Cache used for lookups of builtin functions (room_goto, etc.)
 		// key = name, value = function pointer
 		std::map<std::string, TRoutine> m_BuiltinFunctionCache = {};
@@ -240,6 +243,20 @@ namespace YYTK
 		virtual Aurie::AurieStatus GetArraySize(
 			IN RValue& Value,
 			OUT size_t& Size
+		) override final;
+
+		virtual Aurie::AurieStatus GetRoomData(
+			IN int32_t RoomID,
+			OUT CRoom*& Room
+		) override final;
+
+		virtual Aurie::AurieStatus GetCurrentRoomData(
+			OUT CRoom*& CurrentRoom
+		) override final;
+
+		virtual Aurie::AurieStatus GetInstanceObject(
+			IN RValue InstanceID,
+			OUT CInstance*& Instance
 		) override final;
 	};
 
