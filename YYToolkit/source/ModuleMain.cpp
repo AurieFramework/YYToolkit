@@ -76,21 +76,6 @@ EXPORTED AurieStatus ModuleInitialize(
 	if (!g_ModuleInterface.m_SecondInitComplete)
 		return AURIE_MODULE_INITIALIZATION_FAILED;
 
-	CRoom* current_room = nullptr;
-	g_ModuleInterface.GetCurrentRoomData(
-		current_room
-	);
-
-	Sleep(1000);
-	
-	CInstance* current_instance = current_room->m_ActiveInstances.m_First;
-	while (current_instance)
-	{
-		g_ModuleInterface.PrintInfo("Hello instance %d\n", current_instance->PreMasked.m_ID);
-
-		current_instance = dynamic_cast<CInstance*>(current_instance->PreMasked.m_Next);
-	}
-
 	return AURIE_SUCCESS;
 }
 

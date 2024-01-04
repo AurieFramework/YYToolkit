@@ -49,24 +49,24 @@ namespace YYTK
 		CM_BRIGHTWHITE
 	};
 
-	enum RValueType : unsigned int
+	enum RValueType : uint32_t
 	{
 		VALUE_REAL = 0,				// Real value
-		VALUE_STRING,				// String value
-		VALUE_ARRAY,				// Array value
-		VALUE_PTR,					// Ptr value
-		VALUE_VEC3,					// Vec3 (x,y,z) value (within the RValue)
-		VALUE_UNDEFINED,			// Undefined value
-		VALUE_OBJECT,				// YYObjectBase* value 
-		VALUE_INT32,				// Int32 value
-		VALUE_VEC4,					// Vec4 (x,y,z,w) value (allocated from pool)
-		VALUE_VEC44,				// Vec44 (matrix) value (allocated from pool)
-		VALUE_INT64,				// Int64 value
-		VALUE_ACCESSOR,				// Actually an accessor
-		VALUE_NULL,					// JS Null
-		VALUE_BOOL,					// Bool value
-		VALUE_ITERATOR,				// JS For-in Iterator
-		VALUE_REF,					// Reference value (uses the ptr to point at a RefBase structure)
+		VALUE_STRING = 1,			// String value
+		VALUE_ARRAY = 2,			// Array value
+		VALUE_PTR = 3,				// Ptr value
+		VALUE_VEC3 = 4,				// Vec3 (x,y,z) value (within the RValue)
+		VALUE_UNDEFINED = 5,		// Undefined value
+		VALUE_OBJECT = 6,			// YYObjectBase* value 
+		VALUE_INT32 = 7,			// Int32 value
+		VALUE_VEC4 = 8,				// Vec4 (x,y,z,w) value (allocated from pool)
+		VALUE_VEC44 = 9,			// Vec44 (matrix) value (allocated from pool)
+		VALUE_INT64 = 10,			// Int64 value
+		VALUE_ACCESSOR = 11,		// Actually an accessor
+		VALUE_NULL = 12,			// JS Null
+		VALUE_BOOL = 13,			// Bool value
+		VALUE_ITERATOR = 14,		// JS For-in Iterator
+		VALUE_REF = 15,				// Reference value (uses the ptr to point at a RefBase structure)
 		VALUE_UNSET = 0x0ffffff		// Unset value (never initialized)
 	};
 
@@ -80,7 +80,7 @@ namespace YYTK
 		EVENT_WNDPROC = 5		// The event represents a WndProc() call.
 	};
 
-	enum InstanceKeywords : int
+	enum InstanceKeywords : int32_t
 	{
 		VAR_SELF = -1,
 		VAR_OTHER = -2,
@@ -120,6 +120,7 @@ namespace YYTK
 	struct CPhysicsDataGM;
 	struct GCObjectContainer;
 	struct YYRECT;
+	struct CInstanceInternal;
 
 	template <typename TKey, typename TValue, int TInitialMask>
 	struct CHashMap;
@@ -679,7 +680,7 @@ namespace YYTK
 		) = 0;
 
 		virtual Aurie::AurieStatus GetInstanceObject(
-			IN RValue InstanceID,
+			IN int32_t InstanceID,
 			OUT CInstance*& Instance
 		) = 0;
 	};
@@ -832,7 +833,7 @@ namespace YYTK
 	};
 	static_assert(sizeof(CLayerSpriteElement) == 0x68);
 
-	struct CLayer
+	__declspec(align(8)) struct CLayer
 	{
 		int32_t m_Id;
 		int32_t m_Depth;
@@ -1128,111 +1129,89 @@ namespace YYTK
 		float m_Bottom;
 	};
 
+	// Not a runner type per-se, used to prevent code duplication in CInstance unions
+	struct CInstanceInternal
+	{
+		uint32_t m_InstanceFlags;
+		int32_t m_ID;
+		int32_t m_ObjectIndex;
+		int32_t m_SpriteIndex;
+		float m_SequencePosition;
+		float m_LastSequencePosition;
+		float m_SequenceDirection;
+		float m_ImageIndex;
+		float m_ImageSpeed;
+		float m_ImageScaleX;
+		float m_ImageScaleY;
+		float m_ImageAngle;
+		float m_ImageAlpha;
+		uint32_t m_ImageBlend;
+		float m_X;
+		float m_Y;
+		float m_XStart;
+		float m_YStart;
+		float m_XPrevious;
+		float m_YPrevious;
+		float m_Direction;
+		float m_Speed;
+		float m_Friction;
+		float m_GravityDirection;
+		float m_Gravity;
+		float m_HorizontalSpeed;
+		float m_VerticalSpeed;
+		YYRECT m_BoundingBox;
+		int m_Timers[12];
+		int64_t m_RollbackFrameKilled;
+		PVOID m_TimelinePath;
+		CCode* m_InitCode;
+		CCode* m_PrecreateCode;
+		CObjectGM* m_OldObject;
+		int32_t m_LayerID;
+		int32_t m_MaskIndex;
+		int16_t m_MouseOverCount;
+		CInstance* m_Flink;
+		CInstance* m_Blink;
+	};
+	static_assert(sizeof(CInstanceInternal) == 0xF8);
+
 	struct CInstance : YYObjectBase
 	{
 		int64_t m_CreateCounter;
 		CObjectGM* m_Object;
 		CPhysicsObject* m_PhysicsObject;
 		CSkeletonInstance* m_SkeletonAnimation;
+
+	private:
 		// Structs misalign between 2022.1 and 2023.8
 		// Easy way to check which to use is to check m_ID and compare
-		// it to the result of GetBuiltin("id") on the same instance
+		// it to the result of GetBuiltin("id") on the same instance.
+		// Use GetMembers() to get a CInstanceVariables reference.
 		union
 		{
 			// 2023.x => 2023.8 (and presumably 2023.11)
 			struct
 			{
+			private:
 				PVOID m_SequenceInstance;
-				uint32_t m_InstanceFlags;
-				int32_t m_ID;
-				int32_t m_ObjectIndex;
-				int32_t m_SpriteIndex;
-				float m_SequencePosition;
-				float m_LastSequencePosition;
-				float m_SequenceDirection;
-				float m_ImageIndex;
-				float m_ImageSpeed;
-				float m_ImageScaleX;
-				float m_ImageScaleY;
-				float m_ImageAngle;
-				float m_ImageAlpha;
-				uint32_t m_ImageBlend;
-				float m_X;
-				float m_Y;
-				float m_XStart;
-				float m_YStart;
-				float m_XPrevious;
-				float m_YPrevious;
-				float m_Direction;
-				float m_Speed;
-				float m_Friction;
-				float m_GravityDirection;
-				float m_Gravity;
-				float m_HorizontalSpeed;
-				float m_VerticalSpeed;
-				YYRECT m_BoundingBox;
-				int m_Timers[12];
-				int64_t m_RollbackFrameKilled;
-				PVOID m_TimelinePath;
-				CCode* m_InitCode;
-				CCode* m_PrecreateCode;
-				CObjectGM* m_OldObject;
-				int32_t m_LayerID;
-				int32_t m_MaskIndex;
-				int16_t m_MouseOverCount;
-				CInstance* m_Next;
-				CInstance* m_Previous;
-			} PreMasked;
-			static_assert(sizeof(PreMasked) == 0x100);
+			public:
+				CInstanceInternal Members;
+			} Unmasked;
+			static_assert(sizeof(Unmasked) == 0x100);
 
 			// 2022.1 => 2023.1 (may be used later, haven't checked)
 			struct
 			{
+			private:
 				PVOID m_SkeletonMask;
 				PVOID m_SequenceInstance;
-				uint32_t m_InstanceFlags;
-				int32_t m_ID;
-				int32_t m_ObjectIndex;
-				int32_t m_SpriteIndex;
-				float m_SequencePosition;
-				float m_LastSequencePosition;
-				float m_SequenceDirection;
-				float m_ImageIndex;
-				float m_ImageSpeed;
-				float m_ImageScaleX;
-				float m_ImageScaleY;
-				float m_ImageAngle;
-				float m_ImageAlpha;
-				uint32_t m_ImageBlend;
-				float m_X;
-				float m_Y;
-				float m_XStart;
-				float m_YStart;
-				float m_XPrevious;
-				float m_YPrevious;
-				float m_Direction;
-				float m_Speed;
-				float m_Friction;
-				float m_GravityDirection;
-				float m_Gravity;
-				float m_HorizontalSpeed;
-				float m_VerticalSpeed;
-				YYRECT m_BoundingBox;
-				int m_Timers[12];
-				int64_t m_RollbackFrameKilled;
-				PVOID m_TimelinePath;
-				CCode* m_InitCode;
-				CCode* m_PrecreateCode;
-				CObjectGM* m_OldObject;
-				int32_t m_LayerID;
-				int32_t m_MaskIndex;
-				int16_t m_MouseOverCount;
-				CInstance* m_Next;
-				CInstance* m_Previous;
+			public:
+				CInstanceInternal Members;
 			} Masked;
 			static_assert(sizeof(Masked) == 0x108);
 		};
+	public:
 
+		CInstanceInternal& GetMembers();
 
 		// Overloaded operators
 		RValue& operator[](

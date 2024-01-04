@@ -258,7 +258,7 @@ namespace YYTK
 		) override final;
 
 		virtual Aurie::AurieStatus GetInstanceObject(
-			IN RValue InstanceID,
+			IN int32_t InstanceID,
 			OUT CInstance*& Instance
 		) override final;
 	};

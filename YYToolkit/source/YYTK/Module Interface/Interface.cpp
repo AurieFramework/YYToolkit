@@ -1114,10 +1114,44 @@ namespace YYTK
 	}
 
 	AurieStatus YYTKInterfaceImpl::GetInstanceObject(
-		IN RValue InstanceID,
+		IN int32_t InstanceID,
 		OUT CInstance*& Instance
 	)
 	{
-		return AURIE_NOT_IMPLEMENTED;
+		/*
+			In GameMaker, it is possible to access all instance's data from the ID.
+			In GameMaker, it is possible to access all instance's IDs from the instance_id array.
+
+			This function essentially replicates GV_InstanceId, but returns the actual instance.
+		*/
+
+		CRoom* current_room = nullptr;
+		AurieStatus last_status = AURIE_SUCCESS;
+
+		// Get the current room
+		last_status = GetCurrentRoomData(
+			current_room
+		);
+
+		if (!AurieSuccess(last_status))
+			return last_status;
+
+		// Loop all active instances in the room
+		for (
+			CInstance* inst = current_room->m_ActiveInstances.m_First; 
+			inst != nullptr; 
+			inst = dynamic_cast<CInstance*>(inst->m_Flink)
+		)
+		{
+			// Check if the ID matches our target instance
+			if (inst->GetMembers().m_ID != InstanceID)
+				continue;
+			
+			// Return the pointer to it
+			Instance = inst;
+			return AURIE_SUCCESS;
+		}
+
+		return AURIE_OBJECT_NOT_FOUND;
 	}
 }

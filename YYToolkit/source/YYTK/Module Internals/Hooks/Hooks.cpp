@@ -228,16 +228,15 @@ namespace YYTK
 			if (!AurieSuccess(last_status))
 				return last_status;
 
+			// DoCallScript is a hook we don't care about, it's not used in YYC.
+			// If it fails, it fails... 
 			PVOID do_call_script = nullptr;
-			last_status = GmpFindDoCallScript(
+			GmpFindDoCallScript(
 				&do_call_script
 			);
 
-			if (!AurieSuccess(last_status))
-				return AURIE_MODULE_INITIALIZATION_FAILED;
-
 			// Hook DoCallScript
-			last_status = MmCreateHook(
+			MmCreateHook(
 				g_ArSelfModule,
 				"DoCallScript",
 				do_call_script,
@@ -247,7 +246,7 @@ namespace YYTK
 
 			if (!AurieSuccess(last_status))
 				return AURIE_MODULE_INITIALIZATION_FAILED;
-
+			
 			return AURIE_SUCCESS;
 		}
 
