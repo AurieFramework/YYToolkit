@@ -1140,7 +1140,7 @@ namespace YYTK
 		for (
 			CInstance* inst = current_room->m_ActiveInstances.m_First; 
 			inst != nullptr; 
-			inst = dynamic_cast<CInstance*>(inst->m_Flink)
+			inst = inst->GetMembers().m_Flink
 		)
 		{
 			// Check if the ID matches our target instance
