@@ -30,6 +30,7 @@ YYTK is split on two branches, that being [Legacy](https://github.com/AurieFrame
 | GM 2.x.x compatibility | ✅ | ❌ |
 | GM 2022.x compatibility | 🟠 | ✅ |
 | GM 2023.x compatibility | ❌ | ✅ |
+| VM runner compatibility | ✅ | ❌ |
 
 | Point of comparison | YYToolkit Legacy | YYToolkit Next |
 | :---: | :---: | :---: |
