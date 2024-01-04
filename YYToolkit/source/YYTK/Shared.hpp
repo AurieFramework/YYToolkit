@@ -119,6 +119,7 @@ namespace YYTK
 	struct CSkeletonInstance;
 	struct CPhysicsDataGM;
 	struct GCObjectContainer;
+	struct YYRECT;
 
 	template <typename TKey, typename TValue, int TInitialMask>
 	struct CHashMap;
@@ -1119,13 +1120,119 @@ namespace YYTK
 	};
 	static_assert(sizeof(GCObjectContainer) == 0x90);
 
+	struct YYRECT
+	{
+		float m_Left;
+		float m_Top;
+		float m_Right;
+		float m_Bottom;
+	};
+
 	struct CInstance : YYObjectBase
 	{
 		int64_t m_CreateCounter;
 		CObjectGM* m_Object;
 		CPhysicsObject* m_PhysicsObject;
 		CSkeletonInstance* m_SkeletonAnimation;
-		// Structs misalign between 2022.1 and 2023.8 - omitting members
+		// Structs misalign between 2022.1 and 2023.8
+		// Easy way to check which to use is to check m_ID and compare
+		// it to the result of GetBuiltin("id") on the same instance
+		union
+		{
+			// 2023.x => 2023.8 (and presumably 2023.11)
+			struct
+			{
+				PVOID m_SequenceInstance;
+				uint32_t m_InstanceFlags;
+				int32_t m_ID;
+				int32_t m_ObjectIndex;
+				int32_t m_SpriteIndex;
+				float m_SequencePosition;
+				float m_LastSequencePosition;
+				float m_SequenceDirection;
+				float m_ImageIndex;
+				float m_ImageSpeed;
+				float m_ImageScaleX;
+				float m_ImageScaleY;
+				float m_ImageAngle;
+				float m_ImageAlpha;
+				uint32_t m_ImageBlend;
+				float m_X;
+				float m_Y;
+				float m_XStart;
+				float m_YStart;
+				float m_XPrevious;
+				float m_YPrevious;
+				float m_Direction;
+				float m_Speed;
+				float m_Friction;
+				float m_GravityDirection;
+				float m_Gravity;
+				float m_HorizontalSpeed;
+				float m_VerticalSpeed;
+				YYRECT m_BoundingBox;
+				int m_Timers[12];
+				int64_t m_RollbackFrameKilled;
+				PVOID m_TimelinePath;
+				CCode* m_InitCode;
+				CCode* m_PrecreateCode;
+				CObjectGM* m_OldObject;
+				int32_t m_LayerID;
+				int32_t m_MaskIndex;
+				int16_t m_MouseOverCount;
+				CInstance* m_Next;
+				CInstance* m_Previous;
+			} PreMasked;
+			static_assert(sizeof(PreMasked) == 0x100);
+
+			// 2022.1 => 2023.1 (may be used later, haven't checked)
+			struct
+			{
+				PVOID m_SkeletonMask;
+				PVOID m_SequenceInstance;
+				uint32_t m_InstanceFlags;
+				int32_t m_ID;
+				int32_t m_ObjectIndex;
+				int32_t m_SpriteIndex;
+				float m_SequencePosition;
+				float m_LastSequencePosition;
+				float m_SequenceDirection;
+				float m_ImageIndex;
+				float m_ImageSpeed;
+				float m_ImageScaleX;
+				float m_ImageScaleY;
+				float m_ImageAngle;
+				float m_ImageAlpha;
+				uint32_t m_ImageBlend;
+				float m_X;
+				float m_Y;
+				float m_XStart;
+				float m_YStart;
+				float m_XPrevious;
+				float m_YPrevious;
+				float m_Direction;
+				float m_Speed;
+				float m_Friction;
+				float m_GravityDirection;
+				float m_Gravity;
+				float m_HorizontalSpeed;
+				float m_VerticalSpeed;
+				YYRECT m_BoundingBox;
+				int m_Timers[12];
+				int64_t m_RollbackFrameKilled;
+				PVOID m_TimelinePath;
+				CCode* m_InitCode;
+				CCode* m_PrecreateCode;
+				CObjectGM* m_OldObject;
+				int32_t m_LayerID;
+				int32_t m_MaskIndex;
+				int16_t m_MouseOverCount;
+				CInstance* m_Next;
+				CInstance* m_Previous;
+			} Masked;
+			static_assert(sizeof(Masked) == 0x108);
+		};
+
 
 		// Overloaded operators
 		RValue& operator[](
@@ -1137,7 +1244,9 @@ namespace YYTK
 			IN std::string_view Element
 		);
 	};
-	static_assert(sizeof(CInstance) == 0xA8);
+	// sizeof(0x1A8) is for PreMasked instances
+	// sizeof(0x1B0) is for Masked instances
+	static_assert(sizeof(CInstance) == 0x1A8 || sizeof(CInstance) == 0x1B0);
 
 #endif // YYTK_DEFINE_INTERNAL
 }
