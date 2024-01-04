@@ -114,6 +114,10 @@ namespace YYTK
 	struct CLayerSpriteElement;
 	struct CInstanceBase;
 	struct CWeakRef;
+	struct CObjectGM;
+	struct CPhysicsObject;
+	struct CSkeletonInstance;
+	struct CPhysicsDataGM;
 
 	struct YYGMLException
 	{
@@ -492,18 +496,21 @@ namespace YYTK
 		}
 	};
 
+	// Not defined in YYTK_DEFINE_INTERNAL due to YYObjectBase not being defined yet
+#if not YYTK_DEFINE_INTERNAL
 	struct CInstance
 	{
 		// Overloaded operators
 		RValue& operator[](
 			IN std::string_view Element
-		);
+			);
 
 		// STL-like access
 		RValue& at(
 			IN std::string_view Element
 		);
 	};
+#endif
 
 	// ExecuteIt
 	using FWCodeEvent = FunctionWrapper<bool(CInstance*, CInstance*, CCode*, int, RValue*)>;
@@ -925,10 +932,11 @@ namespace YYTK
 		FNGetOwnProperty m_GetOwnProperty;
 		FNDeleteProperty m_DeleteProperty;
 		FNDefineOwnProperty m_DefineOwnProperty;
-		PVOID m_YYVarsMap;
+		PVOID m_YYVarsMap; // Use GetInstanceMember
 		CWeakRef** m_WeakRef;
 		uint32_t m_WeakRefCount;
 		uint32_t m_VariableCount;
+		uint32_t m_Flags;
 		uint32_t m_Capacity;
 		uint32_t m_Visited;
 		uint32_t m_VisitedGC;
@@ -939,6 +947,83 @@ namespace YYTK
 		int32_t m_RValueInitType;
 		int32_t m_CurrentSlot;
 	};
+	static_assert(sizeof(YYObjectBase) == 0x88);
+
+	struct CScriptRef : YYObjectBase
+	{
+		CScript* m_CallScript;
+		TRoutine m_CppCall;
+		PFUNC_YYGMLScript m_CallYYC;
+		RValue m_Scope;
+		RValue m_BoundThis;
+		YYObjectBase* m_Static;
+		PVOID m_HasInstance;
+		PVOID m_Construct;
+		const char* m_Tag;
+	};
+	static_assert(sizeof(CScriptRef) == 0xE0);
+
+	struct CPhysicsDataGM
+	{
+		float* m_PhysicsVertices;
+		bool m_IsPhysicsObject;
+		bool m_IsPhysicsSensor;
+		bool m_IsPhysicsAwake;
+		bool m_IsPhysicsKinematic;
+		int m_PhysicsShape;
+		int m_PhysicsGroup;
+		float m_PhysicsDensity;
+		float m_PhysicsRestitution;
+		float m_PhysicsLinearDamping;
+		float m_PhysicsAngularDamping;
+		float m_PhysicsFriction;
+		int m_PhysicsVertexCount;
+	};
+	static_assert(sizeof(CPhysicsDataGM) == 0x30);
+
+	struct CObjectGM
+	{
+		const char* m_Name;
+		CObjectGM* m_ParentObject;
+		PVOID m_ChildrenMap; // CHashMap<int, CObjectGM*, 2>
+		PVOID m_EventsMap; // CHashMap<ULONGLONG, CEvent*, 3>
+		CPhysicsDataGM m_PhysicsData;
+		LinkedList<CInstance> m_Instances;
+		LinkedList<CInstance> m_InstancesRecursive;
+		uint32_t m_Flags;
+		int32_t m_SpriteIndex;
+		int32_t m_Depth;
+		int32_t m_Parent;
+		int32_t m_Mask;
+		int32_t m_ID;
+	};
+	static_assert(sizeof(CObjectGM) == 0x98);
+
+	struct GCObjectContainer : YYObjectBase
+	{
+		PVOID m_yyObjMap; // CHashMap<YYObjectBase*, YYObjectBase*, 3>
+	};
+	static_assert(sizeof(GCObjectContainer) == 0x90);
+
+	struct CInstance : YYObjectBase
+	{
+		int64_t m_CreateCounter;
+		CObjectGM* m_Object;
+		CPhysicsObject* m_PhysicsObject;
+		CSkeletonInstance* m_SkeletonAnimation;
+		// Structs misalign between 2022.1 and 2023.8 - omitting members
+
+		// Overloaded operators
+		RValue& operator[](
+			IN std::string_view Element
+			);
+
+		// STL-like access
+		RValue& at(
+			IN std::string_view Element
+		);
+	};
+	static_assert(sizeof(CInstance) == 0xA8);
 
 #endif // YYTK_DEFINE_INTERNAL
 }
