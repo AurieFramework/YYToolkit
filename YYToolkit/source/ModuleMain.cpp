@@ -76,16 +76,9 @@ EXPORTED AurieStatus ModuleInitialize(
 	if (!g_ModuleInterface.m_SecondInitComplete)
 		return AURIE_MODULE_INITIALIZATION_FAILED;
 
-	CInstance* g_Global;
-	g_ModuleInterface.GetGlobalInstance(&g_Global);
-
-	printf("g_Global at %p", g_Global);
-
-	RValue* object_container = nullptr;
-	g_ModuleInterface.GetInstanceMember(
-		g_Global,
-		"ObjectContainer",
-		object_container
+	CRoom* current_room = nullptr;
+	g_ModuleInterface.GetCurrentRoomData(
+		current_room
 	);
 
 	return AURIE_SUCCESS;

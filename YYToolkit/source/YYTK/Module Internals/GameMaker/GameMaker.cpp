@@ -822,6 +822,57 @@ namespace YYTK
 		return AURIE_SUCCESS;
 	}
 
+	Aurie::AurieStatus GmpFindCurrentRoomData(
+		IN FNSetVariable SV_BackgroundColor, 
+		OUT CRoom*** Run_Room
+	)
+	{
+		// Disassemble 80 bytes at the function
+		std::vector<TargettedInstruction> instructions = GmpDisassemble(
+			SV_BackgroundColor,
+			0x50,
+			0xFF
+		);
+
+		// The first mov in this pattern is a mov reg, [memory]
+		size_t target_mov_index = 0;
+		AurieStatus last_status = GmpFindMnemonicPattern(
+			instructions,
+			{
+				ZYDIS_MNEMONIC_MOV,
+				ZYDIS_MNEMONIC_TEST,
+				ZYDIS_MNEMONIC_JZ
+			},
+			target_mov_index
+		);
+
+		if (!AurieSuccess(last_status))
+			return last_status;
+
+		const ZydisDisassembledInstruction& move_instruction = instructions.at(target_mov_index).RawForm;
+
+		// This should always be the case.
+		// But if it's not, it might cause unforeseen bugs, so we assert that in debug builds
+		assert(move_instruction.info.mnemonic == ZYDIS_MNEMONIC_MOV);
+		assert(move_instruction.info.operand_count == 2);
+		assert(move_instruction.operands[1].type == ZYDIS_OPERAND_TYPE_MEMORY);
+
+		ZyanU64 run_room_address = 0;
+		ZydisCalcAbsoluteAddress(
+			&move_instruction.info,
+			&move_instruction.operands[1],
+			move_instruction.runtime_address,
+			&run_room_address
+		);
+
+		// Make sure we have a valid address
+		if (!run_room_address)
+			return AURIE_MODULE_INITIALIZATION_FAILED;
+
+		*Run_Room = reinterpret_cast<CRoom**>(run_room_address);
+		return AURIE_SUCCESS;
+	}
+
 	Aurie::AurieStatus GmpFindRVArrayOffset(
 		IN TRoutine F_ArrayEquals, 
 		OUT int64_t* ArrayOffset

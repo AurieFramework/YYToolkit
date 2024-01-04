@@ -76,6 +76,11 @@ namespace YYTK
 		OUT FNRoomData* RoomData
 	);
 
+	Aurie::AurieStatus GmpFindCurrentRoomData(
+		IN FNSetVariable SV_BackgroundColor,
+		OUT CRoom*** Run_Room
+	);
+
 	Aurie::AurieStatus GmpFindRVArrayOffset(
 		IN TRoutine F_ArrayEquals,
 		OUT int64_t* ArrayOffset

@@ -240,11 +240,16 @@ namespace YYTK
 			if (!AurieSuccess(last_status))
 				return AURIE_MODULE_INTERNAL_ERROR;
 
-			GmpFindRVArrayOffset(
+			// Find the offset required for direct array access (DynamicArrayOfRValue->m_Array)
+			last_status = GmpFindRVArrayOffset(
 				array_equals,
 				&m_RValueArrayOffset
 			);
 
+			if (!AurieSuccess(last_status))
+				return AURIE_MODULE_INTERNAL_ERROR;
+
+			// Find the Script_Data function
 			TRoutine copy_static = nullptr;
 			last_status = this->GetNamedRoutinePointer(
 				"@@CopyStatic@@",
@@ -254,6 +259,16 @@ namespace YYTK
 			if (!AurieSuccess(last_status))
 				return AURIE_MODULE_INTERNAL_ERROR;
 
+			last_status = GmpFindScriptData(
+				m_RunnerInterface,
+				copy_static,
+				&m_GetScriptData
+			);
+
+			if (!AurieSuccess(last_status))
+				return AURIE_MODULE_INTERNAL_ERROR;
+
+			// Find the Room_Data function
 			TRoutine room_instance_clear = nullptr;
 			last_status = this->GetNamedRoutinePointer(
 				"room_instance_clear",
@@ -271,15 +286,34 @@ namespace YYTK
 			if (!AurieSuccess(last_status))
 				return AURIE_MODULE_INTERNAL_ERROR;
 
-			last_status = GmpFindScriptData(
-				m_RunnerInterface,
-				copy_static,
-				&m_GetScriptData
+			// Find the Run_Room pointer
+			size_t background_color_index = 0;
+			last_status = GetBuiltinVariableIndex(
+				"background_color",
+				background_color_index
 			);
 
 			if (!AurieSuccess(last_status))
 				return AURIE_MODULE_INTERNAL_ERROR;
 
+			RVariableRoutine* background_color_entry = nullptr;
+			last_status = GetBuiltinVariableInformation(
+				background_color_index,
+				background_color_entry
+			);
+
+			if (!AurieSuccess(last_status))
+				return AURIE_MODULE_INTERNAL_ERROR;
+
+			last_status = GmpFindCurrentRoomData(
+				background_color_entry->m_SetVariable,
+				&m_RunRoom
+			);
+
+			if (!AurieSuccess(last_status))
+				return AURIE_MODULE_INTERNAL_ERROR;
+
+			// Find D3D11 stuff
 			RValue os_info_ds_map;
 			last_status = CallBuiltinEx(
 				os_info_ds_map,
@@ -330,6 +364,7 @@ namespace YYTK
 			if (!AurieSuccess(last_status))
 				return AURIE_MODULE_INTERNAL_ERROR;
 
+			// Find window handle
 			last_status = CallBuiltinEx(
 				window_handle,
 				"window_handle",
@@ -372,6 +407,7 @@ namespace YYTK
 			CmWriteOutput(CM_GRAY, "- m_EngineSwapchain at 0x%p", m_EngineSwapchain);
 			CmWriteOutput(CM_GRAY, "- m_RValueArrayOffset at 0x%llx", m_RValueArrayOffset);
 			CmWriteOutput(CM_GRAY, "- m_GetRoomData at 0x%p", m_GetRoomData);
+			CmWriteOutput(CM_GRAY, "- m_RunRoom at 0x%p", m_RunRoom);
 
 			m_SecondInitComplete = true;
 			return AURIE_SUCCESS;
@@ -1070,30 +1106,11 @@ namespace YYTK
 		OUT CRoom*& CurrentRoom
 	)
 	{
-		if (!m_GetRoomData)
+		if (!m_RunRoom)
 			return AURIE_MODULE_INTERNAL_ERROR;
 
-		// Get the value of the "room" built-in global
-		// This variable (VALUE_REAL) contains the current room index
-		AurieStatus last_status = AURIE_SUCCESS;
-		RValue current_room;
-
-		last_status = GetBuiltin(
-			"room",
-			nullptr,
-			NULL_INDEX,
-			current_room
-		);
-
-		if (!AurieSuccess(last_status))
-			return last_status;
-
-		int32_t room_number = static_cast<int32_t>(current_room.AsReal());
-
-		return GetRoomData(
-			room_number,
-			CurrentRoom
-		);
+		CurrentRoom = *m_RunRoom;
+		return AURIE_SUCCESS;
 	}
 
 	AurieStatus YYTKInterfaceImpl::GetInstanceObject(

@@ -27,6 +27,9 @@ namespace YYTK
 		// A pointer to the Room_Data() engine function.
 		FNRoomData m_GetRoomData = nullptr;
 
+		// A pointer to the pointer to the running room
+		CRoom** m_RunRoom = nullptr;
+
 		// Cache used for lookups of builtin functions (room_goto, etc.)
 		// key = name, value = function pointer
 		std::map<std::string, TRoutine> m_BuiltinFunctionCache = {};

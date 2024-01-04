@@ -118,6 +118,10 @@ namespace YYTK
 	struct CPhysicsObject;
 	struct CSkeletonInstance;
 	struct CPhysicsDataGM;
+	struct GCObjectContainer;
+
+	template <typename TKey, typename TValue, int TInitialMask>
+	struct CHashMap;
 
 	struct YYGMLException
 	{
@@ -680,6 +684,97 @@ namespace YYTK
 	};
 
 #if YYTK_DEFINE_INTERNAL
+	using CHashMapHash = uint32_t;
+
+	template <typename TKey, typename TValue>
+	struct CHashMapElement
+	{
+		TValue m_Value;
+		TKey m_Key;
+		CHashMapHash m_Hash;
+	};
+
+	template <typename TKey, typename TValue, int TInitialMask>
+	struct CHashMap
+	{
+	private:
+		// Typed functions for calculating hashes
+		static CHashMapHash CHashMapCalculateHash(
+			IN int Key
+		)
+		{
+			return (Key * -0x61c8864f + 1) & INT_MAX;
+		}
+
+		static CHashMapHash CHashMapCalculateHash(
+			IN YYObjectBase* Key
+		)
+		{
+			return ((static_cast<unsigned long long>(reinterpret_cast<uintptr_t>(Key)) >> 6) * 7 + 1) & INT_MAX;
+		}
+
+		static CHashMapHash CHashMapCalculateHash(
+			IN void* Key
+		)
+		{
+			return ((static_cast<unsigned long long>(reinterpret_cast<uintptr_t>(Key)) >> 8) + 1) & INT_MAX;
+		};
+
+	public:
+		int32_t m_CurrentSize;
+		int32_t m_UsedCount;
+		int32_t m_CurrentMask;
+		int32_t m_GrowThreshold;
+		CHashMapElement<TKey, TValue>* m_Elements;
+		void(*m_DeleteValue)(TKey* Key, TValue* Value);
+
+		bool GetContainer(
+			IN TKey Key,
+			OUT CHashMapElement<TKey, TValue>*& Value
+		)
+		{
+			CHashMapHash value_hash = CHashMapCalculateHash(Key);
+			int32_t ideal_position = static_cast<int>(value_hash & m_CurrentMask);
+
+			for (
+				// Start at the ideal element (the value is probably not here though)
+				CHashMapElement<TKey, TValue>& current_element = this->m_Elements[ideal_position];
+				// Continue looping while the hash isn't 0 (meaning we reached the end of the map)
+				current_element.m_Hash != 0;
+				// Go to the next position
+				current_element = this->m_Elements[(++ideal_position) & this->m_CurrentMask]
+				)
+			{
+				if (current_element.m_Key != Key)
+					continue;
+
+				Value = &current_element;
+				return true;
+			}
+
+			return false;
+		}
+
+		bool GetValue(
+			IN TKey Key,
+			OUT TValue& Value
+		)
+		{
+			// Try to get the container
+			CHashMapElement<TKey, TValue>* object_container = nullptr;
+			if (!this->GetContainer(
+				Key,
+				object_container
+			))
+			{
+				return false;
+			}
+
+			Value = object_container->m_Value;
+			return true;
+		}
+	};
+
 	template <typename T>
 	struct LinkedList
 	{
@@ -847,7 +942,18 @@ namespace YYTK
 		const char* m_Name;
 		bool m_IsDuplicate;
 		LinkedList<CLayer> m_Layers;
+		CHashMap<int32_t, CLayer*, 7> m_LayerLookup;
+		CHashMap<int32_t, CLayerElementBase*, 7> m_LayerElementLookup;
+		CLayerElementBase* m_LastElementLookedUp;
+		CHashMap<int32_t, CLayerInstanceElement*, 7> m_InstanceElementLookup;
+		int32_t* m_SequenceInstanceIDs;
+		int32_t m_SequenceInstanceIdCount;
+		int32_t m_SequenceInstanceIdMax;
+		int32_t* m_EffectLayerIDs;
+		int32_t m_EffectLayerIdCount;
+		int32_t m_EffectLayerIdMax;
 	};
+	static_assert(sizeof(CRoom) == 0x218);
 
 	struct CInstanceBase
 	{
@@ -865,7 +971,7 @@ namespace YYTK
 	};
 	static_assert(sizeof(CInstanceBase) == 0x10);
 
-	enum EJSRetValBool : int
+	enum EJSRetValBool : int32_t
 	{
 		EJSRVB_FALSE,
 		EJSRVB_TRUE,
@@ -932,7 +1038,8 @@ namespace YYTK
 		FNGetOwnProperty m_GetOwnProperty;
 		FNDeleteProperty m_DeleteProperty;
 		FNDefineOwnProperty m_DefineOwnProperty;
-		PVOID m_YYVarsMap; // Use GetInstanceMember
+		// Use GetInstanceMember instead
+		CHashMap<int32_t, RValue*, 3>* m_YYVarsMap; 
 		CWeakRef** m_WeakRef;
 		uint32_t m_WeakRefCount;
 		uint32_t m_VariableCount;
@@ -981,12 +1088,19 @@ namespace YYTK
 	};
 	static_assert(sizeof(CPhysicsDataGM) == 0x30);
 
+	struct CEvent
+	{
+		CCode* m_Code;
+		int32_t m_OwnerObjectID;
+	};
+	static_assert(sizeof(CEvent) == 0x10);
+
 	struct CObjectGM
 	{
 		const char* m_Name;
 		CObjectGM* m_ParentObject;
-		PVOID m_ChildrenMap; // CHashMap<int, CObjectGM*, 2>
-		PVOID m_EventsMap; // CHashMap<ULONGLONG, CEvent*, 3>
+		CHashMap<int, CObjectGM*, 2>* m_ChildrenMap;
+		CHashMap<int, CEvent*, 3>* m_EventsMap;
 		CPhysicsDataGM m_PhysicsData;
 		LinkedList<CInstance> m_Instances;
 		LinkedList<CInstance> m_InstancesRecursive;
@@ -1001,7 +1115,7 @@ namespace YYTK
 
 	struct GCObjectContainer : YYObjectBase
 	{
-		PVOID m_yyObjMap; // CHashMap<YYObjectBase*, YYObjectBase*, 3>
+		CHashMap<YYObjectBase*, YYObjectBase*, 3>* m_YYObjectMap;
 	};
 	static_assert(sizeof(GCObjectContainer) == 0x90);
 
