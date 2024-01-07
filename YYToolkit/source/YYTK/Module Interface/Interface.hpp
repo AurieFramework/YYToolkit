@@ -16,6 +16,8 @@ namespace YYTK
 
 		// The runner interface stolen by disassembling Extension_PrePrepare()
 		YYRunnerInterface m_RunnerInterface = {};
+
+		bool m_IsYYCRunner = false;
 	private:
 
 		// A pointer to the functions array in memory

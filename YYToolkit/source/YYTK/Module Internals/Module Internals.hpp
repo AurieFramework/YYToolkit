@@ -41,15 +41,7 @@ namespace YYTK
 	// Creates a console for the tool to output stuff into
 	void CmpCreateConsole();
 
-	Aurie::AurieStatus GmpGetRunnerInterface(
-		OUT YYRunnerInterface& Interface
-	);
-
-	Aurie::AurieStatus GmpGetBuiltinInformation(
-		OUT int32_t*& BuiltinCount,
-		OUT RVariableRoutine*& BuiltinArray
-	);
-
+	// Shared, not directly GM related
 	std::vector<TargettedInstruction> GmpDisassemble(
 		IN PVOID Address,
 		IN size_t MaximumSize,
@@ -60,41 +52,6 @@ namespace YYTK
 		IN const std::vector<TargettedInstruction>& Instructions
 	);
 
-	Aurie::AurieStatus GmpFindFunctionsArray(
-		IN const YYRunnerInterface& Interface,
-		OUT RFunction*** FunctionsArray
-	);
-
-	Aurie::AurieStatus GmpFindScriptData(
-		IN const YYRunnerInterface& Interface,
-		IN TRoutine CopyStatic,
-		OUT FNScriptData* ScriptData
-	);
-
-	Aurie::AurieStatus GmpFindRoomData(
-		IN TRoutine RoomInstanceClear,
-		OUT FNRoomData* RoomData
-	);
-
-	Aurie::AurieStatus GmpFindCurrentRoomData(
-		IN FNSetVariable SV_BackgroundColor,
-		OUT CRoom*** Run_Room
-	);
-
-	Aurie::AurieStatus GmpFindRVArrayOffset(
-		IN TRoutine F_ArrayEquals,
-		OUT int64_t* ArrayOffset
-	);
-
-	Aurie::AurieStatus GmpFindDoCallScript(
-		OUT PVOID* DoCallScript
-	);
-
-	Aurie::AurieStatus GmpFindCodeExecute(
-		OUT PVOID* CodeExecute
-	);
-
-	// Allows for multiple matches in a scanned region
 	Aurie::AurieStatus GmpSigscanRegionEx(
 		IN const unsigned char* RegionBase,
 		IN const size_t RegionSize,
@@ -103,12 +60,87 @@ namespace YYTK
 		OUT std::vector<size_t>& Matches
 	);
 
-	// Not game specific, kinda like MmSigscan* but for instructions
 	Aurie::AurieStatus GmpFindMnemonicPattern(
 		IN const std::vector<TargettedInstruction>& Instructions,
 		IN const std::vector<ZydisMnemonic>& Mnemonics,
 		OUT size_t& StartIndex
 	);
+
+	// Shared, directly GM related
+	Aurie::AurieStatus GmpGetRunnerInterface(
+		OUT YYRunnerInterface& Interface
+	);
+
+	Aurie::AurieStatus GmpFindScriptData(
+		IN const YYRunnerInterface& Interface,
+		IN TRoutine CopyStatic,
+		OUT FNScriptData* ScriptData
+	);
+
+	Aurie::AurieStatus GmpFindCurrentRoomData(
+		IN FNSetVariable SV_BackgroundColor,
+		OUT CRoom*** Run_Room
+	);
+
+	Aurie::AurieStatus GmpFindCodeExecute(
+		OUT PVOID* CodeExecute
+	);
+
+	// Implementations made specifically for VM runners
+	namespace VM
+	{
+		Aurie::AurieStatus GmpGetBuiltinInformation(
+			OUT int32_t*& BuiltinCount,
+			OUT RVariableRoutine*& BuiltinArray
+		);
+
+		Aurie::AurieStatus GmpFindFunctionsArray(
+			IN const YYRunnerInterface& Interface,
+			OUT RFunction*** FunctionsArray
+		);
+
+		Aurie::AurieStatus GmpFindRoomData(
+			IN TRoutine RoomInstanceClear,
+			OUT FNRoomData* RoomData
+		);
+
+		Aurie::AurieStatus GmpFindRVArrayOffset(
+			IN TRoutine F_ArrayEquals,
+			OUT int64_t* ArrayOffset
+		);
+
+		Aurie::AurieStatus GmpFindDoCallScript(
+			OUT PVOID* DoCallScript
+		);
+	}
+
+	// YYC specific implementations
+	namespace YYC
+	{
+		Aurie::AurieStatus GmpGetBuiltinInformation(
+			OUT int32_t*& BuiltinCount,
+			OUT RVariableRoutine*& BuiltinArray
+		);
+
+		Aurie::AurieStatus GmpFindFunctionsArray(
+			IN const YYRunnerInterface& Interface,
+			OUT RFunction*** FunctionsArray
+		);
+
+		Aurie::AurieStatus GmpFindRoomData(
+			IN TRoutine RoomInstanceClear,
+			OUT FNRoomData* RoomData
+		);
+
+		Aurie::AurieStatus GmpFindRVArrayOffset(
+			IN TRoutine F_ArrayEquals,
+			OUT int64_t* ArrayOffset
+		);
+
+		Aurie::AurieStatus GmpFindDoCallScript(
+			OUT PVOID* DoCallScript
+		);
+	}
 
 	namespace Hooks
 	{

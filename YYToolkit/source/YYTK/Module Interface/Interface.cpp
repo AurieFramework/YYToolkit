@@ -38,6 +38,9 @@ namespace YYTK
 
 	size_t YYTKInterfaceImpl::YkDetermineFunctionEntrySize()
 	{
+		if (!m_FunctionsArray)
+			return 0;
+
 		RFunction* first_entry = *m_FunctionsArray;
 		if (!first_entry)
 			return 0;
@@ -64,16 +67,43 @@ namespace YYTK
 		if (!AurieSuccess(last_status))
 			return 0;
 
+		// Get the offset and size of the .text section
+		uint64_t text_offset = 0;
+		size_t text_size = 0;
+		last_status = Internal::PpiGetModuleSectionBounds(
+			GetModuleHandleA(nullptr),
+			".text",
+			text_offset,
+			text_size
+		);
+
+		if (!AurieSuccess(last_status))
+			return 0;
+
 		// The section base is returned relative to the module base
+		text_offset += reinterpret_cast<uint64_t>(GetModuleHandleA(nullptr));
 		rdata_offset += reinterpret_cast<uint64_t>(GetModuleHandleA(nullptr));
 
 		char* rdata_section_start = reinterpret_cast<char*>(rdata_offset);
 		char* rdata_section_end = reinterpret_cast<char*>(rdata_offset + rdata_size);
 
+		// The string should be somewhere in the .rdata section
+		// If it's not, it's definitely not RFunctionStringRef (or the structure is corrupt)
 		if (potential_reference >= rdata_section_start && potential_reference <= rdata_section_end)
 			return sizeof(RFunctionStringRef);
 
-		return sizeof(RFunctionStringFull);
+		char* text_section_start = reinterpret_cast<char*>(text_offset);
+		char* text_section_end = reinterpret_cast<char*>(text_offset + text_size);
+		char* routine = reinterpret_cast<char*>(first_entry->FullEntry.m_Routine);
+
+		// The routine should be somewhere in the .text section
+		// If it's not, it's definitely not RFunctionStringFull (or the structure is corrupt)
+		
+		if (routine >= text_section_start && routine <= text_section_end)
+			return sizeof(RFunctionStringFull);
+
+		// Unknown size - possibly wrong runner architecture?
+		return 0;
 	}
 
 	ModuleCallbackDescriptor* YYTKInterfaceImpl::YkFindDescriptor(
@@ -199,25 +229,6 @@ namespace YYTK
 				return last_status;
 			}
 
-			// Use the runner interface to find the (currently empty) the_functions array in memory
-			last_status = GmpFindFunctionsArray(
-				m_RunnerInterface,
-				&m_FunctionsArray
-			);
-
-			// Make sure we got that, otherwise we still can't do anything
-			if (!AurieSuccess(last_status))
-			{
-				this->PrintError(
-					__FILE__,
-					__LINE__,
-					"Failed to find functions array! (%s)",
-					AurieStatusToString(last_status)
-				);
-
-				return last_status;
-			}
-
 			last_status = Hooks::HkPreinitialize();
 
 			if (!AurieSuccess(last_status))
@@ -232,11 +243,98 @@ namespace YYTK
 				return last_status;
 			}
 
-			// Get the array of builtins
-			last_status = GmpGetBuiltinInformation(
-				this->m_BuiltinCount,
-				this->m_BuiltinArray
+			CmWriteOutput(CM_LIGHTAQUA, "YYTK Next - Early initialization complete.");
+
+			m_FirstInitComplete = true;
+			return AURIE_SUCCESS;
+		}
+		
+		if (!m_SecondInitComplete)
+		{
+			// Now we have to figure out if the runner is YYC or VM
+			// We can either do that by calling "code_is_compiled",
+			// or by checking if the YYC-only version of GmpFindFunctionsArray succeeds.
+
+			// First we assume the runner is YYC, and look for the functions array
+			last_status = YYC::GmpFindFunctionsArray(
+				m_RunnerInterface,
+				&m_FunctionsArray
 			);
+
+			// Before calling anything, we need to know the size of one RFunction entry
+			// This might actually fail if the game is VM, so we can check for that too.
+			m_FunctionEntrySize = this->YkDetermineFunctionEntrySize();
+
+			// If we failed either getting the functions array, or determining the size,
+			// the game is probably VM, and our initial YYC assumption is wrong.
+			if (!AurieSuccess(last_status) || m_FunctionEntrySize == 0)
+			{
+				// Try to find the functions array again, this time using the VM method
+				last_status = VM::GmpFindFunctionsArray(
+					m_RunnerInterface,
+					&m_FunctionsArray
+				);
+
+				// Determine the function entry size again
+				m_FunctionEntrySize = this->YkDetermineFunctionEntrySize();
+
+				// Check if we succeeded this time (VM)
+				if (!AurieSuccess(last_status) || !m_FunctionEntrySize)
+				{
+					this->PrintError(
+						__FILE__,
+						__LINE__,
+						"Failed to determine function array size! (%s)",
+						AurieStatusToString(last_status)
+					);
+
+					return last_status;
+				}
+			}
+
+			// Determine for sure if the runner is YYC
+			RValue is_runner_yyc;
+			last_status = this->CallBuiltinEx(
+				is_runner_yyc,
+				"code_is_compiled",
+				nullptr,
+				nullptr,
+				{}
+			);
+
+			// Make sure we succeeded with that call
+			if (!AurieSuccess(last_status))
+			{
+				this->PrintError(
+					__FILE__,
+					__LINE__,
+					"Failed to determine runner edition! (%s)",
+					AurieStatusToString(last_status)
+				);
+
+				return last_status;
+			}
+
+			// Set the flag for use later (right after this actually)
+			if (is_runner_yyc.AsBool())
+				m_IsYYCRunner = true;
+
+			// Get the array of builtins
+			// Also yes, now we need to put this if-else bullshit everywhere
+			if (m_IsYYCRunner)
+			{
+				last_status = YYC::GmpGetBuiltinInformation(
+					this->m_BuiltinCount,
+					this->m_BuiltinArray
+				);
+			}
+			else
+			{
+				last_status = VM::GmpGetBuiltinInformation(
+					this->m_BuiltinCount,
+					this->m_BuiltinArray
+				);
+			}
 
 			// Make sure we got that. While this isn't critical to YYTK,
 			// it makes mod development way easier.
@@ -251,21 +349,6 @@ namespace YYTK
 
 				return last_status;
 			}
-
-			CmWriteOutput(CM_LIGHTAQUA, "YYTK Next - Early initialization complete.");
-			CmWriteOutput(CM_GRAY, "- m_FunctionsArray at 0x%p", m_FunctionsArray);
-			CmWriteOutput(CM_GRAY, "- m_BuiltinCount at 0x%p", m_BuiltinCount);
-			CmWriteOutput(CM_GRAY, "- m_BuiltinArray at 0x%p", m_BuiltinArray);
-
-			m_FirstInitComplete = true;
-			return AURIE_SUCCESS;
-		}
-		
-		if (!m_SecondInitComplete)
-		{
-			// First up, we need to determine the RFunction entry size 
-			// now that it's populated by the game.
-			m_FunctionEntrySize = this->YkDetermineFunctionEntrySize();
 
 			TRoutine array_equals = nullptr;
 			last_status = this->GetNamedRoutinePointer(
@@ -286,19 +369,27 @@ namespace YYTK
 			}
 
 			// Find the offset required for direct array access (DynamicArrayOfRValue->m_Array)
-			last_status = GmpFindRVArrayOffset(
-				array_equals,
-				&m_RValueArrayOffset
-			);
-
+			if (m_IsYYCRunner)
+			{
+				last_status = YYC::GmpFindRVArrayOffset(
+					array_equals,
+					&m_RValueArrayOffset
+				);
+			}
+			else
+			{
+				last_status = VM::GmpFindRVArrayOffset(
+					array_equals,
+					&m_RValueArrayOffset
+				);
+			}
+			
 			if (!AurieSuccess(last_status))
 			{
 				this->PrintWarning(
 					"Failed to find RValue array offset! (%s)",
 					AurieStatusToString(last_status)
 				);
-
-				// return last_status;
 			}
 
 			// Find the Script_Data function
@@ -357,10 +448,20 @@ namespace YYTK
 				return last_status;
 			}
 
-			last_status = GmpFindRoomData(
-				room_instance_clear,
-				&m_GetRoomData
-			);
+			if (m_IsYYCRunner)
+			{
+				last_status = YYC::GmpFindRoomData(
+					room_instance_clear,
+					&m_GetRoomData
+				);
+			}
+			else
+			{
+				last_status = VM::GmpFindRoomData(
+					room_instance_clear,
+					&m_GetRoomData
+				);
+			}
 
 			if (!AurieSuccess(last_status))
 			{
@@ -368,8 +469,6 @@ namespace YYTK
 					"Failed to find room data! (%s)",
 					AurieStatusToString(last_status)
 				);
-
-				// return last_status;
 			}
 
 			// Find the Run_Room pointer
@@ -416,12 +515,14 @@ namespace YYTK
 
 			if (!AurieSuccess(last_status))
 			{
-				this->PrintWarning(
+				this->PrintError(
+					__FILE__,
+					__LINE__,
 					"Failed to find current room data! (%s)",
 					AurieStatusToString(last_status)
 				);
 
-				// return last_status;
+				return last_status;
 			}
 
 			// Find D3D11 stuff
@@ -463,11 +564,11 @@ namespace YYTK
 			if (!AurieSuccess(last_status))
 			{
 				this->PrintWarning(
+					__FILE__,
+					__LINE__,
 					"Failed to get video_d3d11_swapchain! (%s)",
 					AurieStatusToString(last_status)
 				);
-
-				// return last_status;
 			}
 
 			// Find window handle
@@ -513,17 +614,24 @@ namespace YYTK
 
 			CmWriteOutput(CM_LIGHTAQUA, "YYTK Next - Late initialization complete.");
 
-			CmWriteOutput(
-				CM_GRAY, 
-				"- RFunction Entry Type: %s", 
-				m_FunctionEntrySize == sizeof(RFunctionStringRef) ? "Referential" : "Embedded"
-			);
-
+			CmWriteOutput(CM_GRAY, "- m_FunctionsArray at 0x%p", m_FunctionsArray);
+			CmWriteOutput(CM_GRAY, "- m_BuiltinArray at 0x%p", m_BuiltinArray);
+			CmWriteOutput(CM_GRAY, "- m_BuiltinCount at 0x%p", m_BuiltinCount);
 			CmWriteOutput(CM_GRAY, "- m_GetScriptData at 0x%p", m_GetScriptData);
 			CmWriteOutput(CM_GRAY, "- m_EngineSwapchain at 0x%p", m_EngineSwapchain);
 			CmWriteOutput(CM_GRAY, "- m_RValueArrayOffset at 0x%llx", m_RValueArrayOffset);
 			CmWriteOutput(CM_GRAY, "- m_GetRoomData at 0x%p", m_GetRoomData);
 			CmWriteOutput(CM_GRAY, "- m_RunRoom at 0x%p", m_RunRoom);
+			CmWriteOutput(
+				CM_GRAY,
+				"- RFunction Entry Type: %s",
+				m_FunctionEntrySize == sizeof(RFunctionStringRef) ? "Referential" : "Embedded"
+			);
+			CmWriteOutput(
+				CM_GRAY,
+				"- Runner Edition: %s",
+				m_IsYYCRunner ? "YYC" : "VM"
+			);
 
 			m_SecondInitComplete = true;
 			return AURIE_SUCCESS;

@@ -24,7 +24,7 @@
     <ClCompile Include="source\YYTK\Module Internals\Console\Console.cpp">
       <Filter>Zdrojové soubory</Filter>
     </ClCompile>
-    <ClCompile Include="source\YYTK\Module Internals\GameMaker\GameMaker.cpp">
+    <ClCompile Include="source\YYTK\Module Internals\GameMaker\YYC-only.cpp">
       <Filter>Zdrojové soubory</Filter>
     </ClCompile>
     <ClCompile Include="source\YYTK\Module Interface\Interface.cpp">
@@ -34,6 +34,12 @@
       <Filter>Zdrojové soubory</Filter>
     </ClCompile>
     <ClCompile Include="source\YYTK\Shared.cpp">
+      <Filter>Zdrojové soubory</Filter>
+    </ClCompile>
+    <ClCompile Include="source\YYTK\Module Internals\GameMaker\VM-only.cpp">
+      <Filter>Zdrojové soubory</Filter>
+    </ClCompile>
+    <ClCompile Include="source\YYTK\Module Internals\GameMaker\Generic.cpp">
       <Filter>Zdrojové soubory</Filter>
     </ClCompile>
   </ItemGroup>
