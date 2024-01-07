@@ -651,9 +651,12 @@ namespace YYTK
 			0xFF
 		);
 
-		// It just so happens the first 7-byte long MOV  
-		// instruction references the the_functions array.
-		// It usually looks like mov <64bit register>, [the_functions]
+		// In YYC, the first 7-byte long mov references the functions array:
+			// mov <64bit register>, [the_functions]
+		// In VM, this technique results in finding the Extension array, 
+		// since Extension_Function_GetId is inlined into Code_Function_Find...
+
+		std::vector<RFunction**> potential_function_arrays;
 		for (auto& instruction : instructions)
 		{
 			// The instruction has to be a mov
@@ -709,11 +712,23 @@ namespace YYTK
 
 			// It's a pointer to a pointer, we dereference it once to   
 			// get the actual pointer to the first element in the array
-			*FunctionsArray = reinterpret_cast<RFunction**>(call_address);
-			return AURIE_SUCCESS;
+			potential_function_arrays.push_back(reinterpret_cast<RFunction**>(call_address));
 		}
 
-		return AURIE_OBJECT_NOT_FOUND;
+		if (potential_function_arrays.empty())
+			return AURIE_OBJECT_NOT_FOUND;
+
+		// Return the lowest one in memory
+		// TODO: Figure out how to actually do this
+		RFunction** lowest_in_memory = reinterpret_cast<RFunction**>(MAXULONG_PTR);
+		for (auto& array_pointer : potential_function_arrays)
+		{
+			if (reinterpret_cast<uintptr_t>(lowest_in_memory) > reinterpret_cast<uintptr_t>(array_pointer))
+				lowest_in_memory = array_pointer;
+		}
+
+		*FunctionsArray = lowest_in_memory;
+		return AURIE_SUCCESS;
 	}
 
 	Aurie::AurieStatus GmpFindScriptData(
