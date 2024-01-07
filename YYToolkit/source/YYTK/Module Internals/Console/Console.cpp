@@ -45,9 +45,10 @@ namespace YYTK
 		HANDLE input_stream = GetStdHandle(STD_INPUT_HANDLE);
 		DWORD console_mode;
 		GetConsoleMode(input_stream, &console_mode);
-		//SetConsoleMode(input_stream, ENABLE_EXTENDED_FLAGS | (console_mode & ~ENABLE_QUICK_EDIT_MODE));
+		SetConsoleMode(input_stream, ENABLE_EXTENDED_FLAGS | (console_mode & ~ENABLE_QUICK_EDIT_MODE));
 
 		// Write credits
+		SetConsoleTitleA("YYToolkit Log");
 		CmWriteOutput(CM_LIGHTBLUE, "YYToolkit by @archie_uwu");
 	}
 

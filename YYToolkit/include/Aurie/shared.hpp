@@ -98,7 +98,9 @@ namespace Aurie
 		// The target file header, directory, or RVA could not be found or is invalid.
 		AURIE_FILE_PART_NOT_FOUND,
 		// The object was not found.
-		AURIE_OBJECT_NOT_FOUND
+		AURIE_OBJECT_NOT_FOUND,
+		// The requested resource is unavailable.
+		AURIE_UNAVAILABLE
 	};
 
 	enum AurieObjectType : uint32_t
@@ -163,6 +165,8 @@ namespace Aurie
 			return "AURIE_FILE_PART_NOT_FOUND";
 		case AURIE_OBJECT_NOT_FOUND:
 			return "AURIE_OBJECT_NOT_FOUND";
+		case AURIE_UNAVAILABLE:
+			return "AURIE_UNAVAILABLE";
 		}
 
 		return "AURIE_UNKNOWN_STATUS_CODE";

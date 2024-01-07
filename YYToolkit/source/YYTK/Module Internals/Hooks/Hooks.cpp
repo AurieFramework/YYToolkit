@@ -224,30 +224,8 @@ namespace YYTK
 				HkExecuteIt,
 				nullptr
 			);
-
-			if (!AurieSuccess(last_status))
-				return last_status;
-
-			// DoCallScript is a hook we don't care about, it's not used in YYC.
-			// If it fails, it fails... 
-			PVOID do_call_script = nullptr;
-			GmpFindDoCallScript(
-				&do_call_script
-			);
-
-			// Hook DoCallScript
-			MmCreateHook(
-				g_ArSelfModule,
-				"DoCallScript",
-				do_call_script,
-				HkDoCallScript,
-				nullptr
-			);
-
-			if (!AurieSuccess(last_status))
-				return AURIE_MODULE_INITIALIZATION_FAILED;
 			
-			return AURIE_SUCCESS;
+			return last_status;
 		}
 
 		Aurie::AurieStatus HkInitialize(
@@ -306,6 +284,39 @@ namespace YYTK
 			));
 
 			assert(g_OriginalWindowProc != nullptr);
+
+			// DoCallScript is a hook we don't care about, it's not used in YYC.
+			// If it fails, it fails... 
+
+			PVOID do_call_script = nullptr;
+			if (g_ModuleInterface.m_IsYYCRunner)
+			{
+				last_status = YYC::GmpFindDoCallScript(
+					&do_call_script
+				);
+			}
+			else
+			{
+				// Bail, not supported yet
+				// TODO: Make these not return AURIE_NOT_IMPLEMENTED
+				last_status = VM::GmpFindDoCallScript(
+					&do_call_script
+				);
+
+				return AURIE_SUCCESS;
+			}
+
+			if (!AurieSuccess(last_status))
+				return AURIE_MODULE_INITIALIZATION_FAILED;
+
+			// Hook DoCallScript
+			last_status = MmCreateHook(
+				g_ArSelfModule,
+				"DoCallScript",
+				do_call_script,
+				HkDoCallScript,
+				nullptr
+			);
 
 			return AURIE_SUCCESS;
 		}

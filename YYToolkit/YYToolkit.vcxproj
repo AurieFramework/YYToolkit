@@ -130,6 +130,7 @@
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <AdditionalIncludeDirectories>$(ProjectDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <Optimization>Disabled</Optimization>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -143,7 +144,9 @@
     <ClCompile Include="source\ModuleMain.cpp" />
     <ClCompile Include="source\YYTK\Module Interface\Interface.cpp" />
     <ClCompile Include="source\YYTK\Module Internals\Console\Console.cpp" />
-    <ClCompile Include="source\YYTK\Module Internals\GameMaker\GameMaker.cpp" />
+    <ClCompile Include="source\YYTK\Module Internals\GameMaker\Generic.cpp" />
+    <ClCompile Include="source\YYTK\Module Internals\GameMaker\VM-only.cpp" />
+    <ClCompile Include="source\YYTK\Module Internals\GameMaker\YYC-only.cpp" />
     <ClCompile Include="source\YYTK\Module Internals\Hooks\Hooks.cpp" />
     <ClCompile Include="source\YYTK\Shared.cpp" />
   </ItemGroup>
