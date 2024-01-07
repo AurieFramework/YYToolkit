@@ -490,8 +490,6 @@ namespace YYTK
 			*ArrayOffset = instructions.at(two_movs_index).RawForm.operands[1].mem.disp.value;
 
 			return AURIE_SUCCESS;
-
-			return AURIE_NOT_IMPLEMENTED;
 		}
 
 		AurieStatus GmpFindDoCallScript(
