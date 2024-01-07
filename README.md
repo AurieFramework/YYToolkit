@@ -22,22 +22,26 @@ YYTK is split on two branches, that being [Legacy](https://github.com/AurieFrame
 > [!NOTE]
 > ❌ = Unsupported
 > 🟠 = Limited support
+> 🟡 = Supported, unreliable
 > ✅ = Supported
-
-| GameMaker Version | YYToolkit Legacy | YYToolkit Next |
-| :---: | :---: | :---: |
-| GM 1.4.x | ✅ | ❌ |
-| GM 2.x.x compatibility | ✅ | ❌ |
-| GM 2022.x compatibility | 🟠 | ✅ |
-| GM 2023.x compatibility | ❌ | ✅ |
 
 | Point of comparison | YYToolkit Legacy | YYToolkit Next |
 | :---: | :---: | :---: |
-| Active development | ❌ | ✅ |
-| Global variable management | ✅ | ✅ |
-| Local variable management | 🟠 | ✅ |
-| Built-in variable management | ❌ | ✅ |
-| Data structure access | 🟠 | ✅ |
+| GM 1.4.x                     | 🟡 | ❌ |
+| GM 2.x.x                     | ✅ | ❌ |
+| GM 2022.x                    | 🟠 | ✅ |
+| GM 2023.x                    | ❌ | ✅ |
+| VM runner support            | ✅ | 🟡 |
+| x86 runner support           | ✅ | ❌ |
+| x64 runner support           | 🟡 | ✅ |
+| Active Development           | ❌ | ✅ |
+| Accessing global variables   | ✅ | ✅ |
+| Accessing local variables    | 🟠 | ✅ |
+| Accessing built-in variables | ❌ | ✅ |
+| Accessing data structures    | ❌ | ✅ |
+| Accessing scripts            | 🟡 | ✅ |
+| Accessing rooms              | ❌ | ✅ |
+| Manipulating object events   | ❌ | 🟠 |
 
 ## Contributors
 - YYTK Next
