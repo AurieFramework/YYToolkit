@@ -373,6 +373,7 @@ namespace YYTK
 			{
 				last_status = YYC::GmpFindRVArrayOffset(
 					array_equals,
+					m_RunnerInterface,
 					&m_RValueArrayOffset
 				);
 			}
@@ -380,6 +381,7 @@ namespace YYTK
 			{
 				last_status = VM::GmpFindRVArrayOffset(
 					array_equals,
+					m_RunnerInterface,
 					&m_RValueArrayOffset
 				);
 			}

@@ -106,6 +106,7 @@ namespace YYTK
 
 		Aurie::AurieStatus GmpFindRVArrayOffset(
 			IN TRoutine F_ArrayEquals,
+			IN YYRunnerInterface& Interface,
 			OUT int64_t* ArrayOffset
 		);
 
@@ -134,6 +135,7 @@ namespace YYTK
 
 		Aurie::AurieStatus GmpFindRVArrayOffset(
 			IN TRoutine F_ArrayEquals,
+			IN YYRunnerInterface& Interface,
 			OUT int64_t* ArrayOffset
 		);
 

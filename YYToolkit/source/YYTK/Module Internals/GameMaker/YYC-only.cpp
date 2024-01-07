@@ -325,6 +325,7 @@ namespace YYTK
 
 		AurieStatus GmpFindRVArrayOffset(
 			IN TRoutine F_ArrayEquals,
+			IN YYRunnerInterface& RunnerInterface,
 			OUT int64_t* ArrayOffset
 		)
 		{
@@ -403,7 +404,7 @@ namespace YYTK
 			);
 
 			if (!array_equals_internal_address)
-				return AURIE_MODULE_INITIALIZATION_FAILED;
+				return AURIE_INVALID_PARAMETER;
 
 			instructions = GmpDisassemble(
 				reinterpret_cast<PVOID>(array_equals_internal_address),
@@ -463,7 +464,7 @@ namespace YYTK
 
 			// If we couldn't find two movs that match, return an error
 			if (two_movs_index == SIZE_MAX)
-				return AURIE_MODULE_INITIALIZATION_FAILED;
+				return AURIE_OBJECT_NOT_FOUND;
 
 			*ArrayOffset = instructions.at(two_movs_index).RawForm.operands[1].mem.disp.value;
 
