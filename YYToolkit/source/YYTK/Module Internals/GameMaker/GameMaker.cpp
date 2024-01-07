@@ -522,12 +522,7 @@ namespace YYTK
 			}
 
 			if (!array_base_address || !array_numb_address)
-			{
-				printf("Match at %p failed : base %p, size %p\n", reinterpret_cast<PVOID>(match), array_base_address, array_numb_address);
 				continue;
-			}
-				
-			printf("Match at %p success : base %p, size %p\n", reinterpret_cast<PVOID>(match), array_base_address, array_numb_address);
 
 			BuiltinCount = reinterpret_cast<int32_t*>(array_numb_address);
 			BuiltinArray = reinterpret_cast<RVariableRoutine*>(array_base_address);

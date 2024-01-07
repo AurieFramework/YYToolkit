@@ -293,14 +293,12 @@ namespace YYTK
 
 			if (!AurieSuccess(last_status))
 			{
-				this->PrintError(
-					__FILE__,
-					__LINE__,
+				this->PrintWarning(
 					"Failed to find RValue array offset! (%s)",
 					AurieStatusToString(last_status)
 				);
 
-				return last_status;
+				// return last_status;
 			}
 
 			// Find the Script_Data function
@@ -366,14 +364,12 @@ namespace YYTK
 
 			if (!AurieSuccess(last_status))
 			{
-				this->PrintError(
-					__FILE__,
-					__LINE__,
+				this->PrintWarning(
 					"Failed to find room data! (%s)",
 					AurieStatusToString(last_status)
 				);
 
-				return last_status;
+				// return last_status;
 			}
 
 			// Find the Run_Room pointer
@@ -420,14 +416,12 @@ namespace YYTK
 
 			if (!AurieSuccess(last_status))
 			{
-				this->PrintError(
-					__FILE__,
-					__LINE__,
+				this->PrintWarning(
 					"Failed to find current room data! (%s)",
 					AurieStatusToString(last_status)
 				);
 
-				return last_status;
+				// return last_status;
 			}
 
 			// Find D3D11 stuff
@@ -456,46 +450,7 @@ namespace YYTK
 			// We need to pass the pointer to the interface into the RValue initializer
 			// here, because Aurie didn't yet put our interface in its array, therefore
 			// the hidden ObGetInterface calls within the RValue would fail.
-			RValue dx_device, dx_context, dx_swapchain, window_handle;
-			last_status = CallBuiltinEx(
-				dx_device,
-				"ds_map_find_value",
-				nullptr,
-				nullptr,
-				{ os_info_ds_map, RValue("video_d3d11_device", this) }
-			);
-
-			if (!AurieSuccess(last_status))
-			{
-				this->PrintError(
-					__FILE__,
-					__LINE__,
-					"Failed to get video_d3d11_device! (%s)",
-					AurieStatusToString(last_status)
-				);
-
-				return last_status;
-			}
-
-			last_status = CallBuiltinEx(
-				dx_context,
-				"ds_map_find_value",
-				nullptr,
-				nullptr,
-				{ os_info_ds_map, RValue("video_d3d11_context", this) }
-			);
-
-			if (!AurieSuccess(last_status))
-			{
-				this->PrintError(
-					__FILE__,
-					__LINE__,
-					"Failed to get video_d3d11_context! (%s)",
-					AurieStatusToString(last_status)
-				);
-
-				return last_status;
-			}
+			RValue dx_swapchain, window_handle;
 
 			last_status = CallBuiltinEx(
 				dx_swapchain,
@@ -507,14 +462,12 @@ namespace YYTK
 
 			if (!AurieSuccess(last_status))
 			{
-				this->PrintError(
-					__FILE__,
-					__LINE__,
+				this->PrintWarning(
 					"Failed to get video_d3d11_swapchain! (%s)",
 					AurieStatusToString(last_status)
 				);
 
-				return last_status;
+				// return last_status;
 			}
 
 			// Find window handle
@@ -538,13 +491,9 @@ namespace YYTK
 				return last_status;
 			}
 
-			m_EngineDevice = reinterpret_cast<ID3D11Device*>(dx_device.m_Pointer);
-			m_EngineDeviceContext = reinterpret_cast<ID3D11DeviceContext*>(dx_context.m_Pointer);
 			m_EngineSwapchain = reinterpret_cast<IDXGISwapChain*>(dx_swapchain.m_Pointer);
 			m_WindowHandle = reinterpret_cast<HWND>(window_handle.m_Pointer);
 
-			assert(m_EngineDevice != nullptr);
-			assert(m_EngineDeviceContext != nullptr);
 			assert(m_EngineSwapchain != nullptr);
 
 			last_status = Hooks::HkInitialize(
@@ -552,17 +501,14 @@ namespace YYTK
 				m_EngineSwapchain
 			);
 
-
 			if (!AurieSuccess(last_status))
 			{
-				this->PrintError(
-					__FILE__,
-					__LINE__,
+				this->PrintWarning(
 					"Failed to initialize stage 2 hooks! (%s)",
 					AurieStatusToString(last_status)
 				);
 
-				return last_status;
+				// return last_status;
 			}
 
 			CmWriteOutput(CM_LIGHTAQUA, "YYTK Next - Late initialization complete.");
@@ -574,8 +520,6 @@ namespace YYTK
 			);
 
 			CmWriteOutput(CM_GRAY, "- m_GetScriptData at 0x%p", m_GetScriptData);
-			CmWriteOutput(CM_GRAY, "- m_EngineDevice at 0x%p", m_EngineDevice);
-			CmWriteOutput(CM_GRAY, "- m_EngineDeviceContext at 0x%p", m_EngineDeviceContext);
 			CmWriteOutput(CM_GRAY, "- m_EngineSwapchain at 0x%p", m_EngineSwapchain);
 			CmWriteOutput(CM_GRAY, "- m_RValueArrayOffset at 0x%llx", m_RValueArrayOffset);
 			CmWriteOutput(CM_GRAY, "- m_GetRoomData at 0x%p", m_GetRoomData);
