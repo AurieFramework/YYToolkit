@@ -188,7 +188,16 @@ namespace YYTK
 
 			// If we didn't get that, there's no chance in hell we're doing anything with the runner
 			if (!AurieSuccess(last_status))
-				return AURIE_MODULE_INTERNAL_ERROR;
+			{
+				this->PrintError(
+					__FILE__,
+					__LINE__,
+					"Failed to find runner interface! (%s)",
+					AurieStatusToString(last_status)
+				);
+
+				return last_status;
+			}
 
 			// Use the runner interface to find the (currently empty) the_functions array in memory
 			last_status = GmpFindFunctionsArray(
@@ -198,12 +207,30 @@ namespace YYTK
 
 			// Make sure we got that, otherwise we still can't do anything
 			if (!AurieSuccess(last_status))
-				return AURIE_MODULE_INTERNAL_ERROR;
+			{
+				this->PrintError(
+					__FILE__,
+					__LINE__,
+					"Failed to find functions array! (%s)",
+					AurieStatusToString(last_status)
+				);
+
+				return last_status;
+			}
 
 			last_status = Hooks::HkPreinitialize();
 
 			if (!AurieSuccess(last_status))
-				return AURIE_MODULE_INTERNAL_ERROR;
+			{
+				this->PrintError(
+					__FILE__,
+					__LINE__,
+					"Failed to initialize stage 1 hooks! (%s)",
+					AurieStatusToString(last_status)
+				);
+
+				return last_status;
+			}
 
 			// Get the array of builtins
 			last_status = GmpGetBuiltinInformation(
@@ -214,7 +241,16 @@ namespace YYTK
 			// Make sure we got that. While this isn't critical to YYTK,
 			// it makes mod development way easier.
 			if (!AurieSuccess(last_status))
-				return AURIE_MODULE_INTERNAL_ERROR;
+			{
+				this->PrintError(
+					__FILE__,
+					__LINE__,
+					"Failed to get built-in variable information! (%s)",
+					AurieStatusToString(last_status)
+				);
+
+				return last_status;
+			}
 
 			CmWriteOutput(CM_LIGHTAQUA, "YYTK Next - Early initialization complete.");
 			CmWriteOutput(CM_GRAY, "- m_FunctionsArray at 0x%p", m_FunctionsArray);
@@ -238,7 +274,16 @@ namespace YYTK
 			);
 
 			if (!AurieSuccess(last_status))
-				return AURIE_MODULE_INTERNAL_ERROR;
+			{
+				this->PrintError(
+					__FILE__,
+					__LINE__,
+					"Failed to find array_equals! (%s)",
+					AurieStatusToString(last_status)
+				);
+
+				return last_status;
+			}
 
 			// Find the offset required for direct array access (DynamicArrayOfRValue->m_Array)
 			last_status = GmpFindRVArrayOffset(
@@ -247,7 +292,16 @@ namespace YYTK
 			);
 
 			if (!AurieSuccess(last_status))
-				return AURIE_MODULE_INTERNAL_ERROR;
+			{
+				this->PrintError(
+					__FILE__,
+					__LINE__,
+					"Failed to find RValue array offset! (%s)",
+					AurieStatusToString(last_status)
+				);
+
+				return last_status;
+			}
 
 			// Find the Script_Data function
 			TRoutine copy_static = nullptr;
@@ -257,7 +311,16 @@ namespace YYTK
 			);
 
 			if (!AurieSuccess(last_status))
-				return AURIE_MODULE_INTERNAL_ERROR;
+			{
+				this->PrintError(
+					__FILE__,
+					__LINE__,
+					"Failed to find @@CopyStatic@@ function! (%s)",
+					AurieStatusToString(last_status)
+				);
+
+				return last_status;
+			}
 
 			last_status = GmpFindScriptData(
 				m_RunnerInterface,
@@ -266,7 +329,16 @@ namespace YYTK
 			);
 
 			if (!AurieSuccess(last_status))
-				return AURIE_MODULE_INTERNAL_ERROR;
+			{
+				this->PrintError(
+					__FILE__,
+					__LINE__,
+					"Failed to find script data! (%s)",
+					AurieStatusToString(last_status)
+				);
+
+				return last_status;
+			}
 
 			// Find the Room_Data function
 			TRoutine room_instance_clear = nullptr;
@@ -276,7 +348,16 @@ namespace YYTK
 			);
 
 			if (!AurieSuccess(last_status))
-				return AURIE_MODULE_INTERNAL_ERROR;
+			{
+				this->PrintError(
+					__FILE__,
+					__LINE__,
+					"Failed to find room_instance_clear function! (%s)",
+					AurieStatusToString(last_status)
+				);
+
+				return last_status;
+			}
 
 			last_status = GmpFindRoomData(
 				room_instance_clear,
@@ -284,7 +365,16 @@ namespace YYTK
 			);
 
 			if (!AurieSuccess(last_status))
-				return AURIE_MODULE_INTERNAL_ERROR;
+			{
+				this->PrintError(
+					__FILE__,
+					__LINE__,
+					"Failed to find room data! (%s)",
+					AurieStatusToString(last_status)
+				);
+
+				return last_status;
+			}
 
 			// Find the Run_Room pointer
 			size_t background_color_index = 0;
@@ -294,7 +384,16 @@ namespace YYTK
 			);
 
 			if (!AurieSuccess(last_status))
-				return AURIE_MODULE_INTERNAL_ERROR;
+			{
+				this->PrintError(
+					__FILE__,
+					__LINE__,
+					"Failed to find background_color built-in variable! (%s)",
+					AurieStatusToString(last_status)
+				);
+
+				return last_status;
+			}
 
 			RVariableRoutine* background_color_entry = nullptr;
 			last_status = GetBuiltinVariableInformation(
@@ -303,7 +402,16 @@ namespace YYTK
 			);
 
 			if (!AurieSuccess(last_status))
-				return AURIE_MODULE_INTERNAL_ERROR;
+			{
+				this->PrintError(
+					__FILE__,
+					__LINE__,
+					"Failed to get background_color built-in variable information! (%s)",
+					AurieStatusToString(last_status)
+				);
+
+				return last_status;
+			}
 
 			last_status = GmpFindCurrentRoomData(
 				background_color_entry->m_SetVariable,
@@ -311,7 +419,16 @@ namespace YYTK
 			);
 
 			if (!AurieSuccess(last_status))
-				return AURIE_MODULE_INTERNAL_ERROR;
+			{
+				this->PrintError(
+					__FILE__,
+					__LINE__,
+					"Failed to find current room data! (%s)",
+					AurieStatusToString(last_status)
+				);
+
+				return last_status;
+			}
 
 			// Find D3D11 stuff
 			RValue os_info_ds_map;
@@ -324,7 +441,16 @@ namespace YYTK
 			);
 
 			if (!AurieSuccess(last_status))
-				return AURIE_MODULE_INTERNAL_ERROR;
+			{
+				this->PrintError(
+					__FILE__,
+					__LINE__,
+					"Failed to call os_get_info function! (%s)",
+					AurieStatusToString(last_status)
+				);
+
+				return last_status;
+			}
 
 			// Pull everything needed from the DS List
 			// We need to pass the pointer to the interface into the RValue initializer
@@ -340,7 +466,16 @@ namespace YYTK
 			);
 
 			if (!AurieSuccess(last_status))
-				return AURIE_MODULE_INTERNAL_ERROR;
+			{
+				this->PrintError(
+					__FILE__,
+					__LINE__,
+					"Failed to get video_d3d11_device! (%s)",
+					AurieStatusToString(last_status)
+				);
+
+				return last_status;
+			}
 
 			last_status = CallBuiltinEx(
 				dx_context,
@@ -351,7 +486,16 @@ namespace YYTK
 			);
 
 			if (!AurieSuccess(last_status))
-				return AURIE_MODULE_INTERNAL_ERROR;
+			{
+				this->PrintError(
+					__FILE__,
+					__LINE__,
+					"Failed to get video_d3d11_context! (%s)",
+					AurieStatusToString(last_status)
+				);
+
+				return last_status;
+			}
 
 			last_status = CallBuiltinEx(
 				dx_swapchain,
@@ -362,7 +506,16 @@ namespace YYTK
 			);
 
 			if (!AurieSuccess(last_status))
-				return AURIE_MODULE_INTERNAL_ERROR;
+			{
+				this->PrintError(
+					__FILE__,
+					__LINE__,
+					"Failed to get video_d3d11_swapchain! (%s)",
+					AurieStatusToString(last_status)
+				);
+
+				return last_status;
+			}
 
 			// Find window handle
 			last_status = CallBuiltinEx(
@@ -374,7 +527,16 @@ namespace YYTK
 			);
 
 			if (!AurieSuccess(last_status))
-				return AURIE_MODULE_INTERNAL_ERROR;
+			{
+				this->PrintError(
+					__FILE__,
+					__LINE__,
+					"Failed to get window_handle! (%s)",
+					AurieStatusToString(last_status)
+				);
+
+				return last_status;
+			}
 
 			m_EngineDevice = reinterpret_cast<ID3D11Device*>(dx_device.m_Pointer);
 			m_EngineDeviceContext = reinterpret_cast<ID3D11DeviceContext*>(dx_context.m_Pointer);
@@ -390,8 +552,18 @@ namespace YYTK
 				m_EngineSwapchain
 			);
 
+
 			if (!AurieSuccess(last_status))
-				return AURIE_MODULE_INTERNAL_ERROR;
+			{
+				this->PrintError(
+					__FILE__,
+					__LINE__,
+					"Failed to initialize stage 2 hooks! (%s)",
+					AurieStatusToString(last_status)
+				);
+
+				return last_status;
+			}
 
 			CmWriteOutput(CM_LIGHTAQUA, "YYTK Next - Late initialization complete.");
 

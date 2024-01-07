@@ -1954,6 +1954,56 @@ namespace YYTK
 	};
 	static_assert(sizeof(LinkedList<CInstance>) == 0x18);
 
+	enum eBuffer_Type : int32_t
+	{
+		eBuffer_None = 0x0,
+		eBuffer_U8 = 0x1,
+		eBuffer_S8 = 0x2,
+		eBuffer_U16 = 0x3,
+		eBuffer_S16 = 0x4,
+		eBuffer_U32 = 0x5,
+		eBuffer_S32 = 0x6,
+		eBuffer_F16 = 0x7,
+		eBuffer_F32 = 0x8,
+		eBuffer_D64 = 0x9,
+		eBuffer_Bool = 0xA,
+		eBuffer_String = 0xB,
+		eBuffer_U64 = 0xC,
+		eBuffer_Text = 0xD,
+	};
+
+	enum eBuffer_Seek : int32_t
+	{
+		eBuffer_Start = 0x0,
+		eBuffer_Relative = 0x1,
+		eBuffer_End = 0x2,
+	};
+
+	struct IBuffer
+	{
+		virtual ~IBuffer() = 0;
+		virtual int Write(eBuffer_Type _type, RValue* _pIn) = 0;
+		virtual int WriteArray(eBuffer_Type _type, uint8_t* _pSrc, int Size) = 0;
+		virtual int Read(eBuffer_Type _type, RValue* _pOut) = 0;
+		virtual int Seek(eBuffer_Seek _type, int _val) = 0;
+		virtual void Peek(int _offset, eBuffer_Type _type, RValue* _pOut) = 0;
+		virtual void Poke(int _offset, eBuffer_Type _type, RValue* _pIn) = 0;
+		virtual int Save(const char* _pURI, int _offset, int _size) = 0;
+		virtual int Load(const char* _pURI, int _src_offset, int _src_size, int _dest_offset) = 0;
+		virtual void Base64Encode(RValue* _pOut, int _offset, int _size) = 0;
+		virtual void Base64Decode(const char* _pBASE64, int _offset, int _size) = 0;
+		virtual void MD5(RValue* _pOut, int _offset, int _size) = 0;
+		virtual void SHA1(RValue* _pOut, int _offset, int _size) = 0;
+		virtual void Resize(int _newsize) = 0;
+		virtual void Copy(int _src_offset, int _src_size, IBuffer* _pDest, int _dest_off) = 0;
+		virtual void Fill(int _offset, int _size, eBuffer_Type _type, RValue* _pIn, int _stride, bool fill_gaps) = 0;
+		virtual void GetSurface(int _surface) = 0;
+		virtual void SetSurface(int _surface, int _offset) = 0;
+		virtual uint8_t* Compress(int _offset, int _size, uint32_t& resultSize) = 0;
+		virtual uint8_t* Decompress(uint32_t& resultSize) = 0;
+	};
+	static_assert(sizeof(IBuffer) == 0x8);
+
 	struct CLayerElementBase
 	{
 		int32_t m_Type;
@@ -2129,14 +2179,6 @@ namespace YYTK
 	{
 		virtual ~CInstanceBase() = 0;
 
-		virtual RValue& InternalGetYYVarRef(
-			IN int Index
-		) = 0;
-
-		virtual RValue& InternalGetYYVarRefL(
-			IN int Index
-		) = 0;
-
 		RValue* m_YYVars;
 	};
 	static_assert(sizeof(CInstanceBase) == 0x10);
@@ -2201,6 +2243,42 @@ namespace YYTK
 
 	struct YYObjectBase : CInstanceBase
 	{
+		virtual RValue& InternalGetYYVarRef(
+			IN int Index
+		) = 0;
+
+		virtual RValue& InternalGetYYVarRefL(
+			IN int Index
+		) = 0;
+
+		virtual bool Mark4GC(
+			uint32_t*, 
+			int
+		) = 0;
+
+		virtual bool MarkThisOnly4GC(
+			uint32_t*,
+			int
+		) = 0;
+
+		virtual bool MarkOnlyChildren4GC(
+			uint32_t*,
+			int
+		) = 0;
+
+		virtual void Free(
+			bool preserve_map
+		) = 0;
+
+		virtual void ThreadFree(
+			bool preserve_map,
+			PVOID GCContext
+		) = 0;
+
+		virtual void PreFree() = 0;
+
+		virtual RValue* GetDispose() = 0;
+
 		YYObjectBase* m_Flink;
 		YYObjectBase* m_Blink;
 		YYObjectBase* m_Prototype;

@@ -384,7 +384,7 @@ namespace YYTK
 		);
 
 		if (!pattern_match)
-			return AURIE_MODULE_INITIALIZATION_FAILED;
+			return AURIE_OBJECT_NOT_FOUND;
 
 		// We disassemble the function starting at the pattern
 		std::vector<TargettedInstruction> instructions = GmpDisassemble(
@@ -419,7 +419,7 @@ namespace YYTK
 		
 		// Translation failed? This shouldn't happen.
 		if (!ZYAN_SUCCESS(zyan_status) || !jnz_target)
-			return AURIE_MODULE_INITIALIZATION_FAILED;
+			return AURIE_EXTERNAL_ERROR;
 
 		// Now we disassemble again, but this time at the target of the jnz
 		// ie. where the CPU jumps to if we pass the bounds check
@@ -490,7 +490,7 @@ namespace YYTK
 		}
 
 		if (!array_base_address || !array_numb_address)
-			return AURIE_MODULE_INITIALIZATION_FAILED;
+			return AURIE_MODULE_DEPENDENCY_NOT_RESOLVED;
 
 		BuiltinCount = reinterpret_cast<int32_t*>(array_numb_address);
 		BuiltinArray = reinterpret_cast<RVariableRoutine*>(array_base_address);
