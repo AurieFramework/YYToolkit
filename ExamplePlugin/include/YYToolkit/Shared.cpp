@@ -379,6 +379,30 @@ size_t YYTK::RValue::length()
 	return current_size;
 }
 
+#if YYTK_DEFINE_INTERNAL
+CInstanceInternal& YYTK::CInstance::GetMembers()
+{
+	YYTKInterface* module_interface = GetYYTKInterface();
+	if (!module_interface)
+		return this->Unmasked.Members;
+
+	RValue self_id_builtin;
+	module_interface->GetBuiltin(
+		"id",
+		this,
+		NULL_INDEX,
+		self_id_builtin
+	);
+
+	int32_t self_id = static_cast<int32_t>(self_id_builtin.AsReal());
+
+	if (this->Unmasked.Members.m_ID == self_id)
+		return this->Unmasked.Members;
+
+	return this->Masked.Members;
+}
+#endif // YYTK_DEFINE_INTERNAL
+
 RValue& CInstance::operator[](
 	IN std::string_view Element
 	)
