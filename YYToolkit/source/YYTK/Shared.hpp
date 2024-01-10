@@ -9,7 +9,7 @@
 
 #define YYTK_MAJOR 3
 #define YYTK_MINOR 2
-#define YYTK_PATCH 0
+#define YYTK_PATCH 1
 
 #include <Aurie/shared.hpp>
 #include <FunctionWrapper/FunctionWrapper.hpp>
