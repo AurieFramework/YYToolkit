@@ -1397,7 +1397,7 @@ namespace YYTK
 			);
 
 			int64_t object_count = static_cast<int64_t>(CallBuiltin(
-				"instance_count",
+				"instance_number",
 				{ object_index }
 			).AsReal());
 
@@ -1424,10 +1424,7 @@ namespace YYTK
 				}
 
 				// Get the instance ID from the instance
-				int32_t instance_id = static_cast<int32_t>(CallBuiltin(
-					"instance_id_get",
-					{ instance }
-				).AsReal());
+				int32_t instance_id = static_cast<int32_t>(Object.AsReal());
 
 				// Skip inactive instances / instances that don't exist
 				CInstance* object_instance = nullptr;
