@@ -1380,4 +1380,85 @@ namespace YYTK
 
 		return AURIE_OBJECT_NOT_FOUND;
 	}
+
+	AurieStatus YYTKInterfaceImpl::InvokeWithObject(
+		IN const RValue& Object,
+		IN std::function<void(CInstance* Self, CInstance* Other)> Method
+	)
+	{
+		switch (Object.m_Kind)
+		{
+		case VALUE_STRING:
+		{
+			// We got an object name most probably
+			RValue object_index = CallBuiltin(
+				"asset_get_index",
+				{ Object }
+			);
+
+			int64_t object_count = static_cast<int64_t>(CallBuiltin(
+				"instance_number",
+				{ object_index }
+			).AsReal());
+
+			// Return early if no objects exist
+			if (object_count < 1)
+				return AURIE_OBJECT_NOT_FOUND;
+
+			for (int64_t i = 0; i < object_count; i++)
+			{
+				// Find the actual instance
+				RValue instance = CallBuiltin(
+					"instance_find",
+					{
+						object_index,
+						i
+					}
+				);
+
+				// If we already got a CInstance* from instance_find, we don't have to pre-process it
+				if (instance.m_Kind == VALUE_OBJECT)
+				{
+					Method(instance.m_Object, instance.m_Object);
+					continue;
+				}
+
+				// Get the instance ID from the instance
+				int32_t instance_id = static_cast<int32_t>(Object.AsReal());
+
+				// Skip inactive instances / instances that don't exist
+				CInstance* object_instance = nullptr;
+				if (!AurieSuccess(GetInstanceObject(
+					instance_id,
+					object_instance
+				)))
+				{
+					continue;
+				}
+
+				Method(object_instance, object_instance);
+			}
+
+			return AURIE_SUCCESS;
+		}
+		case VALUE_INT32: // fallthrough
+		case VALUE_INT64:
+		case VALUE_REAL:
+		{
+			// We got an instance ID
+			CInstance* instance = nullptr;
+			AurieStatus last_status = GetInstanceObject(static_cast<int32_t>(Object.AsReal()), instance);
+
+			// Return if the instance ID is invalid
+			if (!AurieSuccess(last_status))
+				return last_status;
+
+			Method(instance, instance);
+			
+			return AURIE_SUCCESS;
+		}
+		}
+
+		return AURIE_NOT_IMPLEMENTED;
+	}
 }

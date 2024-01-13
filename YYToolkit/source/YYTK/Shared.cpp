@@ -17,7 +17,7 @@ static YYTKInterface* GetYYTKInterface()
 		);
 
 		if (!AurieSuccess(last_status))
-			printf("[%s : %d] FATAL: Failed to get YYTK Interface!\n", __FILE__, __LINE__);
+			printf("[%s : %d] FATAL: Failed to get YYTK Interface (%s)!\n", __FILE__, __LINE__, AurieStatusToString(last_status));
 	}
 
 	return module_interface;
@@ -277,17 +277,20 @@ RValue& RValue::operator[](
 		return *this;
 
 	RValue* result = nullptr;
-	if (!AurieSuccess(GetYYTKInterface()->GetArrayEntry(
+	AurieStatus last_status = GetYYTKInterface()->GetArrayEntry(
 		*this,
 		Index,
 		result
-	)))
+	);
+
+	if (!AurieSuccess(last_status))
 	{
 		GetYYTKInterface()->PrintError(
 			__FILE__,
 			__LINE__,
-			"Trying to index invalid array index '%lld'!",
-			Index
+			"Trying to index invalid array index '%lld' (%s)!",
+			Index,
+			AurieStatusToString(last_status)
 		);
 
 		return *this;
@@ -316,8 +319,9 @@ RValue& RValue::operator[](
 		GetYYTKInterface()->PrintError(
 			__FILE__,
 			__LINE__,
-			"Trying to access inaccessible instance member '%s'!",
-			Element.data()
+			"Trying to access inaccessible instance member '%s' (%s)!",
+			Element.data(),
+			AurieStatusToString(last_status)
 		);
 
 		return *this;

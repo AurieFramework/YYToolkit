@@ -9,7 +9,7 @@
 
 #define YYTK_MAJOR 3
 #define YYTK_MINOR 2
-#define YYTK_PATCH 0
+#define YYTK_PATCH 1
 
 #include <Aurie/shared.hpp>
 #include <FunctionWrapper/FunctionWrapper.hpp>
@@ -1850,6 +1850,11 @@ namespace YYTK
 		virtual Aurie::AurieStatus GetInstanceObject(
 			IN int32_t InstanceID,
 			OUT CInstance*& Instance
+		) = 0;
+
+		virtual Aurie::AurieStatus InvokeWithObject(
+			IN const RValue& Object,
+			IN std::function<void(CInstance* Self, CInstance* Other)> Method
 		) = 0;
 	};
 

@@ -30,17 +30,37 @@ namespace YYTK
 		// Vector storing all the instructions encountered
 		std::vector<TargettedInstruction> instructions = {};
 
-		// Loop either until Zydis fails at disassembly, or until we get
-		// a lot of instructions without a function reference (meaning we wondered off)
-		ZydisDisassembledInstruction current_instruction;
-		while (ZYAN_SUCCESS(ZydisDisassembleIntel(
-			ZYDIS_MACHINE_MODE_LONG_64,
-			runtime_address,
-			memory_data + offset,
-			MaximumSize - offset,
-			&current_instruction
-		)) && instructions_since_last_function < MaximumInstructionsWithoutFunction)
+		// Loop until we either exceed the instruction limit or hit the maximum pointer limit
+		while (
+			(instructions_since_last_function < MaximumInstructionsWithoutFunction) &&
+			(runtime_address < (reinterpret_cast<ZyanUPointer>(Address) + MaximumSize)
+		))
 		{
+			ZydisDisassembledInstruction current_instruction;
+
+			ZyanStatus disassembly_status = ZydisDisassembleIntel(
+				ZYDIS_MACHINE_MODE_LONG_64,
+				runtime_address,
+				memory_data + offset,
+				MaximumSize - offset,
+				&current_instruction
+			);
+
+			if (!ZYAN_SUCCESS(disassembly_status))
+			{
+				// Just an invalid opcode, skip to the next one and continue
+				if (disassembly_status == ZYDIS_STATUS_DECODING_ERROR)
+				{
+					runtime_address++;
+					offset++;
+					continue;
+				}
+				
+				// If it's another, more serious error, break out
+				break;
+			}
+
+			// If we succeded, we can continue disassembly
 			TargettedInstruction chain_entry = {};
 			chain_entry.RawForm = current_instruction;
 			chain_entry.FunctionTarget = nullptr;
