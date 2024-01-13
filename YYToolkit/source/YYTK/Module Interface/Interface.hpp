@@ -265,7 +265,7 @@ namespace YYTK
 		virtual Aurie::AurieStatus InvokeWithObject(
 			IN const RValue& Object,
 			IN std::function<void(CInstance* Self, CInstance* Other)> Method
-		);
+		) override final;
 	};
 
 	inline YYTKInterfaceImpl g_ModuleInterface;

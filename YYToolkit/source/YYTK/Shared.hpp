@@ -1851,6 +1851,11 @@ namespace YYTK
 			IN int32_t InstanceID,
 			OUT CInstance*& Instance
 		) = 0;
+
+		virtual Aurie::AurieStatus InvokeWithObject(
+			IN const RValue& Object,
+			IN std::function<void(CInstance* Self, CInstance* Other)> Method
+		) = 0;
 	};
 
 #if YYTK_DEFINE_INTERNAL
