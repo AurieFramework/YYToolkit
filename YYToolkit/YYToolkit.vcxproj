@@ -146,6 +146,7 @@
   <ItemGroup>
     <ClCompile Include="include\Zydis\Zydis.c" />
     <ClCompile Include="source\ModuleMain.cpp" />
+    <ClCompile Include="source\YYTK\CStyle Interface\CStyleInterface.cpp" />
     <ClCompile Include="source\YYTK\Module Interface\Interface.cpp" />
     <ClCompile Include="source\YYTK\Module Internals\Console\Console.cpp" />
     <ClCompile Include="source\YYTK\Module Internals\GameMaker\Generic.cpp" />

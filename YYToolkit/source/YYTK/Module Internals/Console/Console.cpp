@@ -115,13 +115,11 @@ namespace YYTK
 		va_end(va_args);
 
 		// Get the filename instead of the full path
-		size_t last_path_delimiter = Filepath.find_last_of("/\\");
+		std::filesystem::path filepath = Filepath;
+		if (filepath.has_filename())
+			filepath = filepath.filename();
 
-		// Make sure a valid path with a filename was passed in
-		if (last_path_delimiter == std::string::npos || last_path_delimiter == Filepath.length())
-			return;
-
-		std::string_view filename = Filepath.substr(last_path_delimiter + 1);
+		std::string filename = filepath.string();
 
 		// Print the output together with our fancy formatting
 		CmpSetTextColor(CM_WHITE);
