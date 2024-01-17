@@ -42,9 +42,6 @@
     <ClCompile Include="source\YYTK\Module Internals\GameMaker\Generic.cpp">
       <Filter>Zdrojové soubory</Filter>
     </ClCompile>
-    <ClCompile Include="source\YYTK\CStyle Interface\CStyleInterface.cpp">
-      <Filter>Zdrojové soubory</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\Aurie\shared.hpp">
