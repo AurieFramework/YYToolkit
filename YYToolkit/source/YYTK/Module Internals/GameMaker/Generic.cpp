@@ -296,7 +296,8 @@ namespace YYTK
 
 			// If there's less than 80 functions, it's probably not the interface
 			// YYRunnerInterface has 96 functions in LTS + 2 variables = 98 lea matches
-			if (function_count > 90 && function_count < 104)
+			// 2022.3 YYC has 88 functions
+			if (function_count > 87 && function_count < 104)
 				break;
 
 			instructions.clear();
