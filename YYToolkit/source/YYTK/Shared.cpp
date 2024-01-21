@@ -124,7 +124,7 @@ YYTK::RValue::RValue(
 	*this = std::string_view(Value);
 }
 
-#if YYTK_CPP_VERSION > 201703L
+#if YYTK_CPP_VERSION > 202002L
 YYTK::RValue::RValue(
 	IN const char8_t* Value
 )
@@ -151,7 +151,7 @@ RValue::RValue(
 	);
 }
 
-#if YYTK_CPP_VERSION > 201703L
+#if YYTK_CPP_VERSION > 202002L
 YYTK::RValue::RValue(
 	IN std::u8string_view Value
 )
@@ -167,7 +167,7 @@ YYTK::RValue::RValue(
 	*this = std::string_view(Value);
 }
 
-#if YYTK_CPP_VERSION > 201703L
+#if YYTK_CPP_VERSION > 202002L
 YYTK::RValue::RValue(
 	IN const std::u8string& Value
 )

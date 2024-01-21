@@ -208,7 +208,7 @@ namespace YYTK
 			IN const char* Value
 		);
 
-#if YYTK_CPP_VERSION > 201703L
+#if YYTK_CPP_VERSION > 202002L
 		RValue(
 			IN const char8_t* Value
 		);
@@ -217,7 +217,7 @@ namespace YYTK
 			IN std::string_view Value
 		);
 
-#if YYTK_CPP_VERSION > 201703L
+#if YYTK_CPP_VERSION > 202002L
 		RValue(
 			IN std::u8string_view Value
 		);
@@ -226,7 +226,7 @@ namespace YYTK
 			IN const std::string& Value
 		);
 
-#if YYTK_CPP_VERSION > 201703L
+#if YYTK_CPP_VERSION > 202002L
 		RValue(
 			IN const std::u8string& Value
 		);
