@@ -124,12 +124,14 @@ YYTK::RValue::RValue(
 	*this = std::string_view(Value);
 }
 
+#if YYTK_CPP_VERSION > 201703L
 YYTK::RValue::RValue(
 	IN const char8_t* Value
 )
 {
 	*this = std::u8string_view(Value);
 }
+#endif // YYTK_CPP_VERSION
 
 RValue::RValue(
 	IN std::string_view Value
@@ -149,12 +151,14 @@ RValue::RValue(
 	);
 }
 
+#if YYTK_CPP_VERSION > 201703L
 YYTK::RValue::RValue(
 	IN std::u8string_view Value
 )
 {
 	*this = std::string(Value.cbegin(), Value.cend());
 }
+#endif // YYTK_CPP_VERSION
 
 YYTK::RValue::RValue(
 	IN const std::string& Value
@@ -163,12 +167,14 @@ YYTK::RValue::RValue(
 	*this = std::string_view(Value);
 }
 
+#if YYTK_CPP_VERSION > 201703L
 YYTK::RValue::RValue(
 	IN const std::u8string& Value
 )
 {
 	*this = std::u8string_view(Value);
 }
+#endif // YYTK_CPP_VERSION
 
 RValue::RValue(
 	IN std::string_view Value,

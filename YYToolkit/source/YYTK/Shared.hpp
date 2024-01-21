@@ -9,7 +9,15 @@
 
 #define YYTK_MAJOR 3
 #define YYTK_MINOR 2
-#define YYTK_PATCH 2
+#define YYTK_PATCH 3
+
+#ifndef YYTK_CPP_VERSION
+#ifndef _MSVC_LANG
+#define YYTK_CPP_VERSION __cplusplus
+#else
+#define YYTK_CPP_VERSION _MSVC_LANG
+#endif // _MSVC_LANG
+#endif // YYTK_CPP_VERSION
 
 #include <Aurie/shared.hpp>
 #include <FunctionWrapper/FunctionWrapper.hpp>
@@ -200,26 +208,29 @@ namespace YYTK
 			IN const char* Value
 		);
 
+#if YYTK_CPP_VERSION > 201703L
 		RValue(
 			IN const char8_t* Value
 		);
-
+#endif // YYTK_CPP_VERSION
 		RValue(
 			IN std::string_view Value
 		);
 
+#if YYTK_CPP_VERSION > 201703L
 		RValue(
 			IN std::u8string_view Value
 		);
-
+#endif // YYTK_CPP_VERSION
 		RValue(
 			IN const std::string& Value
 		);
 
+#if YYTK_CPP_VERSION > 201703L
 		RValue(
 			IN const std::u8string& Value
 		);
-
+#endif // YYTK_CPP_VERSION
 		RValue(
 			IN std::string_view Value,
 			IN YYTKInterface* Interface
