@@ -55,7 +55,7 @@ namespace YYTK
 		)
 		{
 			// decltype apparently doesn't work in x86 bruh
-			auto original_function = GetHookTrampoline<HRESULT(WINAPI*)(IDXGISwapChain*, UINT, UINT)>("Present");
+			auto original_function = GetHookTrampoline<decltype(&HkPresent)>("Present");
 
 			FunctionWrapper<HRESULT(IDXGISwapChain*, UINT, UINT)> func_wrapper(
 				original_function,
@@ -88,8 +88,7 @@ namespace YYTK
 			IN UINT SwapChainFlags
 		)
 		{
-			// decltype apparently doesn't work in x86 bruh
-			auto original_function = GetHookTrampoline<HRESULT(WINAPI*)(IDXGISwapChain*, UINT, UINT, UINT, DXGI_FORMAT, UINT)>("ResizeBuffers");
+			auto original_function = GetHookTrampoline<decltype(&HkResizeBuffers)>("ResizeBuffers");
 
 			FunctionWrapper<HRESULT(IDXGISwapChain*, UINT, UINT, UINT, DXGI_FORMAT, UINT)> func_wrapper(
 				original_function, 
@@ -152,45 +151,6 @@ namespace YYTK
 				CodeObject,
 				Arguments,
 				Flags
-			);
-		}
-
-		PVOID HkDoCallScript(
-			IN CScript* Script,
-			IN int ArgumentCount,
-			IN char* VmStackPointer,
-			IN PVOID VmInstance,
-			IN CInstance* Locals,
-			IN CInstance* Arguments
-		)
-		{
-			auto original_function = GetHookTrampoline<decltype(&HkDoCallScript)>("DoCallScript");
-
-			FunctionWrapper<decltype(HkDoCallScript)> func_wrapper(
-				original_function,
-				Script,
-				ArgumentCount,
-				VmStackPointer,
-				VmInstance,
-				Locals,
-				Arguments
-			);
-
-			g_ModuleInterface.YkDispatchCallbacks(
-				EVENT_SCRIPT_CALL,
-				func_wrapper
-			);
-
-			if (func_wrapper.CalledOriginal())
-				return func_wrapper.Result();
-
-			return original_function(
-				Script,
-				ArgumentCount,
-				VmStackPointer,
-				VmInstance,
-				Locals,
-				Arguments
 			);
 		}
 
@@ -287,39 +247,6 @@ namespace YYTK
 			));
 
 			assert(g_OriginalWindowProc != nullptr);
-
-			// DoCallScript is a hook we don't care about, it's not used in YYC.
-			// If it fails, it fails... 
-
-			PVOID do_call_script = nullptr;
-			if (g_ModuleInterface.m_IsYYCRunner)
-			{
-				last_status = YYC::GmpFindDoCallScript(
-					&do_call_script
-				);
-			}
-			else
-			{
-				// Bail, not supported yet
-				// TODO: Make these not return AURIE_NOT_IMPLEMENTED
-				last_status = VM::GmpFindDoCallScript(
-					&do_call_script
-				);
-
-				return AURIE_SUCCESS;
-			}
-
-			if (!AurieSuccess(last_status))
-				return AURIE_MODULE_INITIALIZATION_FAILED;
-
-			// Hook DoCallScript
-			last_status = MmCreateHook(
-				g_ArSelfModule,
-				"DoCallScript",
-				do_call_script,
-				HkDoCallScript,
-				nullptr
-			);
 
 			return AURIE_SUCCESS;
 		}

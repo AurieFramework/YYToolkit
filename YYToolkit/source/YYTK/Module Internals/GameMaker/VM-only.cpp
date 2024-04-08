@@ -492,13 +492,5 @@ namespace YYTK
 
 			return AURIE_SUCCESS;
 		}
-
-		AurieStatus GmpFindDoCallScript(
-			OUT PVOID* DoCallScript
-		)
-		{
-			UNREFERENCED_PARAMETER(DoCallScript);
-			return AURIE_NOT_IMPLEMENTED;
-		}
 	}
 }

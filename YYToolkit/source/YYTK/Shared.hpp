@@ -8,8 +8,8 @@
 #define YYTK_SHARED_H_
 
 #define YYTK_MAJOR 3
-#define YYTK_MINOR 2
-#define YYTK_PATCH 4
+#define YYTK_MINOR 3
+#define YYTK_PATCH 0
 
 #ifndef YYTK_CPP_VERSION
 #ifndef _MSVC_LANG
@@ -84,7 +84,7 @@ namespace YYTK
 		EVENT_OBJECT_CALL = 1,	// The event represents a Code_Execute() call.
 		EVENT_FRAME = 2,		// The event represents an IDXGISwapChain::Present() call.
 		EVENT_RESIZE = 3,		// The event represents an IDXGISwapChain::ResizeBuffers() call.
-		EVENT_SCRIPT_CALL = 4,	// The event represents a DoCallScript() call.
+		EVENT_UNUSED = 4,		// This value is unused.
 		EVENT_WNDPROC = 5		// The event represents a WndProc() call.
 	};
 
@@ -1703,8 +1703,6 @@ namespace YYTK
 	using FWFrame = FunctionWrapper<HRESULT(IDXGISwapChain*, UINT, UINT)>;
 	// IDXGISwapChain::ResizeBuffers
 	using FWResize = FunctionWrapper<HRESULT(IDXGISwapChain*, UINT, UINT, UINT, DXGI_FORMAT, UINT)>;
-	// DoCallScript (only in VM)
-	using FWScriptEvent = FunctionWrapper<PVOID(CScript*, int, char*, PVOID, CInstance*, CInstance*)>;
 	// WndProc calls
 	using FWWndProc = FunctionWrapper<LRESULT(HWND, UINT, WPARAM, LPARAM)>;
 
@@ -2077,7 +2075,7 @@ namespace YYTK
 	static_assert(sizeof(CLayerSpriteElement) == 0x68);
 #endif // _WIN64
 
-	__declspec(align(8)) struct CLayer
+	struct CLayer
 	{
 		int32_t m_Id;
 		int32_t m_Depth;

@@ -109,10 +109,6 @@ namespace YYTK
 			IN YYRunnerInterface& Interface,
 			OUT int64_t* ArrayOffset
 		);
-
-		Aurie::AurieStatus GmpFindDoCallScript(
-			OUT PVOID* DoCallScript
-		);
 	}
 
 	// YYC specific implementations
@@ -138,10 +134,6 @@ namespace YYTK
 			IN YYRunnerInterface& Interface,
 			OUT int64_t* ArrayOffset
 		);
-
-		Aurie::AurieStatus GmpFindDoCallScript(
-			OUT PVOID* DoCallScript
-		);
 	}
 
 	namespace Hooks
@@ -158,15 +150,6 @@ namespace YYTK
 			IN CCode* CodeObject,
 			IN RValue* Arguments,
 			IN INT Flags
-		);
-
-		PVOID HkDoCallScript(
-			IN CScript* Script,
-			IN int ArgumentCount,
-			IN char* VmStackPointer,
-			IN PVOID VmInstance,
-			IN CInstance* Locals,
-			IN CInstance* Arguments
 		);
 
 		// Meant for Stage 1 of loading in g_ModuleInterface
