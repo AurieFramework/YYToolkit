@@ -33,7 +33,7 @@ YYTK is split on two branches, that being [Legacy](https://github.com/AurieFrame
 | GM 2023.x                    | ❌ | ✅ |
 | GM 2024.x beta               | ❌ | ✅ |
 | VM runner support            | ✅ | 🟡 |
-| x86 runner support           | ✅ | ❌ |
+| x86 runner support           | ✅ | 🟡 |
 | x64 runner support           | 🟡 | ✅ |
 | Active Development           | ❌ | ✅ |
 | Accessing global variables   | ✅ | ✅ |

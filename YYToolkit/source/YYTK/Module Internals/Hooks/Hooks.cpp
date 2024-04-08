@@ -22,7 +22,8 @@ namespace YYTK
 		{
 			auto original_function = g_OriginalWindowProc;
 
-			FunctionWrapper<decltype(HkWndProc)> func_wrapper(
+			// decltype apparently doesn't work in x86 bruh
+			FunctionWrapper<LRESULT(HWND, UINT, WPARAM, LPARAM)> func_wrapper(
 				original_function,
 				WindowHandle,
 				Message,
@@ -53,9 +54,10 @@ namespace YYTK
 			IN unsigned int Flags
 		)
 		{
-			auto original_function = GetHookTrampoline<decltype(&HkPresent)>("Present");
+			// decltype apparently doesn't work in x86 bruh
+			auto original_function = GetHookTrampoline<HRESULT(WINAPI*)(IDXGISwapChain*, UINT, UINT)>("Present");
 
-			FunctionWrapper<decltype(HkPresent)> func_wrapper(
+			FunctionWrapper<HRESULT(IDXGISwapChain*, UINT, UINT)> func_wrapper(
 				original_function,
 				_this,
 				Sync,
@@ -86,15 +88,16 @@ namespace YYTK
 			IN UINT SwapChainFlags
 		)
 		{
-			auto original_function = GetHookTrampoline<decltype(&HkResizeBuffers)>("ResizeBuffers");
+			// decltype apparently doesn't work in x86 bruh
+			auto original_function = GetHookTrampoline<HRESULT(WINAPI*)(IDXGISwapChain*, UINT, UINT, UINT, DXGI_FORMAT, UINT)>("ResizeBuffers");
 
-			FunctionWrapper<decltype(HkResizeBuffers)> func_wrapper(
-				original_function,
-				_this,
-				BufferCount,
-				Width,
-				Height,
-				NewFormat,
+			FunctionWrapper<HRESULT(IDXGISwapChain*, UINT, UINT, UINT, DXGI_FORMAT, UINT)> func_wrapper(
+				original_function, 
+				_this, 
+				BufferCount, 
+				Width, 
+				Height, 
+				NewFormat, 
 				SwapChainFlags
 			);
 

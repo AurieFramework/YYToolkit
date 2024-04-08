@@ -1138,7 +1138,7 @@ namespace YYTK
 			return AURIE_MODULE_INTERNAL_ERROR;
 
 		// Prevent ourselves from reading out-of-bounds
-		if (Index >= *m_BuiltinCount)
+		if (static_cast<int>(Index) >= *m_BuiltinCount)
 			return AURIE_INVALID_PARAMETER;
 
 		VariableInformation = &m_BuiltinArray[Index];

@@ -33,8 +33,9 @@ namespace YYTK
 		int32_t m_ArgumentCount;
 		int32_t m_UsageCount;
 	};
+#ifdef _WIN64
 	static_assert(sizeof(RFunctionStringFull) == 80);
-
+#endif // _WIN64
 	struct RFunctionStringRef
 	{
 		const char* m_Name;
@@ -42,7 +43,9 @@ namespace YYTK
 		int32_t m_ArgumentCount;
 		int32_t m_UsageCount;
 	};
+#ifdef _WIN64
 	static_assert(sizeof(RFunctionStringRef) == 24);
+#endif // _WIN64
 
 	struct RFunction
 	{
@@ -62,7 +65,9 @@ namespace YYTK
 			return *reinterpret_cast<RFunctionStringRef*>(reinterpret_cast<char*>(this) + (sizeof(RFunctionStringRef) * Index));
 		}
 	};
+#ifdef _WIN64
 	static_assert(sizeof(RFunction) == 80);
+#endif // _WIN64
 
 	struct RVariableRoutine
 	{
@@ -71,7 +76,9 @@ namespace YYTK
 		FNSetVariable m_SetVariable;
 		bool m_CanBeSet;
 	};
+#ifdef _WIN64
 	static_assert(sizeof(RVariableRoutine) == 32);
+#endif // _WIN64
 
 	struct TargettedInstruction
 	{

@@ -13,6 +13,11 @@ namespace YYTK
 		IN size_t MaximumInstructionsWithoutFunction
 	)
 	{
+		// Query our current architecture to know what we disassemble as
+		USHORT image_architecture = 0;
+		if (!AurieSuccess(PpGetCurrentArchitecture(image_architecture)))
+			return {};
+
 		ZyanU8* memory_data = reinterpret_cast<ZyanU8*>(MmAllocateMemory(g_ArSelfModule, MaximumSize));
 		if (!memory_data)
 			return {};
@@ -37,9 +42,10 @@ namespace YYTK
 		))
 		{
 			ZydisDisassembledInstruction current_instruction;
+			
 
 			ZyanStatus disassembly_status = ZydisDisassembleIntel(
-				ZYDIS_MACHINE_MODE_LONG_64,
+				(image_architecture == IMAGE_FILE_MACHINE_AMD64) ? ZYDIS_MACHINE_MODE_LONG_64 : ZYDIS_MACHINE_MODE_LEGACY_32,
 				runtime_address,
 				memory_data + offset,
 				MaximumSize - offset,
@@ -201,7 +207,169 @@ namespace YYTK
 
 	// ===== Shared, GameMaker-reliant code =====
 
-	AurieStatus GmpGetRunnerInterface(
+	// x86 version of GmpGetRunnerInterface.
+	AurieStatus GmpGetRunnerInterfaceX86(
+		OUT YYRunnerInterface& Interface
+	)
+	{
+		// In x86, the pattern for finding the runner interface is incredibly simple.
+		/*
+			Loop Hero (GM 2.3.6)
+
+				85 C0                              test    eax, eax
+				0F 88 4E 03 00 00                  js      loc_15D0F23
+				50                                 push    eax
+				E8 C5 35 00 00                     call    sub_15D41A0
+				C7 84 24 A0 00 00 00 00 00 00 00   mov     [esp+0DB0h+var_D10], 0
+				C7 44 24 24 F0 BF 54 01            mov     [esp+0DB0h+var_D8C], offset sub_154BFF0
+				C7 44 24 28 C0 0F 5D 01            mov     [esp+0DB0h+var_D88], offset sub_15D0FC0
+				C7 44 24 2C C0 DE 66 01            mov     [esp+0DB0h+var_D84], offset sub_166DEC0
+				C7 44 24 30 A0 B1 54 01            mov     [esp+0DB0h+var_D80], offset sub_154B1A0
+				...
+
+			Deltarune, Chapter 2 (GM 2022.2)
+				85 C0                              test    eax, eax
+				0F 88 A6 03 00 00                  js      loc_4F7FDB
+				50                                 push    eax
+				E8 B5 FB FC FF                     call    sub_4C77F0
+				C7 84 24 A0 00 00 00 00 00 00 00   mov     [esp+0DCCh+var_D2C], 0
+				C7 44 24 24 40 05 58 00            mov     [esp+0DCCh+var_DA8], offset sub_580540
+				C7 44 24 28 90 80 4F 00            mov     [esp+0DCCh+var_DA4], offset sub_4F8090
+				C7 44 24 2C E0 72 43 00            mov     [esp+0DCCh+var_DA0], offset sub_4372E0
+				C7 44 24 30 60 F5 57 00            mov     [esp+0DCCh+var_D9C], offset sub_57F560
+				C7 44 24 34 E0 85 56 00            mov     [esp+0DCCh+var_D98], offset sub_5685E0
+
+			... Diffing to see what's similar
+				85 C0                              test    eax, eax
+				0F 88 ?? ?? ?? ??                  js      ??
+				50                                 push    eax
+				E8 ?? ?? ?? ??                     call    ??
+
+				then the C7s which are inconsistent lengths apart because of the first instruction
+		*/
+
+		// Find the required pattern in the game
+		// There may be multiple that match, but only one is correct.
+		uint64_t text_section_base = 0;
+		size_t text_section_size = 0;
+
+		// Get the .text section address for the game executable
+		AurieStatus last_status = Internal::PpiGetModuleSectionBounds(
+			GetModuleHandleW(nullptr),
+			".text",
+			text_section_base,
+			text_section_size
+		);
+
+		if (!AurieSuccess(last_status))
+			return last_status;
+
+		// Since PpiGetModuleSectionBounds returns the offset to the .text section
+		// we need the base address of the game to add to the offset
+		char* game_base = reinterpret_cast<char*>(GetModuleHandleW(nullptr));
+
+		// Scan for all occurences of this pattern in memory
+		std::vector<size_t> pattern_matches = {};
+		GmpSigscanRegionEx(
+			reinterpret_cast<const unsigned char*>((game_base + text_section_base)),
+			text_section_size,
+			UTEXT(
+				"\x85\xC0"					// test eax, eax
+				"\x0F\x88\x00\x00\x00\x00"	// js ??
+				"\x50"						// push eax
+				"\xE8\x00\x00\x00\x00"		// call ??
+				"\xC7"						// first byte of a mov
+			),
+			"xxxx????x",
+			pattern_matches
+		);
+
+		// TODO: Loop all matches, see if there's a long chain of ZYDIS_MNEMONIC_MOV, where:
+		//		- operands[0].type = ZYDIS_OPERAND_TYPE_MEMORY
+		//		- operands[1].type = ZYDIS_OPERAND_TYPE_IMMEDIATE
+
+		if (pattern_matches.empty())
+			return AURIE_OBJECT_NOT_FOUND;
+
+		memset(&Interface, 0, sizeof(Interface));
+		std::vector<ZydisDisassembledInstruction> mov_instructions;
+
+		for (const auto& match : pattern_matches)
+		{
+			// Now disassemble at the match, strip all instructions except movs that match the pattern above
+			std::vector<TargettedInstruction> instructions = GmpDisassemble(
+				reinterpret_cast<PVOID>(match),
+				0x4FF,
+				140
+			);
+
+			// Get every mov from the instructions
+			for (const auto& instr : instructions)
+			{
+				// Skip anything that's not a mov
+				if (instr.RawForm.info.mnemonic != ZYDIS_MNEMONIC_MOV)
+					continue;
+
+				// Strip any movs that aren't moving to some memory
+				if (instr.RawForm.operands[0].type != ZYDIS_OPERAND_TYPE_MEMORY)
+					continue;
+
+				// Strip any movs that aren't moving from an immediate
+				if (instr.RawForm.operands[1].type != ZYDIS_OPERAND_TYPE_IMMEDIATE)
+					continue;
+
+				mov_instructions.push_back(instr.RawForm);
+			}
+
+			if (mov_instructions.size() > 80 && mov_instructions.size() < 104)
+			{
+				CmWriteWarning(
+					"Found %d functions in %d assembly instructions!",
+					mov_instructions.size(),
+					instructions.size()
+				);
+
+				break;
+			}
+
+			mov_instructions.clear();
+		}
+
+		// Loop all compatible mov instructions, find the stack base
+		int64_t interface_start_on_stack = INT_MAX;
+		for (auto& instr : mov_instructions)
+		{
+			if (instr.operands[0].mem.disp.value < interface_start_on_stack)
+				interface_start_on_stack = instr.operands[0].mem.disp.value;
+		}
+
+		// Now loop everything again and fill the struct
+		char* interface_base = reinterpret_cast<char*>(&Interface);
+		for (auto& instr : mov_instructions)
+		{
+			int64_t offset = instr.operands[0].mem.disp.value - interface_start_on_stack;
+
+			if (offset >= sizeof(YYRunnerInterface))
+			{
+				// TODO: instr.operands[1].imm.value might be relative?
+				CmWriteWarning(
+					"YYRunnerInterface+0x%04llx = 0x%p, but sizeof(YYRunnerInterface) = 0x%x",
+					offset,
+					instr.operands[1].imm.value,
+					sizeof(YYRunnerInterface)
+				);
+
+				continue;
+			}
+
+			// Copy the function pointer to our interface copy
+			memcpy(interface_base + offset, &instr.operands[1].imm.value, sizeof(PVOID));
+		}
+
+		return AURIE_SUCCESS;
+	}
+
+	AurieStatus GmpGetRunnerInterfaceX64(
 		OUT YYRunnerInterface& Interface
 	)
 	{
@@ -362,7 +530,7 @@ namespace YYTK
 		// we can't just take whatever offset is and memcpy(interface + offset, function, sizeof(function)).
 		// We have to find where the structure actually starts on the stack.
 
-		int64_t interface_start_on_stack = 0;
+		int64_t interface_start_on_stack = INT_MAX;
 
 		// We find it by looping all instructions and looking for the mov that has the lowest offset.
 		// The first elements are gonna be at [rbp+whatever], and that whatever is then gonna start
@@ -530,6 +698,23 @@ namespace YYTK
 		return AURIE_SUCCESS;
 	}
 
+	// Calls whatever architecture is currently running
+	AurieStatus GmpGetRunnerInterface(
+		OUT YYRunnerInterface& Interface
+	)
+	{
+		USHORT architecture = 0;
+		AurieStatus last_status = PpGetCurrentArchitecture(architecture);
+
+		if (!AurieSuccess(last_status))
+			return last_status;
+
+		if (architecture == IMAGE_FILE_MACHINE_AMD64)
+			return GmpGetRunnerInterfaceX64(Interface);
+
+		return GmpGetRunnerInterfaceX86(Interface);
+	}
+
 	AurieStatus GmpFindScriptData(
 		IN const YYRunnerInterface& Interface,
 		IN TRoutine CopyStatic,
@@ -607,7 +792,7 @@ namespace YYTK
 		return AURIE_SUCCESS;
 	}
 
-	Aurie::AurieStatus GmpFindCodeExecute(
+	AurieStatus GmpFindCodeExecuteX64(
 		OUT PVOID* CodeExecute
 	)
 	{
@@ -628,7 +813,7 @@ namespace YYTK
 			game_name.c_str(),
 			UTEXT(
 				"\xE8\x00\x00\x00\x00"	// call <ExecuteIt>
-				"\x0F\xB6\xD8"			// mozvx ebx, al
+				"\x0F\xB6\xD8"			// movzx ebx, al
 				"\x3C\x01"				// cmp al, 1
 			),
 			"x????xxxxx"
@@ -672,7 +857,88 @@ namespace YYTK
 		return AURIE_SUCCESS;
 	}
 
-	AurieStatus GmpFindCurrentRoomData(
+	AurieStatus GmpFindCodeExecuteX86(
+		OUT PVOID* CodeExecute
+	)
+	{
+		AurieStatus last_status = AURIE_SUCCESS;
+
+		// Get the name of the game executable
+		std::wstring game_name;
+		last_status = MdGetImageFilename(
+			g_ArInitialImage,
+			game_name
+		);
+
+		if (!AurieSuccess(last_status))
+			return last_status;
+
+		// We're looking for a pattern in Code_Execute
+		size_t pattern_match = MmSigscanModule(
+			game_name.c_str(),
+			UTEXT(
+				"\xE8\x00\x00\x00\x00"	// call <ExecuteIt>
+				"\x8A\xD8"				// mov bl, al
+				"\x83\xC4\x14"			// add esp, 14
+			),
+			"x????xxxxx"
+		);
+
+		if (!pattern_match)
+			return AURIE_MODULE_INITIALIZATION_FAILED;
+
+		std::vector<TargettedInstruction> instructions = GmpDisassemble(
+			reinterpret_cast<PVOID>(pattern_match),
+			0x10,
+			0xFF
+		);
+
+		// Get the first instruction at that address (the call instruction), and make sure it has the
+		// parameters we expect it to have (ie. is a call, and has 1 visible operand - the address.)
+		ZydisDisassembledInstruction& call_instruction = instructions.front().RawForm;
+		if (call_instruction.info.mnemonic != ZYDIS_MNEMONIC_CALL)
+			return AURIE_MODULE_INITIALIZATION_FAILED;
+
+		if (call_instruction.info.operand_count_visible < 1)
+			return AURIE_MODULE_INITIALIZATION_FAILED;
+
+		// Calculate the address of the function which we're calling (ExecuteIt)
+		ZyanU64 execute_it_address = 0;
+		if (!ZYAN_SUCCESS(ZydisCalcAbsoluteAddress(
+			&call_instruction.info,
+			&call_instruction.operands[0],
+			call_instruction.runtime_address,
+			&execute_it_address
+		)))
+		{
+			return AURIE_MODULE_INITIALIZATION_FAILED;
+		}
+
+		// We should've never gotten here if the pattern or translation fails.
+		assert(execute_it_address != 0);
+
+		*CodeExecute = reinterpret_cast<PVOID>(execute_it_address);
+
+		return AURIE_SUCCESS;
+	}
+
+	AurieStatus GmpFindCodeExecute(
+		OUT PVOID* CodeExecute
+	)
+	{
+		USHORT architecture = 0;
+		AurieStatus last_status = PpGetCurrentArchitecture(architecture);
+
+		if (!AurieSuccess(last_status))
+			return last_status;
+
+		if (architecture == IMAGE_FILE_MACHINE_AMD64)
+			return GmpFindCodeExecuteX64(CodeExecute);
+
+		return GmpFindCodeExecuteX86(CodeExecute);
+	}
+
+	AurieStatus GmpFindCurrentRoomDataX64(
 		IN FNSetVariable SV_BackgroundColor,
 		OUT CRoom*** Run_Room
 	)
@@ -721,5 +987,72 @@ namespace YYTK
 
 		*Run_Room = reinterpret_cast<CRoom**>(run_room_address);
 		return AURIE_SUCCESS;
+	}
+
+	AurieStatus GmpFindCurrentRoomDataX86(
+		IN FNSetVariable SV_BackgroundColor,
+		OUT CRoom*** Run_Room
+	)
+	{
+		// Disassemble 32 bytes at the function
+		std::vector<TargettedInstruction> instructions = GmpDisassemble(
+			SV_BackgroundColor,
+			0x20,
+			0xFF
+		);
+
+		// Find the first cmp instruction
+		size_t target_cmp_index = 0;
+		AurieStatus last_status = GmpFindMnemonicPattern(
+			instructions,
+			{
+				ZYDIS_MNEMONIC_CMP // cmp Run_Room, 0
+			},
+			target_cmp_index
+		);
+
+		if (!AurieSuccess(last_status))
+			return last_status;
+
+		const ZydisDisassembledInstruction& compare_instruction = instructions.at(target_cmp_index).RawForm;
+
+		// This should always be the case.
+		// But if it's not, it might cause unforeseen bugs, so we assert that in debug builds
+		assert(compare_instruction.info.mnemonic == ZYDIS_MNEMONIC_CMP);
+		assert(compare_instruction.info.operand_count_visible == 2);
+		assert(compare_instruction.operands[0].type == ZYDIS_OPERAND_TYPE_MEMORY);
+		assert(compare_instruction.operands[1].type == ZYDIS_OPERAND_TYPE_IMMEDIATE);
+
+		ZyanU64 run_room_address = 0;
+		ZydisCalcAbsoluteAddress(
+			&compare_instruction.info,
+			&compare_instruction.operands[0],
+			compare_instruction.runtime_address,
+			&run_room_address
+		);
+
+		// Make sure we have a valid address
+		if (!run_room_address)
+			return AURIE_MODULE_INITIALIZATION_FAILED;
+
+		*Run_Room = reinterpret_cast<CRoom**>(run_room_address);
+		return AURIE_SUCCESS;
+	}
+
+	AurieStatus GmpFindCurrentRoomData(
+		IN FNSetVariable SV_BackgroundColor,
+		OUT CRoom*** Run_Room
+	)
+	{
+		USHORT architecture = 0;
+		AurieStatus last_status = PpGetCurrentArchitecture(architecture);
+
+		if (!AurieSuccess(last_status))
+			return last_status;
+
+		if (architecture == IMAGE_FILE_MACHINE_AMD64)
+			return GmpFindCurrentRoomDataX64(SV_BackgroundColor, Run_Room);
+
+		return GmpFindCurrentRoomDataX86(SV_BackgroundColor, Run_Room);
 	}
 }

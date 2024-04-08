@@ -9,7 +9,7 @@
 
 #define YYTK_MAJOR 3
 #define YYTK_MINOR 2
-#define YYTK_PATCH 3
+#define YYTK_PATCH 4
 
 #ifndef YYTK_CPP_VERSION
 #ifndef _MSVC_LANG
@@ -250,11 +250,11 @@ namespace YYTK
 		// Overloaded operators
 		RValue& operator[](
 			IN size_t Index
-		);
+			);
 
 		RValue& operator[](
 			IN std::string_view Element
-		);
+			);
 
 		// STL-like access
 		RValue& at(
@@ -1968,7 +1968,9 @@ namespace YYTK
 		T* m_Last;
 		int32_t m_Count;
 	};
+#ifdef _WIN64
 	static_assert(sizeof(LinkedList<CInstance>) == 0x18);
+#endif // _WIN64
 
 	enum eBuffer_Type : int32_t
 	{
@@ -2018,7 +2020,9 @@ namespace YYTK
 		virtual uint8_t* Compress(int _offset, int _size, uint32_t& resultSize) = 0;
 		virtual uint8_t* Decompress(uint32_t& resultSize) = 0;
 	};
+#ifdef _WIN64
 	static_assert(sizeof(IBuffer) == 0x8);
+#endif // _WIN64
 
 	struct CLayerElementBase
 	{
@@ -2040,14 +2044,18 @@ namespace YYTK
 			CLayerElementBase* m_Blink;
 		};
 	};
+#ifdef _WIN64
 	static_assert(sizeof(CLayerElementBase) == 0x30);
+#endif // _WIN64
 
 	struct CLayerInstanceElement : CLayerElementBase
 	{
 		int32_t m_InstanceID;
 		CInstance* m_Instance;
 	};
+#ifdef _WIN64
 	static_assert(sizeof(CLayerInstanceElement) == 0x40);
+#endif // _WIN64
 
 	struct CLayerSpriteElement : CLayerElementBase
 	{
@@ -2065,7 +2073,9 @@ namespace YYTK
 		float m_X;
 		float m_Y;
 	};
+#ifdef _WIN64
 	static_assert(sizeof(CLayerSpriteElement) == 0x68);
+#endif // _WIN64
 
 	__declspec(align(8)) struct CLayer
 	{
@@ -2091,7 +2101,9 @@ namespace YYTK
 		CLayer* m_Blink;
 		PVOID m_GCProxy;
 	};
+#ifdef _WIN64
 	static_assert(sizeof(CLayer) == 0xA0);
+#endif // _WIN64
 
 	// A representation of a room, as from the data.win file
 	struct YYRoom
@@ -2128,7 +2140,9 @@ namespace YYTK
 		float m_PhysicsGravityY;
 		float m_PhysicsPixelToMeters;
 	};
+#ifdef _WIN64
 	static_assert(sizeof(YYRoom) == 0x58);
+#endif // _WIN64
 
 	// Note: this is not how RValues store arrays
 	template <typename T>
@@ -2137,7 +2151,9 @@ namespace YYTK
 		int32_t Length;
 		T* Array;
 	};
+#ifdef _WIN64
 	static_assert(sizeof(CArrayStructure<int>) == 0x10);
+#endif // _WIN64
 
 	// Seems to be mostly stable, some elements at the end are however omitted
 	struct CRoom
@@ -2189,7 +2205,9 @@ namespace YYTK
 		int32_t m_EffectLayerIdCount;
 		int32_t m_EffectLayerIdMax;
 	};
+#ifdef _WIN64
 	static_assert(sizeof(CRoom) == 0x218);
+#endif // _WIN64
 
 	struct CInstanceBase
 	{
@@ -2197,7 +2215,9 @@ namespace YYTK
 
 		RValue* m_YYVars;
 	};
+#ifdef _WIN64
 	static_assert(sizeof(CInstanceBase) == 0x10);
+#endif // _WIN64
 
 	enum EJSRetValBool : int32_t
 	{
@@ -2210,21 +2230,21 @@ namespace YYTK
 		IN YYObjectBase* Object,
 		OUT RValue& Result,
 		IN const char* Name
-	);
+		);
 
 	using FNDeleteProperty = void(*)(
 		IN YYObjectBase* Object,
 		OUT RValue& Result,
 		IN const char* Name,
 		IN bool ThrowOnError
-	);
+		);
 
 	using FNDefineOwnProperty = EJSRetValBool(*)(
 		IN YYObjectBase* Object,
 		IN const char* Name,
 		OUT RValue& Result,
 		IN bool ThrowOnError
-	);
+		);
 
 	enum YYObjectKind : int32_t
 	{
@@ -2268,7 +2288,7 @@ namespace YYTK
 		) = 0;
 
 		virtual bool Mark4GC(
-			uint32_t*, 
+			uint32_t*,
 			int
 		) = 0;
 
@@ -2303,7 +2323,7 @@ namespace YYTK
 		FNDeleteProperty m_DeleteProperty;
 		FNDefineOwnProperty m_DefineOwnProperty;
 		// Use GetInstanceMember instead
-		CHashMap<int32_t, RValue*, 3>* m_YYVarsMap; 
+		CHashMap<int32_t, RValue*, 3>* m_YYVarsMap;
 		CWeakRef** m_WeakRef;
 		uint32_t m_WeakRefCount;
 		uint32_t m_VariableCount;
@@ -2318,7 +2338,9 @@ namespace YYTK
 		int32_t m_RValueInitType;
 		int32_t m_CurrentSlot;
 	};
+#ifdef _WIN64
 	static_assert(sizeof(YYObjectBase) == 0x88);
+#endif // _WIN64
 
 	struct CScriptRef : YYObjectBase
 	{
@@ -2332,7 +2354,9 @@ namespace YYTK
 		PVOID m_Construct;
 		const char* m_Tag;
 	};
+#ifdef _WIN64
 	static_assert(sizeof(CScriptRef) == 0xE0);
+#endif // _WIN64
 
 	struct CPhysicsDataGM
 	{
@@ -2350,14 +2374,18 @@ namespace YYTK
 		float m_PhysicsFriction;
 		int m_PhysicsVertexCount;
 	};
+#ifdef _WIN64
 	static_assert(sizeof(CPhysicsDataGM) == 0x30);
+#endif // _WIN64
 
 	struct CEvent
 	{
 		CCode* m_Code;
 		int32_t m_OwnerObjectID;
 	};
+#ifdef _WIN64
 	static_assert(sizeof(CEvent) == 0x10);
+#endif // _WIN64
 
 	struct CObjectGM
 	{
@@ -2375,13 +2403,17 @@ namespace YYTK
 		int32_t m_Mask;
 		int32_t m_ID;
 	};
+#ifdef _WIN64
 	static_assert(sizeof(CObjectGM) == 0x98);
+#endif // _WIN64
 
 	struct GCObjectContainer : YYObjectBase
 	{
 		CHashMap<YYObjectBase*, YYObjectBase*, 3>* m_YYObjectMap;
 	};
+#ifdef _WIN64
 	static_assert(sizeof(GCObjectContainer) == 0x90);
+#endif // _WIN64
 
 	struct YYRECT
 	{
@@ -2434,7 +2466,9 @@ namespace YYTK
 		CInstance* m_Flink;
 		CInstance* m_Blink;
 	};
+#ifdef _WIN64
 	static_assert(sizeof(CInstanceInternal) == 0xF8);
+#endif // _WIN64
 
 	struct CInstance : YYObjectBase
 	{
@@ -2458,7 +2492,9 @@ namespace YYTK
 			public:
 				CInstanceInternal Members;
 			} Unmasked;
+#ifdef _WIN64
 			static_assert(sizeof(Unmasked) == 0x100);
+#endif // _WIN64
 
 			// 2022.1 => 2023.1 (may be used later, haven't checked)
 			struct
@@ -2469,7 +2505,9 @@ namespace YYTK
 			public:
 				CInstanceInternal Members;
 			} Masked;
+#ifdef _WIN64
 			static_assert(sizeof(Masked) == 0x108);
+#endif // _WIN64
 		};
 	public:
 
@@ -2487,7 +2525,9 @@ namespace YYTK
 	};
 	// sizeof(0x1A8) is for PreMasked instances
 	// sizeof(0x1B0) is for Masked instances
+#ifdef _WIN64
 	static_assert(sizeof(CInstance) == 0x1A8 || sizeof(CInstance) == 0x1B0);
+#endif // _WIN64
 
 #endif // YYTK_DEFINE_INTERNAL
 }

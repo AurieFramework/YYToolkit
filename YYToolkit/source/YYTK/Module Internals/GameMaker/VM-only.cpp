@@ -102,7 +102,7 @@ namespace YYTK
 				// This should be the second one (instructions[1]),
 				// but I don't want to hardcode it...
 				// TODO: Use mnemonic scan
-				int64_t jnz_instruction_index = -1;
+				intptr_t jnz_instruction_index = -1;
 				for (size_t i = 0; i < instructions.size(); i++)
 				{
 					const auto& instruction = instructions.at(i).RawForm;
@@ -385,6 +385,7 @@ namespace YYTK
 			OUT int64_t* ArrayOffset
 		)
 		{
+			UNREFERENCED_PARAMETER(Interface);
 			// So there's one of two ways this is implemented:
 			// Either it's a mov-call-test mnemonic pattern (and the function is called like normal)
 			// In the other case, it's inlined into F_ArrayEquals, in which case we don't care >:(
@@ -496,6 +497,7 @@ namespace YYTK
 			OUT PVOID* DoCallScript
 		)
 		{
+			UNREFERENCED_PARAMETER(DoCallScript);
 			return AURIE_NOT_IMPLEMENTED;
 		}
 	}
