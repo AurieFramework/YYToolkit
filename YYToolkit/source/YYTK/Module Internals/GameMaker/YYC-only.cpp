@@ -666,7 +666,7 @@ namespace YYTK
 			return GmpFindRoomDataX86(RoomInstanceClear, RoomData);
 		}
 
-		AurieStatus GmpFindRVArrayOffset(
+		AurieStatus GmpFindRVArrayOffsetX64(
 			IN TRoutine F_ArrayEquals,
 			IN YYRunnerInterface& RunnerInterface,
 			OUT int64_t* ArrayOffset
@@ -812,6 +812,102 @@ namespace YYTK
 			*ArrayOffset = instructions.at(two_movs_index).RawForm.operands[1].mem.disp.value;
 
 			return AURIE_SUCCESS;
+		}
+
+		AurieStatus GmpFindRVArrayOffsetX86(
+			IN TRoutine F_ArrayEquals,
+			IN YYRunnerInterface& RunnerInterface,
+			OUT int64_t* ArrayOffset
+		)
+		{
+			// Disassemble F_ArrayEquals
+			std::vector<TargettedInstruction> instructions = GmpDisassemble(
+				F_ArrayEquals,
+				0xFF,
+				0xFF
+			);
+
+			AurieStatus last_status = AURIE_SUCCESS;
+
+			// x86 runners have the two movs inside the F_ArrayEquals function.
+			// This cuts out one point of failure, which we take advantage of here.
+			// We look for two movs that move into different registers each, but move
+			// the same offset.
+			size_t two_movs_index = SIZE_MAX;
+			while (instructions.size())
+			{
+				// Find a potential match
+				last_status = GmpFindMnemonicPattern(
+					instructions,
+					{
+						ZYDIS_MNEMONIC_MOV,
+						ZYDIS_MNEMONIC_MOV
+					},
+					two_movs_index
+				);
+
+				// If no matches exist, end the loop
+				if (!AurieSuccess(last_status))
+				{
+					// Reset the counter
+					two_movs_index = SIZE_MAX;
+					break;
+				}
+
+				ZydisDisassembledInstruction& first_mov = instructions.at(two_movs_index).RawForm;
+				ZydisDisassembledInstruction& second_mov = instructions.at(two_movs_index + 1).RawForm;
+
+				// TODO: I don't know how to invert this properly
+				// To explain this whole thing, we're searching for two consecutive movs that fulfill:
+				// - Moving from some memory addresses (offset by a common value) to (any) registers
+				// - That's about it?
+				if ((first_mov.info.operand_count == 2 && second_mov.info.operand_count == 2) &&
+					(first_mov.operands[0].type == ZYDIS_OPERAND_TYPE_REGISTER && second_mov.operands[0].type == ZYDIS_OPERAND_TYPE_REGISTER) &&
+					(first_mov.operands[1].type == ZYDIS_OPERAND_TYPE_MEMORY && second_mov.operands[1].type == ZYDIS_OPERAND_TYPE_MEMORY) &&
+					(first_mov.operands[1].mem.disp.has_displacement && second_mov.operands[1].mem.disp.has_displacement) &&
+					(first_mov.operands[1].mem.disp.value == second_mov.operands[1].mem.disp.value)
+					)
+				{
+					break;
+				}
+
+				// Create a new vector, starting at where the two movs ended, up until the end of the current vector
+				std::vector<TargettedInstruction> new_instructions(
+					instructions.cbegin() + two_movs_index + 1, instructions.cend()
+				);
+
+				// Move from new_instructions to instructions, effectively replacing them
+				instructions = std::move(new_instructions);
+
+				// Reset the index
+				two_movs_index = SIZE_MAX;
+			}
+
+			// If we couldn't find two movs that match, return an error
+			if (two_movs_index == SIZE_MAX)
+				return AURIE_OBJECT_NOT_FOUND;
+
+			*ArrayOffset = instructions.at(two_movs_index).RawForm.operands[1].mem.disp.value;
+
+			return AURIE_SUCCESS;
+		}
+
+		AurieStatus GmpFindRVArrayOffset(
+			IN TRoutine F_ArrayEquals,
+			IN YYRunnerInterface& RunnerInterface,
+			OUT int64_t* ArrayOffset
+		)
+		{
+			USHORT architecture = 0;
+			AurieStatus last_status = PpGetCurrentArchitecture(architecture);
+
+			if (!AurieSuccess(last_status))
+				return last_status;
+
+			if (architecture == IMAGE_FILE_MACHINE_AMD64)
+				return GmpFindRVArrayOffsetX64(F_ArrayEquals, RunnerInterface, ArrayOffset);
+
+			return GmpFindRVArrayOffsetX86(F_ArrayEquals, RunnerInterface, ArrayOffset);
 		}
 	}
 }

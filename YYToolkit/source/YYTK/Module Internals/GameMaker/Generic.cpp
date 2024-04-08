@@ -43,7 +43,6 @@ namespace YYTK
 		{
 			ZydisDisassembledInstruction current_instruction;
 			
-
 			ZyanStatus disassembly_status = ZydisDisassembleIntel(
 				(image_architecture == IMAGE_FILE_MACHINE_AMD64) ? ZYDIS_MACHINE_MODE_LONG_64 : ZYDIS_MACHINE_MODE_LEGACY_32,
 				runtime_address,

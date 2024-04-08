@@ -1004,6 +1004,12 @@ namespace YYTK
 		if (Instance.m_Kind != VALUE_OBJECT)
 			return AURIE_INVALID_PARAMETER;
 
+		if (!m_RunnerInterface.StructGetKeys)
+			return AURIE_MODULE_INTERNAL_ERROR;
+
+		if (!m_RunnerInterface.StructGetMember)
+			return AURIE_MODULE_INTERNAL_ERROR;
+
 		int instance_variable_count = m_RunnerInterface.StructGetKeys(
 			&Instance,
 			nullptr,
