@@ -420,9 +420,63 @@ RValue& CInstance::operator[](
 	return RValue(this).at(Element);
 }
 
-RValue& YYTK::CInstance::at(
+RValue& CInstance::at(
 	IN std::string_view Element
 )
 {
 	return RValue(this).at(Element);
 }
+
+#if YYTK_DEFINE_INTERNAL
+bool YYObjectBase::Add(
+	IN const char* Name,
+	IN const RValue& Value, 
+	IN int Flags
+)
+{
+	// Get the module interface
+	YYTKInterface* module_interface = GetYYTKInterface();
+	if (!module_interface)
+		return false;
+
+	// Check if we have the needed function
+	if (!module_interface->GetRunnerInterface().COPY_RValue)
+		return false;
+
+	// Get the slot ID - this calls FindAlloc_Slot_From_Name
+	int32_t variable_hash = 0;
+	if (!AurieSuccess(module_interface->GetVariableSlot(this, Name, variable_hash)))
+		return false;
+
+	// Get the RValue reference
+	RValue& rv = this->InternalGetYYVarRef(variable_hash);
+	
+	// Copy the RValue from our stuff into the struct
+	module_interface->GetRunnerInterface().COPY_RValue(&rv, &Value);
+	rv.m_Flags = Flags; // Make the behavior consistent with the actual func
+
+	return true;
+}
+
+bool YYObjectBase::IsExtensible()
+{
+	return this->m_Flags & 1;
+}
+
+RValue* YYObjectBase::FindOrAllocValue(
+	IN const char* Name
+)
+{
+	// Get the interface
+	YYTKInterface* module_interface = GetYYTKInterface();
+	if (!module_interface)
+		return nullptr;
+
+	// Get the slot ID - this calls FindAlloc_Slot_From_Name
+	int32_t variable_hash = 0;
+	if (!AurieSuccess(module_interface->GetVariableSlot(this, Name, variable_hash)))
+		return nullptr;
+
+	return &this->InternalGetYYVarRef(variable_hash);
+}
+#endif // YYTK_DEFINE_INTERNAL

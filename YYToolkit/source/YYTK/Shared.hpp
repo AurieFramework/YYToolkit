@@ -2331,6 +2331,18 @@ namespace YYTK
 
 		virtual RValue* GetDispose() = 0;
 
+		bool Add(
+			IN const char* Name,
+			IN const RValue& Value,
+			IN int Flags
+		);
+
+		bool IsExtensible();
+
+		RValue* FindOrAllocValue(
+			IN const char* Name
+		);
+
 		YYObjectBase* m_Flink;
 		YYObjectBase* m_Blink;
 		YYObjectBase* m_Prototype;
