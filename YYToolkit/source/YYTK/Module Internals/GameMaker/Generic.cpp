@@ -377,8 +377,6 @@ namespace YYTK
 		// Code_Variable_FindAlloc_Slot_From_Name is usually the first call.
 		// See comment above GmpGetYYObjectBaseAdd for decomp...
 
-		AurieStatus last_status = AURIE_SUCCESS;
-
 		// Make sure we have the required function
 		if (!YYObjectBase_Add)
 			return AURIE_UNAVAILABLE;
@@ -773,8 +771,6 @@ namespace YYTK
 		OUT PFN_YYObjectBaseAdd* Function
 	)
 	{
-		AurieStatus last_status = AURIE_SUCCESS;
-
 		// Make sure we have the required function
 		if (!Interface.StructAddRValue)
 			return AURIE_UNAVAILABLE;
