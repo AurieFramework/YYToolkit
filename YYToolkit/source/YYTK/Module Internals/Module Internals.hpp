@@ -86,6 +86,16 @@ namespace YYTK
 		OUT PVOID* CodeExecute
 	);
 
+	Aurie::AurieStatus GmpGetYYObjectBaseAdd(
+		IN const YYRunnerInterface& Interface,
+		OUT PFN_YYObjectBaseAdd* Function
+	);
+
+	Aurie::AurieStatus GmpGetFindAllocSlotFromName(
+		IN PFN_YYObjectBaseAdd YYObjectBase_Add,
+		OUT	PFN_FindAllocSlot* FindAllocSlot
+	);
+
 	// Implementations made specifically for VM runners
 	namespace VM
 	{
@@ -131,7 +141,6 @@ namespace YYTK
 
 		Aurie::AurieStatus GmpFindRVArrayOffset(
 			IN TRoutine F_ArrayEquals,
-			IN YYRunnerInterface& Interface,
 			OUT int64_t* ArrayOffset
 		);
 	}

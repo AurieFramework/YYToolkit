@@ -56,6 +56,16 @@ namespace YYTK
 		// Needed for RValue array access
 		// RValue* actual_array = (RValue**)(RValue.m_Pointer)[this_value / sizeof(RValue*)];
 		int64_t m_RValueArrayOffset = 0;
+
+		// Used to add or set a named value in a YYObjectBase structure.
+		PFN_YYObjectBaseAdd m_AddToYYObjectBase = nullptr;
+
+		// Used to turn a name into a hash to use in lookups in the internal hashmap.
+		// While accessible through variable_struct_get_hash in newer runners,
+		// some don't have the function.
+		// In case the name isn't in the hashmap, the function allocates a new slot for it,
+		// effectively creating the variable inside the object.
+		PFN_FindAllocSlot m_FindAllocSlot = nullptr;
 	public:
 		// Stores plugin callbacks
 		std::vector<ModuleCallbackDescriptor> m_RegisteredCallbacks;
@@ -265,6 +275,12 @@ namespace YYTK
 		virtual Aurie::AurieStatus InvokeWithObject(
 			IN const RValue& Object,
 			IN std::function<void(CInstance* Self, CInstance* Other)> Method
+		) override final;
+
+		virtual Aurie::AurieStatus GetVariableSlot(
+			IN const RValue& Object,
+			IN const char* VariableName,
+			OUT int32_t& Hash
 		) override final;
 	};
 

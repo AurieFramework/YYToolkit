@@ -368,6 +368,52 @@ namespace YYTK
 		return AURIE_SUCCESS;
 	}
 
+	// Finds the Code_Variable_FindAlloc_Slot_From_Name function
+	AurieStatus GmpGetFindAllocSlotFromName(
+		IN PFN_YYObjectBaseAdd YYObjectBase_Add,
+		OUT	PFN_FindAllocSlot* FindAllocSlot
+	)
+	{
+		// Code_Variable_FindAlloc_Slot_From_Name is usually the first call.
+		// See comment above GmpGetYYObjectBaseAdd for decomp...
+
+		AurieStatus last_status = AURIE_SUCCESS;
+
+		// Make sure we have the required function
+		if (!YYObjectBase_Add)
+			return AURIE_UNAVAILABLE;
+
+		// Disassemble 48 bytes at the function
+		std::vector<TargettedInstruction> instructions = GmpDisassemble(
+			YYObjectBase_Add,
+			48,
+			0xFF
+		);
+
+		// Find the first call, and trace the target
+		ZyanU64 function_address = 0;
+
+		for (const auto& instr : instructions)
+		{
+			if (instr.RawForm.info.mnemonic != ZYDIS_MNEMONIC_CALL)
+				continue;
+
+			ZydisCalcAbsoluteAddress(
+				&instr.RawForm.info,
+				&instr.RawForm.operands[0],
+				instr.RawForm.runtime_address,
+				&function_address
+			);
+			break;
+		}
+
+		if (!function_address)
+			return AURIE_OBJECT_NOT_FOUND;
+
+		*FindAllocSlot = reinterpret_cast<PFN_FindAllocSlot>(function_address);
+		return AURIE_SUCCESS;
+	}
+
 	AurieStatus GmpGetRunnerInterfaceX64(
 		OUT YYRunnerInterface& Interface
 	)
@@ -694,6 +740,73 @@ namespace YYTK
 			);
 		}
 
+		return AURIE_SUCCESS;
+	}
+
+	// Locates the YYObjectBase:Add function, works in both x86 and x64, VM and YYC
+	// Rough decomp is this:
+	/*
+		void YYObjectBase::Add(
+			IN const char* Name,
+			IN RValue* Value,
+			IN int Flags
+		)
+		{
+			if ((this->m_Flags & 1) == 0)
+				return;
+
+			int variable_slot = Code_Variable_FindAlloc_Slot_From_Name(this, Name);
+
+			RValue* variable_slot_ptr = nullptr;
+			if (this->m_YYVars)
+				variable_slot_ptr = &this->m_YYVars[variable_slot];
+			else
+				variable_slot_ptr = this->InternalGetYYVar(variable_slot);
+
+			// Deep-copy RValue from Value to variable_slot_ptr
+			// ...
+		}
+	
+	*/
+	AurieStatus GmpGetYYObjectBaseAdd(
+		IN const YYRunnerInterface& Interface,
+		OUT PFN_YYObjectBaseAdd* Function
+	)
+	{
+		AurieStatus last_status = AURIE_SUCCESS;
+
+		// Make sure we have the required function
+		if (!Interface.StructAddRValue)
+			return AURIE_UNAVAILABLE;
+
+		// Disassemble 32 bytes at the function
+		std::vector<TargettedInstruction> instructions = GmpDisassemble(
+			Interface.StructAddRValue,
+			32, 
+			0xFF
+		);
+
+		// Find either the first jump or the first call, and trace the target
+		ZyanU64 function_address = 0;
+
+		for (const auto& instr : instructions)
+		{
+			if (instr.RawForm.info.mnemonic != ZYDIS_MNEMONIC_JMP && instr.RawForm.info.mnemonic != ZYDIS_MNEMONIC_CALL)
+				continue;
+			
+			ZydisCalcAbsoluteAddress(
+				&instr.RawForm.info,
+				&instr.RawForm.operands[0],
+				instr.RawForm.runtime_address,
+				&function_address
+			);
+			break;
+		}
+
+		if (!function_address)
+			return AURIE_OBJECT_NOT_FOUND;
+
+		*Function = reinterpret_cast<PFN_YYObjectBaseAdd>(function_address);
 		return AURIE_SUCCESS;
 	}
 

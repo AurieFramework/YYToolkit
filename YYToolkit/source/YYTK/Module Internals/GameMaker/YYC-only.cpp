@@ -668,7 +668,6 @@ namespace YYTK
 
 		AurieStatus GmpFindRVArrayOffsetX64(
 			IN TRoutine F_ArrayEquals,
-			IN YYRunnerInterface& RunnerInterface,
 			OUT int64_t* ArrayOffset
 		)
 		{
@@ -816,7 +815,6 @@ namespace YYTK
 
 		AurieStatus GmpFindRVArrayOffsetX86(
 			IN TRoutine F_ArrayEquals,
-			IN YYRunnerInterface& RunnerInterface,
 			OUT int64_t* ArrayOffset
 		)
 		{
@@ -894,7 +892,6 @@ namespace YYTK
 
 		AurieStatus GmpFindRVArrayOffset(
 			IN TRoutine F_ArrayEquals,
-			IN YYRunnerInterface& RunnerInterface,
 			OUT int64_t* ArrayOffset
 		)
 		{
@@ -905,9 +902,9 @@ namespace YYTK
 				return last_status;
 
 			if (architecture == IMAGE_FILE_MACHINE_AMD64)
-				return GmpFindRVArrayOffsetX64(F_ArrayEquals, RunnerInterface, ArrayOffset);
+				return GmpFindRVArrayOffsetX64(F_ArrayEquals, ArrayOffset);
 
-			return GmpFindRVArrayOffsetX86(F_ArrayEquals, RunnerInterface, ArrayOffset);
+			return GmpFindRVArrayOffsetX86(F_ArrayEquals, ArrayOffset);
 		}
 	}
 }

@@ -161,6 +161,18 @@ namespace YYTK
 		IN RValue** Arguments // Array of RValue pointers
 		);
 
+	using PFN_YYObjectBaseAdd = void(__thiscall*)(
+		IN YYObjectBase* This,
+		IN const char* Name,
+		IN const RValue& Value,
+		IN int Flags
+		);
+
+	using PFN_FindAllocSlot = int(*)(
+		OPTIONAL IN YYObjectBase* Object,
+		IN const char* Name
+	);
+
 #pragma pack(push, 4)
 	struct RValue
 	{
@@ -1864,6 +1876,12 @@ namespace YYTK
 		virtual Aurie::AurieStatus InvokeWithObject(
 			IN const RValue& Object,
 			IN std::function<void(CInstance* Self, CInstance* Other)> Method
+		) = 0;
+
+		virtual Aurie::AurieStatus GetVariableSlot(
+			IN const RValue& Object,
+			IN const char* VariableName,
+			OUT int32_t& Hash
 		) = 0;
 	};
 

@@ -373,7 +373,6 @@ namespace YYTK
 			{
 				last_status = YYC::GmpFindRVArrayOffset(
 					array_equals,
-					m_RunnerInterface,
 					&m_RValueArrayOffset
 				);
 			}
@@ -606,8 +605,40 @@ namespace YYTK
 
 			if (!AurieSuccess(last_status))
 			{
-				this->PrintWarning(
+				this->PrintError(
+					__FILE__,
+					__LINE__,
 					"Failed to initialize stage 2 hooks! (%s)",
+					AurieStatusToString(last_status)
+				);
+
+				return last_status;
+			}
+
+			last_status = GmpGetYYObjectBaseAdd(
+				m_RunnerInterface,
+				&m_AddToYYObjectBase
+			);
+
+			if (!AurieSuccess(last_status))
+			{
+				this->PrintWarning(
+					"Failed to find YYObjectBase::Add! (%s)",
+					AurieStatusToString(last_status)
+				);
+
+				// return last_status;
+			}
+
+			last_status = GmpGetFindAllocSlotFromName(
+				m_AddToYYObjectBase,
+				&m_FindAllocSlot
+			);
+
+			if (!AurieSuccess(last_status))
+			{
+				this->PrintWarning(
+					"Failed to find FindAllocSlot! (%s)",
 					AurieStatusToString(last_status)
 				);
 
@@ -624,6 +655,9 @@ namespace YYTK
 			CmWriteOutput(CM_GRAY, "- m_RValueArrayOffset at 0x%llx", m_RValueArrayOffset);
 			CmWriteOutput(CM_GRAY, "- m_GetRoomData at 0x%p", m_GetRoomData);
 			CmWriteOutput(CM_GRAY, "- m_RunRoom at 0x%p", m_RunRoom);
+			CmWriteOutput(CM_GRAY, "- m_AddToYYObjectBase at 0x%p", m_AddToYYObjectBase);
+			CmWriteOutput(CM_GRAY, "- m_FindAllocSlot at 0x%p", m_FindAllocSlot);
+
 			CmWriteOutput(
 				CM_GRAY,
 				"- RFunction Entry Type: %s",
@@ -980,11 +1014,27 @@ namespace YYTK
 		OUT RValue*& Member
 	)
 	{
-		if (!m_RunnerInterface.StructGetMember)
-			return AURIE_MODULE_INTERNAL_ERROR;
-
 		if (Instance.m_Kind != VALUE_OBJECT)
 			return AURIE_INVALID_PARAMETER;
+
+		// If we don't have the interface function, we use a fallback method
+		if (!m_RunnerInterface.StructGetMember)
+		{
+			int32_t variable_hash = 0;
+			AurieStatus last_status = AURIE_SUCCESS;
+
+			last_status = this->GetVariableSlot(
+				Instance,
+				MemberName,
+				variable_hash
+			);
+
+			if (!AurieSuccess(last_status))
+				return last_status;
+
+			Member = &Instance.m_Object->InternalGetYYVarRef(variable_hash);
+			return AURIE_SUCCESS;
+		}
 
 		RValue* member_value = m_RunnerInterface.StructGetMember(&Instance, MemberName);
 
@@ -1004,33 +1054,109 @@ namespace YYTK
 		if (Instance.m_Kind != VALUE_OBJECT)
 			return AURIE_INVALID_PARAMETER;
 
+		// Determine the number of keys in the struct
+		// Use a fallback method if StructGetKeys isn't available in the interface
+		int instance_variable_count = -1;
 		if (!m_RunnerInterface.StructGetKeys)
-			return AURIE_MODULE_INTERNAL_ERROR;
+		{
+			AurieStatus last_status = AURIE_SUCCESS;
+			RValue name_count;
 
-		if (!m_RunnerInterface.StructGetMember)
-			return AURIE_MODULE_INTERNAL_ERROR;
+			// Ask the engine for the count - this function may not be present
+			last_status = CallBuiltinEx(
+				name_count,
+				"variable_struct_names_count",
+				nullptr,
+				nullptr,
+				{ Instance }
+			);
 
-		int instance_variable_count = m_RunnerInterface.StructGetKeys(
-			&Instance,
-			nullptr,
-			nullptr
-		);
+			// Bail if the function isn't present
+			if (!AurieSuccess(last_status))
+				return last_status;
 
-		assert(instance_variable_count > 0);
+			instance_variable_count = static_cast<int>(name_count.AsReal());
+		}
+		else
+		{
+			// Query the count by passing nullptr for the keys array
+			instance_variable_count = m_RunnerInterface.StructGetKeys(
+				&Instance,
+				nullptr,
+				nullptr
+			);
+		}
 
-		// Get the names of all 
+		assert(instance_variable_count >= 0);
+
+		// Create a vector with enough space to store all the instance variable names
 		std::vector<const char*> instance_variable_names(instance_variable_count);
-		m_RunnerInterface.StructGetKeys(
-			&Instance, 
-			instance_variable_names.data(),
-			&instance_variable_count
-		);
+		
+		// Use a fallback if StructGetKeys isn't available
+		if (!m_RunnerInterface.StructGetKeys)
+		{
+			AurieStatus last_status = AURIE_SUCCESS;
+			RValue name_array;
+
+			// Ask the engine for the count - this function may not be present
+			last_status = CallBuiltinEx(
+				name_array,
+				"variable_struct_get_names",
+				nullptr,
+				nullptr,
+				{ Instance }
+			);
+
+			// Bail if the call failed
+			if (!AurieSuccess(last_status))
+				return last_status;
+
+			// Loop through all elements of the array
+			for (size_t i = 0; i < name_array.length(); i++)
+			{
+				// Use array_get to not rely on m_RValueArrayOffset
+				RValue name;
+				last_status = CallBuiltinEx(
+					name,
+					"array_get",
+					nullptr,
+					nullptr,
+					{ name_array, static_cast<int64_t>(i) }
+				);
+
+				// If we can't get the name just bail
+				if (!AurieSuccess(last_status))
+					return last_status;
+
+				// Assign the name into our vector
+				instance_variable_names.at(i) = name.AsString().data();
+			}
+		}
+		else
+		{
+			m_RunnerInterface.StructGetKeys(
+				&Instance,
+				instance_variable_names.data(),
+				&instance_variable_count
+			);
+		}
 
 		for (int i = 0; i < instance_variable_count; i++)
 		{
 			const char* variable_name = instance_variable_names.at(i);
 
-			if (EnumFunction(variable_name, m_RunnerInterface.StructGetMember(&Instance, variable_name)))
+			RValue* member_variable = nullptr;
+			AurieStatus last_status = AURIE_SUCCESS;
+
+			// Try to fetch the variable
+			last_status = GetInstanceMember(Instance, variable_name, member_variable);
+
+			// If we fail we bail
+			if (!AurieSuccess(last_status))
+				return last_status;
+
+			// If EnumFunction returns true, we're good to go
+			if (EnumFunction(variable_name, member_variable))
 				return AURIE_SUCCESS;
 		}
 
@@ -1466,5 +1592,23 @@ namespace YYTK
 		}
 
 		return AURIE_NOT_IMPLEMENTED;
+	}
+
+	AurieStatus YYTKInterfaceImpl::GetVariableSlot(
+		IN const RValue& Object,
+		IN const char* VariableName,
+		OUT int32_t& Hash
+	)
+	{
+		// TODO: Use variable_struct_get_hash if possible
+		if (!m_FindAllocSlot)
+			return AURIE_MODULE_INTERNAL_ERROR;
+
+		Hash = m_FindAllocSlot(
+			Object.m_Object,
+			VariableName
+		);
+
+		return AURIE_SUCCESS;
 	}
 }
