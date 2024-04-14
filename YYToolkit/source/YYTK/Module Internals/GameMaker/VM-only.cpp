@@ -72,6 +72,8 @@ namespace YYTK
 			char* game_base = reinterpret_cast<char*>(GetModuleHandleW(nullptr));
 
 			// Scan for all occurences of this pattern in memory
+			// Note that in the below pattern, not having a register in the first opcode
+			// is crucial! Some games, it's eax, others it's r8d or some other register!
 			std::vector<size_t> pattern_matches = {};
 			GmpSigscanRegionEx(
 				reinterpret_cast<const unsigned char*>((game_base + text_section_base)),
@@ -99,19 +101,19 @@ namespace YYTK
 				);
 
 				// Now, scan for the first jnz instruction
-				// This should be the second one (instructions[1]),
-				// but I don't want to hardcode it...
-				// TODO: Use mnemonic scan
-				intptr_t jnz_instruction_index = -1;
-				for (size_t i = 0; i < instructions.size(); i++)
-				{
-					const auto& instruction = instructions.at(i).RawForm;
+				// This should be the second one (instructions[1])
+				size_t jnz_instruction_index = 0;
+				last_status = GmpFindMnemonicPattern(
+					instructions,
+					{
+						ZYDIS_MNEMONIC_JNZ
+					},
+					jnz_instruction_index
+				);
 
-					if (instruction.info.mnemonic != ZYDIS_MNEMONIC_JNZ)
-						continue;
-
-					jnz_instruction_index = i;
-				}
+				// If no jnz instruction exists, skip to the next entry
+				if (!AurieSuccess(last_status))
+					continue;
 
 				ZyanU64 jnz_target = 0;
 
