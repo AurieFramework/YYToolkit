@@ -412,6 +412,40 @@ namespace YYTK
 		return AURIE_SUCCESS;
 	}
 
+	std::pair<std::vector<TargettedInstruction>, size_t> GmpLookupChainedInstructions(
+		IN const std::vector<size_t>& PotentialChainBaseAddresses,
+		IN const size_t MinimumChainSize,
+		IN const size_t MaximumChainSize,
+		IN const size_t MaximumInstructionsWithoutFunctionReference,
+		IN const size_t DisassemblySize
+	)
+	{
+		size_t chain_size = 0;
+		std::vector<TargettedInstruction> instructions = {};
+		for (const size_t& base_address : PotentialChainBaseAddresses)
+		{
+			// Magic numbers, look at the disassembly in that huge comment above
+			instructions = GmpDisassemble(
+				reinterpret_cast<PVOID>(base_address),
+				DisassemblySize,
+				MaximumInstructionsWithoutFunctionReference
+			);
+
+			chain_size = GmpCountInstructionReferences(instructions);
+
+			// If there's less than 80 functions, it's probably not the interface
+			// YYRunnerInterface has 96 functions in LTS + 2 variables = 98 lea matches
+			// 2022.3 YYC has 88 functions
+			if (chain_size > MinimumChainSize && chain_size < MaximumChainSize)
+				break;
+
+			instructions.clear();
+			chain_size = 0;
+		}
+
+		return std::make_pair(instructions, chain_size);
+	}
+
 	AurieStatus GmpGetRunnerInterfaceX64(
 		OUT YYRunnerInterface& Interface
 	)
@@ -484,43 +518,73 @@ namespace YYTK
 			reinterpret_cast<const unsigned char*>((game_base + text_section_base)),
 			text_section_size,
 			UTEXT(
-				"\x33\xC9"						// xor ??, ??
-				"\x48\x89\x8D\x00\x00\x00\x00"	// mov [rbp+??], ??
+				"\x33\x00"						// xor ??, ??
+				"\x48\x89\x00\x00\x00\x00\x00"	// mov [rsp+??], ??
 				"\x48\x8D\x0D\x00\x00\x00\x00"	// lea [??+??]
 			),
 			"x?xx?????xx?????",
 			pattern_matches
 		);
 
-		// Loop through all the matches, and check if they have a long function chain
-		std::vector<TargettedInstruction> instructions = {};
-		for (const size_t& match : pattern_matches)
+		// If there's less than 80 functions, it's probably not the interface
+		// YYRunnerInterface has 96 functions in LTS + 2 variables = 98 lea matches
+		// 2022.3 YYC has 88 functions
+
+		// Loop through all the matches, and check if they have a long function chain following them
+		auto [chain_instructions, chain_size] = GmpLookupChainedInstructions(
+			pattern_matches,
+			84, /* 2022.3 YYC has 88 functions, so leaving 4 less is probably okay */
+			104, /* LTS runner has 96 functions, and two variables = 98 chainlinks - leave a few free */
+			4, /* There should be at most 4 instructions preceding the first mov-lea pair */
+			0x1000 /* Chosen such that the chain's disassembly fits completely in the buffer */
+		);
+		
+		// In Crashlands 2's demo, the mov instruction seems different.
+		// The mov is relative to RBP instead of RSP, meaning it's 4-byte instead of 6-byte.
+		// If this is the case in the current runner, we fail the check below.
+		/*
+			E8 6E 3F 00 00        call    sub_7FF718FE5280
+			33 C9                 xor     ecx, ecx
+			48 89 4D 58           mov     [rbp+58h], rcx
+			48 8D 0D 51 C7 F5 FF  lea     rcx, sub_7FF718F3DA70
+			48 89 4C 24 60        mov     [rsp+60h], rcx
+			48 8D 0D A5 05 00 00  lea     rcx, sub_7FF718FE18D0
+			48 89 4C 24 60        mov     [rsp+68h], rcx
+		*/
+
+		if (!chain_size)
 		{
-			// Magic numbers, look at the disassembly in that huge comment above
-			instructions = GmpDisassemble(
-				reinterpret_cast<PVOID>(match),
-				0x1000,
-				4
+			// Overwrite pattern_matches with new base addresses
+			GmpSigscanRegionEx(
+				reinterpret_cast<const unsigned char*>((game_base + text_section_base)),
+				text_section_size,
+				UTEXT(
+					"\x33\x00"						// xor ??, ??
+					"\x48\x89\x4D\x00"				// mov [rbp+??], rcx
+					"\x48\x8D\x0D\x00\x00\x00\x00"	// lea [??+??]
+				),
+				"x?xxx?xxx????",
+				pattern_matches
 			);
 
-			size_t function_count = GmpCountInstructionReferences(instructions);
+			// Rescan for the chain.
+			std::tie(chain_instructions, chain_size) = GmpLookupChainedInstructions(
+				pattern_matches,
+				84, /* 2022.3 YYC has 88 functions, so leaving 4 less is probably okay */
+				104, /* LTS runner has 96 functions, and two variables = 98 chainlinks - leave a few free */
+				4, /* There should be at most 4 instructions preceding the first mov-lea pair */
+				0x1000 /* Chosen such that the chain's disassembly fits completely in the buffer */
+			);
 
-			// If there's less than 80 functions, it's probably not the interface
-			// YYRunnerInterface has 96 functions in LTS + 2 variables = 98 lea matches
-			// 2022.3 YYC has 88 functions
-			if (function_count > 87 && function_count < 104)
-				break;
-
-			instructions.clear();
+			// If no chain exists, we give up.
+			if (!chain_size)
+				return AURIE_OBJECT_NOT_FOUND;
 		}
-
-		if (instructions.empty())
-			return AURIE_OBJECT_NOT_FOUND;
 
 		CmWriteWarning(
 			"Found %lld functions in %lld assembly instructions!",
-			GmpCountInstructionReferences(instructions),
-			instructions.size()
+			chain_size,
+			chain_instructions.size()
 		);
 
 		// Function entries are not sorted by their offset in the YYRunnerInterface structure
@@ -530,9 +594,9 @@ namespace YYTK
 		// The register that's XORed with itself in the first instruction is our target register.
 		// Find that register.
 		ZydisRegister target_register = ZYDIS_REGISTER_NONE;
-		for (size_t i = 0; i < instructions[0].RawForm.info.operand_count; i++)
+		for (size_t i = 0; i < chain_instructions[0].RawForm.info.operand_count; i++)
 		{
-			ZydisDecodedOperand& operand = instructions[0].RawForm.operands[i];
+			ZydisDecodedOperand& operand = chain_instructions[0].RawForm.operands[i];
 
 			if (operand.type != ZYDIS_OPERAND_TYPE_REGISTER)
 				continue;
@@ -579,18 +643,18 @@ namespace YYTK
 		// The first elements are gonna be at [rbp+whatever], and that whatever is then gonna start
 		// incrementing by sizeof(PVOID).
 
-		for (size_t i = 0; i < instructions.size(); i++)
+		for (size_t i = 0; i < chain_instructions.size(); i++)
 		{
-			const TargettedInstruction& instruction = instructions[i];
+			const TargettedInstruction& instruction = chain_instructions[i];
 
 			if (instruction.RawForm.info.mnemonic != ZYDIS_MNEMONIC_MOV)
 				continue;
 
 			// TODO: Check if this instruction references the target_register
 
-			for (size_t j = 0; j < instructions[i].RawForm.info.operand_count; j++)
+			for (size_t j = 0; j < chain_instructions[i].RawForm.info.operand_count; j++)
 			{
-				const ZydisDecodedOperand& operand = instructions[i].RawForm.operands[j];
+				const ZydisDecodedOperand& operand = chain_instructions[i].RawForm.operands[j];
 
 				// Make sure the operand is of type memory
 				if (operand.type != ZYDIS_OPERAND_TYPE_MEMORY)
@@ -620,7 +684,7 @@ namespace YYTK
 		// to the target register we extracted earlier.
 		std::vector<TargettedInstruction> movs_and_leas;
 
-		for (const TargettedInstruction& instruction : instructions)
+		for (const TargettedInstruction& instruction : chain_instructions)
 		{
 			switch (instruction.RawForm.info.mnemonic)
 			{
