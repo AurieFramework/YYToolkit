@@ -1556,7 +1556,7 @@ namespace YYTK
 				}
 
 				// Get the instance ID from the instance
-				int32_t instance_id = static_cast<int32_t>(Object.AsReal());
+				int32_t instance_id = static_cast<int32_t>(instance.AsReal());
 
 				// Skip inactive instances / instances that don't exist
 				CInstance* object_instance = nullptr;

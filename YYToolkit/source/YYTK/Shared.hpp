@@ -9,7 +9,7 @@
 
 #define YYTK_MAJOR 3
 #define YYTK_MINOR 3
-#define YYTK_PATCH 1
+#define YYTK_PATCH 2
 
 #ifndef YYTK_CPP_VERSION
 #ifndef _MSVC_LANG
@@ -2042,15 +2042,30 @@ namespace YYTK
 		}
 	};
 
+	// Newer struct, later renamed to LinkedList - OLinkedList is used in older x86 games, 
+	// and causes misalingment due to alignment changing from 8-bytes in x64 to 4-bytes in x86.
 	template <typename T>
 	struct LinkedList
 	{
 		T* m_First;
 		T* m_Last;
 		int32_t m_Count;
+		int32_t m_DeleteType;
 	};
 #ifdef _WIN64
 	static_assert(sizeof(LinkedList<CInstance>) == 0x18);
+#endif // _WIN64
+
+	template <typename T>
+	struct OLinkedList
+	{
+		T* m_First;
+		T* m_Last;
+		int32_t m_Count;
+	};
+#ifdef _WIN64
+	static_assert(sizeof(OLinkedList<CInstance>) == 0x18);
+	static_assert(sizeof(OLinkedList<CInstance>) == sizeof(LinkedList<CInstance>));
 #endif // _WIN64
 
 	enum eBuffer_Type : int32_t
@@ -2259,7 +2274,7 @@ namespace YYTK
 		int32_t m_PhysicsGravityX;
 		int32_t m_PhysicsGravityY;
 		float m_PhysicsPixelToMeters;
-		LinkedList<CInstance> m_ActiveInstances;
+		OLinkedList<CInstance> m_ActiveInstances;
 		LinkedList<CInstance> m_InactiveInstances;
 		CInstance* m_MarkedFirst;
 		CInstance* m_MarkedLast;
@@ -2577,6 +2592,16 @@ namespace YYTK
 		// Use GetMembers() to get a CInstanceVariables reference.
 		union
 		{
+			// Islets 1.0.0.3 Steam (x86), GM 2022.6
+			struct
+			{
+			public:
+				CInstanceInternal Members;
+			} MembersOnly;
+#ifdef _WIN64
+			static_assert(sizeof(MembersOnly) == 0xF8);
+#endif // _WIN64
+
 			// 2023.x => 2023.8 (and presumably 2023.11)
 			struct
 			{
@@ -2584,9 +2609,9 @@ namespace YYTK
 				PVOID m_SequenceInstance;
 			public:
 				CInstanceInternal Members;
-			} Unmasked;
+			} SequenceInstanceOnly;
 #ifdef _WIN64
-			static_assert(sizeof(Unmasked) == 0x100);
+			static_assert(sizeof(SequenceInstanceOnly) == 0x100);
 #endif // _WIN64
 
 			// 2022.1 => 2023.1 (may be used later, haven't checked)
@@ -2597,9 +2622,9 @@ namespace YYTK
 				PVOID m_SequenceInstance;
 			public:
 				CInstanceInternal Members;
-			} Masked;
+			} WithSkeletonMask;
 #ifdef _WIN64
-			static_assert(sizeof(Masked) == 0x108);
+			static_assert(sizeof(WithSkeletonMask) == 0x108);
 #endif // _WIN64
 		};
 	public:

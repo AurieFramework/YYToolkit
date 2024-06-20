@@ -393,8 +393,10 @@ size_t YYTK::RValue::length()
 CInstanceInternal& YYTK::CInstance::GetMembers()
 {
 	YYTKInterface* module_interface = GetYYTKInterface();
+
+	// SequenceInstanceOnly is used in most new games that v3 is targetting
 	if (!module_interface)
-		return this->Unmasked.Members;
+		return this->SequenceInstanceOnly.Members;
 	
 	RValue self_id_builtin;
 	module_interface->GetBuiltin(
@@ -406,10 +408,22 @@ CInstanceInternal& YYTK::CInstance::GetMembers()
 
 	int32_t self_id = static_cast<int32_t>(self_id_builtin.AsReal());
 	
-	if (this->Unmasked.Members.m_ID == self_id)
-		return this->Unmasked.Members;
+	if (this->MembersOnly.Members.m_ID == self_id)
+		return this->MembersOnly.Members;
 
-	return this->Masked.Members;
+	if (this->SequenceInstanceOnly.Members.m_ID == self_id)
+		return this->SequenceInstanceOnly.Members;
+
+	if (this->WithSkeletonMask.Members.m_ID == self_id)
+		return this->WithSkeletonMask.Members;
+
+	module_interface->PrintError(
+		__FILE__,
+		__LINE__, 
+		"Failed to determine CInstance member offset! Report this to GitHub and include the game name!"
+	);
+
+	return this->SequenceInstanceOnly.Members;
 }
 #endif // YYTK_DEFINE_INTERNAL
 
