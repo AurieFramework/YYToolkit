@@ -9,7 +9,7 @@
 
 #define YYTK_MAJOR 3
 #define YYTK_MINOR 3
-#define YYTK_PATCH 2
+#define YYTK_PATCH 3
 
 #ifndef YYTK_CPP_VERSION
 #ifndef _MSVC_LANG

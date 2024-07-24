@@ -36,6 +36,96 @@ namespace YYTK
 		}
 	}
 
+	AurieStatus YYTKInterfaceImpl::YkFetchD3D11Info(
+		OUT ID3D11Device** DeviceObject, 
+		OUT IDXGISwapChain** Swapchain
+	)
+	{
+		AurieStatus last_status = AURIE_SUCCESS;
+
+		// Call os_get_info, which gets us the necessary info
+		RValue os_info_ds_map;
+		last_status = CallBuiltinEx(
+			os_info_ds_map,
+			"os_get_info",
+			nullptr,
+			nullptr,
+			{}
+		);
+
+		// This is not checking the return value of os_get_info,
+		// instead checking if we even called the function successfully.
+		if (!AurieSuccess(last_status))
+		{
+			this->PrintError(
+				__FILE__,
+				__LINE__,
+				"Failed to call os_get_info function! (%s)",
+				AurieStatusToString(last_status)
+			);
+
+			return last_status;
+		}
+
+		// Pull everything needed from the DS List
+		// We need to pass the pointer to the interface into the RValue initializer
+		// here, because Aurie didn't yet put our interface in its array (we're being called from stage II init), 
+		// therefore the hidden ObGetInterface calls within the RValue would fail.
+		RValue dx_swapchain, dx_device;
+
+		last_status = CallBuiltinEx(
+			dx_device,
+			"ds_map_find_value",
+			nullptr,
+			nullptr,
+			{ os_info_ds_map, RValue("video_d3d11_device", this) }
+		);
+
+		// This is not checking the return value of ds_map_find_value,
+		// instead checking if we even called the function successfully.
+		if (!AurieSuccess(last_status))
+		{
+			this->PrintError(
+				__FILE__,
+				__LINE__,
+				"Failed to get video_d3d11_device! (%s)",
+				AurieStatusToString(last_status)
+			);
+
+			return AURIE_OBJECT_NOT_FOUND;
+		}
+
+		last_status = CallBuiltinEx(
+			dx_swapchain,
+			"ds_map_find_value",
+			nullptr,
+			nullptr,
+			{ os_info_ds_map, RValue("video_d3d11_swapchain", this) }
+		);
+
+		// This is not checking the return value of ds_map_find_value,
+		// instead checking if we even called the function successfully.
+		if (!AurieSuccess(last_status))
+		{
+			this->PrintError(
+				__FILE__,
+				__LINE__,
+				"Failed to get video_d3d11_swapchain! (%s)",
+				AurieStatusToString(last_status)
+			);
+
+			return AURIE_OBJECT_NOT_FOUND;
+		}
+
+		if (DeviceObject)
+			*DeviceObject = static_cast<ID3D11Device*>(dx_device.m_Pointer);
+
+		if (Swapchain)
+			*Swapchain = static_cast<IDXGISwapChain*>(dx_swapchain.m_Pointer);
+
+		return AURIE_SUCCESS;
+	}
+
 	size_t YYTKInterfaceImpl::YkDetermineFunctionEntrySize()
 	{
 		if (!m_FunctionsArray)
@@ -384,7 +474,7 @@ namespace YYTK
 					&m_RValueArrayOffset
 				);
 			}
-			
+
 			if (!AurieSuccess(last_status))
 			{
 				this->PrintWarning(
@@ -526,53 +616,9 @@ namespace YYTK
 				return last_status;
 			}
 
-			// Find D3D11 stuff
-			RValue os_info_ds_map;
-			last_status = CallBuiltinEx(
-				os_info_ds_map,
-				"os_get_info",
-				nullptr,
-				nullptr,
-				{}
-			);
-
-			if (!AurieSuccess(last_status))
-			{
-				this->PrintError(
-					__FILE__,
-					__LINE__,
-					"Failed to call os_get_info function! (%s)",
-					AurieStatusToString(last_status)
-				);
-
-				return last_status;
-			}
-
-			// Pull everything needed from the DS List
-			// We need to pass the pointer to the interface into the RValue initializer
-			// here, because Aurie didn't yet put our interface in its array, therefore
-			// the hidden ObGetInterface calls within the RValue would fail.
-			RValue dx_swapchain, window_handle;
-
-			last_status = CallBuiltinEx(
-				dx_swapchain,
-				"ds_map_find_value",
-				nullptr,
-				nullptr,
-				{ os_info_ds_map, RValue("video_d3d11_swapchain", this) }
-			);
-
-			if (!AurieSuccess(last_status))
-			{
-				this->PrintWarning(
-					__FILE__,
-					__LINE__,
-					"Failed to get video_d3d11_swapchain! (%s)",
-					AurieStatusToString(last_status)
-				);
-			}
-
 			// Find window handle
+			RValue window_handle;
+
 			last_status = CallBuiltinEx(
 				window_handle,
 				"window_handle",
@@ -593,8 +639,51 @@ namespace YYTK
 				return last_status;
 			}
 
-			m_EngineSwapchain = reinterpret_cast<IDXGISwapChain*>(dx_swapchain.m_Pointer);
 			m_WindowHandle = reinterpret_cast<HWND>(window_handle.m_Pointer);
+
+			// Fetch D3D11 info:
+			// 
+			// There will be always at least one iteration.
+			// The maximum wait time is determined by the value of d3d11_try_limit 
+			// prior to the loop.
+			// 
+			// The os_get_info function may be called up to d3d11_try_limit times, 
+			// with the wait time (in milliseconds) being equal to d3d11_try_limit * 10.
+			int d3d11_try_limit = 300;
+
+			while (d3d11_try_limit > 0)
+			{
+				last_status = YkFetchD3D11Info(
+					nullptr, // unused
+					&m_EngineSwapchain
+				);
+
+
+				// If we succeeded, **and got the swapchain** we can simply break out without sleeping
+				// Otherwise, wait 10ms and try again.
+				if (AurieSuccess(last_status) && m_EngineSwapchain)
+					break;
+
+				Sleep(10);
+
+				// Decrement our try counter, as to not get stuck in an infinite
+				// loop, if for some reason the pointers never actually get set.
+				d3d11_try_limit--;
+			}
+
+			// When we get here, either we ran out of our "try limit" or we broke out.
+			// If we broke out, AurieSuccess(last_status) will pass.
+			if (!AurieSuccess(last_status))
+			{
+				this->PrintError(
+					__FILE__,
+					__LINE__,
+					"Failed to fetch D3D11 info! (%s)",
+					AurieStatusToString(last_status)
+				);
+
+				return last_status;
+			}
 
 			assert(m_EngineSwapchain != nullptr);
 

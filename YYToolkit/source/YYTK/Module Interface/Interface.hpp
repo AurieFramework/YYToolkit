@@ -118,6 +118,11 @@ namespace YYTK
 			}
 		}
 
+		Aurie::AurieStatus YkFetchD3D11Info(
+			OUT ID3D11Device** DeviceObject,
+			OUT IDXGISwapChain** Swapchain
+		);
+
 		size_t YkDetermineFunctionEntrySize();
 
 		// === Interface Functions ===
