@@ -8,8 +8,8 @@
 #define YYTK_SHARED_H_
 
 #define YYTK_MAJOR 3
-#define YYTK_MINOR 2
-#define YYTK_PATCH 4
+#define YYTK_MINOR 4
+#define YYTK_PATCH 0
 
 #ifndef YYTK_CPP_VERSION
 #ifndef _MSVC_LANG
@@ -84,7 +84,7 @@ namespace YYTK
 		EVENT_OBJECT_CALL = 1,	// The event represents a Code_Execute() call.
 		EVENT_FRAME = 2,		// The event represents an IDXGISwapChain::Present() call.
 		EVENT_RESIZE = 3,		// The event represents an IDXGISwapChain::ResizeBuffers() call.
-		EVENT_SCRIPT_CALL = 4,	// The event represents a DoCallScript() call.
+		EVENT_UNUSED = 4,		// This value is unused.
 		EVENT_WNDPROC = 5		// The event represents a WndProc() call.
 	};
 
@@ -160,6 +160,18 @@ namespace YYTK
 		IN int ArgumentCount,
 		IN RValue** Arguments // Array of RValue pointers
 		);
+
+	using PFN_YYObjectBaseAdd = void(__thiscall*)(
+		IN YYObjectBase* This,
+		IN const char* Name,
+		IN const RValue& Value,
+		IN int Flags
+		);
+
+	using PFN_FindAllocSlot = int(*)(
+		OPTIONAL IN YYObjectBase* Object,
+		IN const char* Name
+	);
 
 #pragma pack(push, 4)
 	struct RValue
@@ -1703,8 +1715,6 @@ namespace YYTK
 	using FWFrame = FunctionWrapper<HRESULT(IDXGISwapChain*, UINT, UINT)>;
 	// IDXGISwapChain::ResizeBuffers
 	using FWResize = FunctionWrapper<HRESULT(IDXGISwapChain*, UINT, UINT, UINT, DXGI_FORMAT, UINT)>;
-	// DoCallScript (only in VM)
-	using FWScriptEvent = FunctionWrapper<PVOID(CScript*, int, char*, PVOID, CInstance*, CInstance*)>;
 	// WndProc calls
 	using FWWndProc = FunctionWrapper<LRESULT(HWND, UINT, WPARAM, LPARAM)>;
 
@@ -1867,6 +1877,12 @@ namespace YYTK
 			IN const RValue& Object,
 			IN std::function<void(CInstance* Self, CInstance* Other)> Method
 		) = 0;
+
+		virtual Aurie::AurieStatus GetVariableSlot(
+			IN const RValue& Object,
+			IN const char* VariableName,
+			OUT int32_t& Hash
+		) = 0;
 	};
 
 #if YYTK_DEFINE_INTERNAL
@@ -1905,6 +1921,71 @@ namespace YYTK
 		{
 			return ((static_cast<unsigned long long>(reinterpret_cast<uintptr_t>(Key)) >> 8) + 1) & INT_MAX;
 		};
+
+		static CHashMapHash CHashMapCalculateHash(
+			IN const char* Key
+		)
+		{
+			// https://github.com/jwerle/murmurhash.c - Licensed under MIT
+			size_t len = strlen(Key);
+			uint32_t c1 = 0xcc9e2d51;
+			uint32_t c2 = 0x1b873593;
+			uint32_t r1 = 15;
+			uint32_t r2 = 13;
+			uint32_t m = 5;
+			uint32_t n = 0xe6546b64;
+			uint32_t h = 0;
+			uint32_t k = 0;
+			uint8_t* d = (uint8_t*)Key; // 32 bit extract from 'key'
+			const uint32_t* chunks = NULL;
+			const uint8_t* tail = NULL; // tail - last 8 bytes
+			int i = 0;
+			int l = len / 4; // chunk length
+
+			chunks = (const uint32_t*)(d + l * 4); // body
+			tail = (const uint8_t*)(d + l * 4); // last 8 byte chunk of `key'
+
+			// for each 4 byte chunk of `key'
+			for (i = -l; i != 0; ++i) {
+				// next 4 byte chunk of `key'
+				k = chunks[i];
+
+				// encode next 4 byte chunk of `key'
+				k *= c1;
+				k = (k << r1) | (k >> (32 - r1));
+				k *= c2;
+
+				// append to hash
+				h ^= k;
+				h = (h << r2) | (h >> (32 - r2));
+				h = h * m + n;
+			}
+
+			k = 0;
+
+			// remainder
+			switch (len & 3) { // `len % 4'
+			case 3: k ^= (tail[2] << 16);
+			case 2: k ^= (tail[1] << 8);
+
+			case 1:
+				k ^= tail[0];
+				k *= c1;
+				k = (k << r1) | (k >> (32 - r1));
+				k *= c2;
+				h ^= k;
+			}
+
+			h ^= len;
+
+			h ^= (h >> 16);
+			h *= 0x85ebca6b;
+			h ^= (h >> 13);
+			h *= 0xc2b2ae35;
+			h ^= (h >> 16);
+
+			return h;
+		}
 
 	public:
 		int32_t m_CurrentSize;
@@ -1961,15 +2042,30 @@ namespace YYTK
 		}
 	};
 
+	// Newer struct, later renamed to LinkedList - OLinkedList is used in older x86 games, 
+	// and causes misalingment due to alignment changing from 8-bytes in x64 to 4-bytes in x86.
 	template <typename T>
 	struct LinkedList
 	{
 		T* m_First;
 		T* m_Last;
 		int32_t m_Count;
+		int32_t m_DeleteType;
 	};
 #ifdef _WIN64
 	static_assert(sizeof(LinkedList<CInstance>) == 0x18);
+#endif // _WIN64
+
+	template <typename T>
+	struct OLinkedList
+	{
+		T* m_First;
+		T* m_Last;
+		int32_t m_Count;
+	};
+#ifdef _WIN64
+	static_assert(sizeof(OLinkedList<CInstance>) == 0x18);
+	static_assert(sizeof(OLinkedList<CInstance>) == sizeof(LinkedList<CInstance>));
 #endif // _WIN64
 
 	enum eBuffer_Type : int32_t
@@ -2077,7 +2173,7 @@ namespace YYTK
 	static_assert(sizeof(CLayerSpriteElement) == 0x68);
 #endif // _WIN64
 
-	__declspec(align(8)) struct CLayer
+	struct CLayer
 	{
 		int32_t m_Id;
 		int32_t m_Depth;
@@ -2178,7 +2274,7 @@ namespace YYTK
 		int32_t m_PhysicsGravityX;
 		int32_t m_PhysicsGravityY;
 		float m_PhysicsPixelToMeters;
-		LinkedList<CInstance> m_ActiveInstances;
+		OLinkedList<CInstance> m_ActiveInstances;
 		LinkedList<CInstance> m_InactiveInstances;
 		CInstance* m_MarkedFirst;
 		CInstance* m_MarkedLast;
@@ -2314,6 +2410,18 @@ namespace YYTK
 		virtual void PreFree() = 0;
 
 		virtual RValue* GetDispose() = 0;
+
+		bool Add(
+			IN const char* Name,
+			IN const RValue& Value,
+			IN int Flags
+		);
+
+		bool IsExtensible();
+
+		RValue* FindOrAllocValue(
+			IN const char* Name
+		);
 
 		YYObjectBase* m_Flink;
 		YYObjectBase* m_Blink;
@@ -2484,6 +2592,16 @@ namespace YYTK
 		// Use GetMembers() to get a CInstanceVariables reference.
 		union
 		{
+			// Islets 1.0.0.3 Steam (x86), GM 2022.6
+			struct
+			{
+			public:
+				CInstanceInternal Members;
+			} MembersOnly;
+#ifdef _WIN64
+			static_assert(sizeof(MembersOnly) == 0xF8);
+#endif // _WIN64
+
 			// 2023.x => 2023.8 (and presumably 2023.11)
 			struct
 			{
@@ -2491,9 +2609,9 @@ namespace YYTK
 				PVOID m_SequenceInstance;
 			public:
 				CInstanceInternal Members;
-			} Unmasked;
+			} SequenceInstanceOnly;
 #ifdef _WIN64
-			static_assert(sizeof(Unmasked) == 0x100);
+			static_assert(sizeof(SequenceInstanceOnly) == 0x100);
 #endif // _WIN64
 
 			// 2022.1 => 2023.1 (may be used later, haven't checked)
@@ -2504,9 +2622,9 @@ namespace YYTK
 				PVOID m_SequenceInstance;
 			public:
 				CInstanceInternal Members;
-			} Masked;
+			} WithSkeletonMask;
 #ifdef _WIN64
-			static_assert(sizeof(Masked) == 0x108);
+			static_assert(sizeof(WithSkeletonMask) == 0x108);
 #endif // _WIN64
 		};
 	public:
