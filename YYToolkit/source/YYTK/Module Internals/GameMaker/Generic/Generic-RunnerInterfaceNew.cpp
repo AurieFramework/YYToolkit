@@ -254,7 +254,7 @@ namespace YYTK
 			auto instructions_in_the_current_page = GmpDisassemble(
 				page_base,
 				PAGE_SIZE,
-				UINT64_MAX
+				SIZE_MAX
 			);
 
 			std::vector<std::pair<size_t, ZydisDisassembledInstruction>> lea_mov_pairs = {};
@@ -344,7 +344,7 @@ namespace YYTK
 				if (mov_instruction.operands[0].mem.base != ZYDIS_REGISTER_RBP && mov_instruction.operands[0].mem.base != ZYDIS_REGISTER_RSP)
 					continue;
 
-				valid_lea_mov_pairs_addresses.push_back(pair.second.runtime_address);
+				valid_lea_mov_pairs_addresses.push_back(static_cast<size_t>(pair.second.runtime_address));
 			}
 
 			// Filter valid_lea_mov_pairs_addresses by checking the length of function chains.
@@ -397,5 +397,7 @@ namespace YYTK
 
 			return AURIE_SUCCESS;
 		}
+
+		return AURIE_OBJECT_NOT_FOUND;
 	}
 }

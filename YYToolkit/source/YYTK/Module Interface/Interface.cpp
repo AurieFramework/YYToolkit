@@ -1390,7 +1390,7 @@ namespace YYTK
 		}
 
 		// Loop all builtin entries
-		for (size_t i = 0; i < *m_BuiltinCount; i++)
+		for (int i = 0; i < *m_BuiltinCount; i++)
 		{
 			// If we have a match with the name, we cache the index and return
 			if (!strcmp(Name.data(), m_BuiltinArray[i].m_Name))
