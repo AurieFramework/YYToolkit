@@ -301,22 +301,49 @@ namespace YYTK
 
 		if (!m_FirstInitComplete)
 		{
+			// Create the runner interface event
+			m_RunnerInterfacePopulatedEvent = CreateEventA(
+				nullptr,
+				FALSE,
+				FALSE,
+				nullptr
+			);
+
 			// Get the runner interface by reading assembly
 			last_status = GmpGetRunnerInterface(
 				m_RunnerInterface
 			);
 
-			// If we didn't get that, there's no chance in hell we're doing anything with the runner
+			// If we didn't get that, there's no chance in hell we're doing anything with the runner...
+			// Until v3.4, where a new method is introduced!
 			if (!AurieSuccess(last_status))
 			{
-				this->PrintError(
-					__FILE__,
-					__LINE__,
-					"Failed to find runner interface! (%s)",
-					AurieStatusToString(last_status)
+				PVOID rip = nullptr;
+				last_status = GmpBreakpointInterfaceCreation(
+					&rip,
+					GmpHandleInterfaceCreationBP
 				);
 
-				return last_status;
+				if (!AurieSuccess(last_status) || !rip)
+				{
+					this->PrintError(
+						__FILE__,
+						__LINE__,
+						"Failed to find runner interface! (%s)",
+						AurieStatusToString(last_status)
+					);
+
+					return last_status;
+				}
+				else
+				{
+					m_IsUsingVeh = true;
+					this->Print(
+						CM_LIGHTAQUA,
+						"Game code analysis finished. Breakpoint set on RIP 0x%p.",
+						rip
+					);
+				}
 			}
 
 			last_status = Hooks::HkPreinitialize();
@@ -341,6 +368,22 @@ namespace YYTK
 		
 		if (!m_SecondInitComplete)
 		{
+			// If we're using VEH, we have to wait until the runner interface is populated
+			// by the exception handler.
+			// We do this by using the event, which is signaled by the exception handler.
+			if (m_IsUsingVeh)
+			{
+				this->Print(
+					CM_LIGHTAQUA,
+					"Please wait while the game creates a runner interface."
+				);
+
+				WaitForSingleObject(
+					m_RunnerInterfacePopulatedEvent,
+					INFINITE
+				);
+			}
+
 			// Now we have to figure out if the runner is YYC or VM
 			// We can either do that by calling "code_is_compiled",
 			// or by checking if the YYC-only version of GmpFindFunctionsArray succeeds.
@@ -563,28 +606,38 @@ namespace YYTK
 			}
 
 			// Find the Run_Room pointer
-			size_t background_color_index = 0;
+			size_t builtin_variable_index = 0;
 			last_status = GetBuiltinVariableIndex(
 				"background_color",
-				background_color_index
+				builtin_variable_index
 			);
 
 			if (!AurieSuccess(last_status))
 			{
-				this->PrintError(
-					__FILE__,
-					__LINE__,
-					"Failed to find background_color built-in variable! (%s)",
-					AurieStatusToString(last_status)
+				// We failed to get background_color (it seems to not exist in Fields of Mistria 2024.6 for example)
+				last_status = GetBuiltinVariableIndex(
+					"room_width",
+					builtin_variable_index
 				);
 
-				return last_status;
+				// If even room_width fails, we bail.
+				if (!AurieSuccess(last_status))
+				{
+					this->PrintError(
+						__FILE__,
+						__LINE__,
+						"Failed to find built-in variables (background_color & room_width)! (%s)",
+						AurieStatusToString(last_status)
+					);
+
+					return last_status;
+				}
 			}
 
-			RVariableRoutine* background_color_entry = nullptr;
+			RVariableRoutine* builtin_variable_information = nullptr;
 			last_status = GetBuiltinVariableInformation(
-				background_color_index,
-				background_color_entry
+				builtin_variable_index,
+				builtin_variable_information
 			);
 
 			if (!AurieSuccess(last_status))
@@ -592,7 +645,7 @@ namespace YYTK
 				this->PrintError(
 					__FILE__,
 					__LINE__,
-					"Failed to get background_color built-in variable information! (%s)",
+					"Failed to get built-in variable information! (%s)",
 					AurieStatusToString(last_status)
 				);
 
@@ -600,7 +653,7 @@ namespace YYTK
 			}
 
 			last_status = GmpFindCurrentRoomData(
-				background_color_entry->m_SetVariable,
+				builtin_variable_information->m_SetVariable,
 				&m_RunRoom
 			);
 
@@ -746,7 +799,7 @@ namespace YYTK
 			CmWriteOutput(CM_GRAY, "- m_RunRoom at 0x%p", m_RunRoom);
 			CmWriteOutput(CM_GRAY, "- m_AddToYYObjectBase at 0x%p", m_AddToYYObjectBase);
 			CmWriteOutput(CM_GRAY, "- m_FindAllocSlot at 0x%p", m_FindAllocSlot);
-
+			
 			CmWriteOutput(
 				CM_GRAY,
 				"- RFunction Entry Type: %s",
@@ -768,6 +821,9 @@ namespace YYTK
 
 	void YYTKInterfaceImpl::Destroy() 
 	{
+		if (m_RunnerInterfacePopulatedEvent)
+			CloseHandle(m_RunnerInterfacePopulatedEvent);
+
 		Hooks::HkUninitialize(
 			m_WindowHandle
 		);

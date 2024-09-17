@@ -33,13 +33,46 @@
     <ClCompile Include="source\YYTK\Shared.cpp">
       <Filter>Zdrojové soubory</Filter>
     </ClCompile>
-    <ClCompile Include="source\YYTK\Module Internals\GameMaker\Generic.cpp">
+    <ClCompile Include="source\YYTK\Module Internals\GameMaker\Generic\Generic.cpp">
       <Filter>Zdrojové soubory</Filter>
     </ClCompile>
-    <ClCompile Include="source\YYTK\Module Internals\GameMaker\VM-only.cpp">
+    <ClCompile Include="source\YYTK\Module Internals\GameMaker\YYC\YYC-Arrays.cpp">
       <Filter>Zdrojové soubory</Filter>
     </ClCompile>
-    <ClCompile Include="source\YYTK\Module Internals\GameMaker\YYC-only.cpp">
+    <ClCompile Include="source\YYTK\Module Internals\GameMaker\YYC\YYC-BuiltinVariables.cpp">
+      <Filter>Zdrojové soubory</Filter>
+    </ClCompile>
+    <ClCompile Include="source\YYTK\Module Internals\GameMaker\YYC\YYC-Rooms.cpp">
+      <Filter>Zdrojové soubory</Filter>
+    </ClCompile>
+    <ClCompile Include="source\YYTK\Module Internals\GameMaker\YYC\YYC-Functions.cpp">
+      <Filter>Zdrojové soubory</Filter>
+    </ClCompile>
+    <ClCompile Include="source\YYTK\Module Internals\GameMaker\VM\VM-Arrays.cpp">
+      <Filter>Zdrojové soubory</Filter>
+    </ClCompile>
+    <ClCompile Include="source\YYTK\Module Internals\GameMaker\VM\VM-BuiltinVariables.cpp">
+      <Filter>Zdrojové soubory</Filter>
+    </ClCompile>
+    <ClCompile Include="source\YYTK\Module Internals\GameMaker\VM\VM-Functions.cpp">
+      <Filter>Zdrojové soubory</Filter>
+    </ClCompile>
+    <ClCompile Include="source\YYTK\Module Internals\GameMaker\VM\VM-Rooms.cpp">
+      <Filter>Zdrojové soubory</Filter>
+    </ClCompile>
+    <ClCompile Include="source\YYTK\Module Internals\GameMaker\Generic\Generic-Rooms.cpp">
+      <Filter>Zdrojové soubory</Filter>
+    </ClCompile>
+    <ClCompile Include="source\YYTK\Module Internals\GameMaker\Generic\Generic-CodeExecute.cpp">
+      <Filter>Zdrojové soubory</Filter>
+    </ClCompile>
+    <ClCompile Include="source\YYTK\Module Internals\GameMaker\Generic\Generic-RunnerInterfaceOld.cpp">
+      <Filter>Zdrojové soubory</Filter>
+    </ClCompile>
+    <ClCompile Include="source\YYTK\Module Internals\GameMaker\Generic\Generic-Objects.cpp">
+      <Filter>Zdrojové soubory</Filter>
+    </ClCompile>
+    <ClCompile Include="source\YYTK\Module Internals\GameMaker\Generic\Generic-RunnerInterfaceNew.cpp">
       <Filter>Zdrojové soubory</Filter>
     </ClCompile>
   </ItemGroup>

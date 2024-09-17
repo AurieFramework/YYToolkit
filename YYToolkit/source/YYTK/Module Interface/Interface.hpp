@@ -18,6 +18,17 @@ namespace YYTK
 		YYRunnerInterface m_RunnerInterface = {};
 
 		bool m_IsYYCRunner = false;
+
+		// Set to true if VEH is used to get the runner interface.
+		// If it is, the runner interface is unavailable during stage 1 init.
+		bool m_IsUsingVeh = false;
+
+		// A handle to an event which is signaled by the vectored exception handler.
+		// Once signaled, the runner interface has been populated with values.
+		HANDLE m_RunnerInterfacePopulatedEvent = nullptr;
+
+		// The instruction pointer of the Extension_PrePrepare breakpoint.
+		PVOID m_ExceptionRIP = nullptr;
 	private:
 
 		// A pointer to the functions array in memory

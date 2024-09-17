@@ -61,14 +61,25 @@ namespace YYTK
 	);
 
 	Aurie::AurieStatus GmpFindMnemonicPattern(
-		IN const std::vector<TargettedInstruction>& Instructions,
+		IN const std::vector<YYTK::TargettedInstruction>& Instructions,
 		IN const std::vector<ZydisMnemonic>& Mnemonics,
-		OUT size_t& StartIndex
+		OUT size_t& StartIndex,
+		OPTIONAL IN size_t LoopStartIndex = 0
 	);
 
 	// Shared, directly GM related
 	Aurie::AurieStatus GmpGetRunnerInterface(
 		OUT YYRunnerInterface& Interface
+	);
+
+	bool GmpHandleInterfaceCreationBP(
+		IN PVOID ProcessorContext,
+		IN uint32_t ExceptionCode
+	);
+
+	Aurie::AurieStatus GmpBreakpointInterfaceCreation(
+		OPTIONAL OUT PVOID* Rip,
+		IN Aurie::AurieBreakpointCallback Callback
 	);
 
 	Aurie::AurieStatus GmpFindScriptData(
