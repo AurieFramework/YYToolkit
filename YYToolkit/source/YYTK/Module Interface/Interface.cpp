@@ -304,7 +304,7 @@ namespace YYTK
 			// Create the runner interface event
 			m_RunnerInterfacePopulatedEvent = CreateEventA(
 				nullptr,
-				FALSE,
+				TRUE,
 				FALSE,
 				nullptr
 			);
@@ -381,6 +381,11 @@ namespace YYTK
 				WaitForSingleObject(
 					m_RunnerInterfacePopulatedEvent,
 					INFINITE
+				);
+
+				this->Print(
+					CM_LIGHTAQUA,
+					"Runner interface created, proceeding with initialization."
 				);
 			}
 

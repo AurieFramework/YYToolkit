@@ -55,6 +55,21 @@ namespace YYTK
 			cpu_context->Rbp
 		);
 
+		// Restore original bytes of the breakpointed instruction.
+		Internal::MmpUnsetBreakpoint(
+			reinterpret_cast<PVOID>(cpu_context->Rip)
+		);
+
+		// Restore original bytes of the JS instruction, which we temporarily patched 
+		// such that we hit the breakpoint unconditionally.
+		WriteProcessMemory(
+			GetCurrentProcess(),
+			g_ModuleInterface.m_ExtensionPatchBase,
+			g_ModuleInterface.m_ExtensionPatchBytes.data(),
+			g_ModuleInterface.m_ExtensionPatchBytes.size(),
+			nullptr
+		);
+
 		// Disassemble at RIP - 0xFFF
 		const auto instructions_prior_to_rip = GmpDisassemble(
 			// - 0xFFF is to offset by the size we want to disassemble, and +5 is the size of the call instruction.
@@ -63,6 +78,87 @@ namespace YYTK
 			0xFFF,
 			UINT64_MAX
 		);
+
+		// We have modified the runner to forcefully hit this call instruction, even if it shouldn't.
+		// 
+		// If RIP shouldn't be here, the call instruction will be the one causing a fault, trying
+		// to call into a non-canonical address.
+		//
+		// We check the register for nullptr.
+
+		// Get the last call prior to RIP
+		auto last_call_instruction_iterator = std::find_if(
+			instructions_prior_to_rip.rbegin(),
+			instructions_prior_to_rip.rend(),
+			[](const TargettedInstruction& Instruction)
+			{
+				return Instruction.RawForm.info.mnemonic == ZYDIS_MNEMONIC_CALL;
+			}
+		);
+
+		// No call instruction in the disassembly???
+		if (last_call_instruction_iterator == instructions_prior_to_rip.rend())
+			return true;
+
+		const auto& last_call_instruction = last_call_instruction_iterator->RawForm;
+
+		// Instruction should be call qword ptr [reg+offset]
+		assert(last_call_instruction.info.mnemonic == ZYDIS_MNEMONIC_CALL);
+
+		// Get the register of the call instruction
+		const ZydisRegister call_register = last_call_instruction.operands[0].mem.base;
+		
+		// Determine if the call instruction would cause an access fault
+		bool should_advance_rip = false;
+		switch (call_register)
+		{
+		case ZYDIS_REGISTER_RAX:
+			should_advance_rip = (cpu_context->Rax == 0);
+			break;
+		case ZYDIS_REGISTER_RBX:
+			should_advance_rip = (cpu_context->Rbx == 0);
+			break;
+		case ZYDIS_REGISTER_RCX:
+			should_advance_rip = (cpu_context->Rcx == 0);
+			break;
+		case ZYDIS_REGISTER_RDX:
+			should_advance_rip = (cpu_context->Rdx == 0);
+			break;
+		case ZYDIS_REGISTER_RSI:
+			should_advance_rip = (cpu_context->Rsi == 0);
+			break;
+		case ZYDIS_REGISTER_RDI:
+			should_advance_rip = (cpu_context->Rdi == 0);
+			break;
+		case ZYDIS_REGISTER_R9:
+			should_advance_rip = (cpu_context->R9 == 0);
+			break;
+		case ZYDIS_REGISTER_R10:
+			should_advance_rip = (cpu_context->R10 == 0);
+			break;
+		case ZYDIS_REGISTER_R11:
+			should_advance_rip = (cpu_context->R11 == 0);
+			break;
+		case ZYDIS_REGISTER_R12:
+			should_advance_rip = (cpu_context->R12 == 0);
+			break;
+		case ZYDIS_REGISTER_R13:
+			should_advance_rip = (cpu_context->R13 == 0);
+			break;
+		case ZYDIS_REGISTER_R14:
+			should_advance_rip = (cpu_context->R14 == 0);
+			break;
+		case ZYDIS_REGISTER_R15:
+			should_advance_rip = (cpu_context->R15 == 0);
+			break;
+		default:
+			CmWriteError(__FILE__, __LINE__, "Unsupported VEH register %lld!", call_register);
+			break;
+		}
+
+		// Skip the call instruction
+		if (should_advance_rip)
+			cpu_context->Rip += last_call_instruction.info.length;
 
 		size_t lea_mov_chain_start = 0;
 		AurieStatus last_status = AURIE_SUCCESS;
@@ -83,13 +179,7 @@ namespace YYTK
 		);
 
 		if (!AurieSuccess(last_status))
-		{
-			Internal::MmpUnsetBreakpoint(
-				reinterpret_cast<PVOID>(cpu_context->Rip)
-			);
-
 			return true;
-		}
 
 		// Extract the runner interface instructions starting at the lea-mov chain.
 		auto runner_interface_instructions = GmpFindRunnerInterfaceInstructionsX64(
@@ -132,9 +222,11 @@ namespace YYTK
 		}
 
 		g_ModuleInterface.m_RunnerInterface = *reinterpret_cast<YYRunnerInterface*>(lowest_stack_point);
-
-		Internal::MmpUnsetBreakpoint(
-			reinterpret_cast<PVOID>(cpu_context->Rip)
+		
+		CmWriteOutput(
+			CM_LIGHTPURPLE,
+			"Captured runner interface at stack address 0x%llX",
+			lowest_stack_point
 		);
 
 		SetEvent(g_ModuleInterface.m_RunnerInterfacePopulatedEvent);
@@ -356,6 +448,70 @@ namespace YYTK
 			// Try again if no runner interface instructions exist
 			if (runner_interface_instructions.empty())
 				continue;
+			
+			// Capture the base address of the runner interface instructions
+			const uintptr_t runner_interface_instructions_base = 
+				runner_interface_instructions.front().RawForm.runtime_address;
+
+			// Disassemble some instructions before the runner interface init code begins
+			auto pre_ri_instructions = GmpDisassemble(
+				reinterpret_cast<PVOID>(runner_interface_instructions_base - 0x20),
+				0x20,
+				SIZE_MAX
+			);
+
+			// Find the last js instruction before the runner interface init code.
+			// 
+			// If no extension has the runner interface init function, the runner interface init code will
+			// never be hit in the runner, therefore placing a breakpoint on the call instruction
+			// after will never work.
+			//
+			// This js instruction will be the last instruction hit. 
+			// We modify the instruction to never jump (nopping it), 
+			auto last_js_iterator = std::find_if(
+				pre_ri_instructions.rbegin(),
+				pre_ri_instructions.rend(),
+				[](const TargettedInstruction& instr)
+				{
+					return instr.RawForm.info.mnemonic == ZYDIS_MNEMONIC_JS;
+				}
+			);
+
+			// If we failed to find a JS instruction prior to the interface init code, continue
+			if (last_js_iterator == pre_ri_instructions.rend())
+				continue;
+
+			// Get the last js instruction from the iterator
+			const auto last_js_instruction = *last_js_iterator;
+
+			// Save the base address of the JS instruction for restoration purposes.
+			g_ModuleInterface.m_ExtensionPatchBase = 
+				reinterpret_cast<PVOID>(last_js_instruction.RawForm.runtime_address);
+
+			// Nop the instruction
+			for (size_t i = 0; i < last_js_instruction.RawForm.info.length; i++)
+			{
+				constexpr unsigned char nop = 0x90;
+
+				// Save the original bytes for restoration in the VEH handler
+				g_ModuleInterface.m_ExtensionPatchBytes.push_back(
+					*reinterpret_cast<uint8_t*>(last_js_instruction.RawForm.runtime_address + i)
+				);
+
+				// Overwrite with a NOP
+				WriteProcessMemory(
+					GetCurrentProcess(),
+					reinterpret_cast<PVOID>(last_js_instruction.RawForm.runtime_address + i),
+					&nop,
+					sizeof(nop),
+					nullptr
+				);
+			}
+
+			// Nopping the above instruction will cause several issues if no extension that 
+			// has the method exists.
+			// Namely, the call instruction after will fault, due to trying to call into a nullptr address.
+			// We will have to correct that (advance RIP) in the VEH handler.
 
 			// The runner interface init code is terminated with a call instruction.
 			// This instruction is executed unconditionally.
