@@ -1646,7 +1646,7 @@ namespace YYTK
 
 		// Loop all active instances in the room
 		for (
-			CInstance* inst = current_room->m_ActiveInstances.m_First; 
+			CInstance* inst = current_room->GetMembers().m_ActiveInstances.m_First; 
 			inst != nullptr; 
 			inst = inst->GetMembers().m_Flink
 		)

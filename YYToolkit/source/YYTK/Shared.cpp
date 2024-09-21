@@ -493,4 +493,33 @@ RValue* YYObjectBase::FindOrAllocValue(
 
 	return &this->InternalGetYYVarRef(variable_hash);
 }
+
+CRoomInternal& YYTK::CRoom::GetMembers()
+{
+	YYTKInterface* module_interface = GetYYTKInterface();
+
+	// Return the more likely thing.
+	if (!module_interface)
+		return this->WithBackgrounds.Internals;
+
+	size_t bg_color_idx = 0;
+	AurieStatus last_status = module_interface->GetBuiltinVariableIndex(
+		"background_color",
+		bg_color_idx
+	);
+
+	// This lookup will fail in newer runners where backgrounds were removed
+	if (!AurieSuccess(last_status))
+	{
+		// Note: We have to craft the pointer manually here, since
+		// bool alignment prevents us from just having a struct (it'd get aligned to sizeof(PVOID)).
+
+		// Don't ask why it's from m_Color and not from m_ShowColor, it doesn't make sense
+		// and I can't figure out why it works - it just does.
+		return *reinterpret_cast<CRoomInternal*>(&this->m_Color);
+	}
+
+	return this->WithBackgrounds.Internals;
+}
+
 #endif // YYTK_DEFINE_INTERNAL

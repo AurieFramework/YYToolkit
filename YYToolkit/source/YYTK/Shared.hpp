@@ -9,7 +9,7 @@
 
 #define YYTK_MAJOR 3
 #define YYTK_MINOR 4
-#define YYTK_PATCH 2
+#define YYTK_PATCH 3
 
 #ifndef YYTK_CPP_VERSION
 #ifndef _MSVC_LANG
@@ -2251,19 +2251,9 @@ namespace YYTK
 	static_assert(sizeof(CArrayStructure<int>) == 0x10);
 #endif // _WIN64
 
-	// Seems to be mostly stable, some elements at the end are however omitted
-	struct CRoom
+	struct CRoomInternal
 	{
-		int32_t m_LastTile;
-		CRoom* m_InstanceHandle;
-		const char* m_Caption;
-		int32_t m_Speed;
-		int32_t m_Width;
-		int32_t m_Height;
-		bool m_Persistent;
-		uint32_t m_Color;
-		bool m_ShowColor;
-		CBackGM* m_Backgrounds[8];
+		// CBackGM* m_Backgrounds[8];
 		bool m_EnableViews;
 		bool m_ClearScreen;
 		bool m_ClearDisplayBuffer;
@@ -2300,6 +2290,35 @@ namespace YYTK
 		int32_t* m_EffectLayerIDs;
 		int32_t m_EffectLayerIdCount;
 		int32_t m_EffectLayerIdMax;
+	};
+
+	// Seems to be mostly stable, some elements at the end are however omitted
+	struct CRoom
+	{
+		int32_t m_LastTile;
+		CRoom* m_InstanceHandle;
+		const char* m_Caption;
+		int32_t m_Speed;
+		int32_t m_Width;
+		int32_t m_Height;
+		bool m_Persistent;
+		uint32_t m_Color;
+		bool m_ShowColor;
+	private:
+
+		// Last confirmed use in 2023.8, might be later even
+		struct
+		{
+			CBackGM* Backgrounds[8];
+			CRoomInternal Internals;
+		} WithBackgrounds;
+
+		// 2024.6 (first confirmed use) has Backgrounds removed.
+		// CRoomInternal cannot be properly aligned (due to bool having 1-byte alignment),
+		// so GetMembers() crafts the pointer manually instead of having a defined struct here.
+
+	public:
+		CRoomInternal& GetMembers();
 	};
 #ifdef _WIN64
 	static_assert(sizeof(CRoom) == 0x218);
