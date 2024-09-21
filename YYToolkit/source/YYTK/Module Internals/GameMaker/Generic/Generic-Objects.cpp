@@ -144,6 +144,32 @@ namespace YYTK
 			We therefore know that the there are only two function calls, and we know the address of one of them.
 			The following code disassembles F_CopyStatic, and looks for the first call that's not YYGetInt32.
 			That will be our ScriptData() call.
+
+
+			===== WARNING =====
+			Some time after the 2024.1 release, F_CopyStatic has been changed to make the method no longer work!
+
+			The function has changed to instead forcibly create a prototype if none exists, something like:
+			void F_CopyStatic(RValue& Result, CInstance* SelfInstance, CInstance* OtherInstance, int ArgumentCount, RValue* Arguments)
+			{
+				int32_t script_index = YYGetInt32(Arguments, 0);
+				if (script_index >= 100000)
+					script_index -= 100000;
+
+				// If no prototype exists, create one.
+				YYObjectBase* prototype = g_pCurrentExec->pCCode->i_pPrototype;
+				if ( !i_pPrototype )
+				{
+					i_pPrototype = Code_CreateStatic();
+
+					// ...
+				}
+
+				CScript* script = ScriptData(script_index);
+				// ...
+			}
+
+			This breaks the first-call technique, since that will now instead fall into Code_CreateStatic!
 		*/
 
 		// Disassemble 256 bytes at the function
@@ -181,6 +207,31 @@ namespace YYTK
 			// Skip the first YYGetInt32 call
 			if (call_address == reinterpret_cast<ZyanU64>(Interface.YYGetInt32))
 				continue;
+
+			// We have an unknown function that's called from F_CopyStatic and isn't YYGetInt32!
+			// 
+			// Analyze the first few instructions. There should be no more calls from ScriptData, 
+			// but there are calls from all the other functions that falsely pass the above check.
+
+			auto target_function_instructions = GmpDisassemble(
+				reinterpret_cast<PVOID>(call_address),
+				0x30,
+				0xFFF
+			);
+
+			// If we find a call instruction anywhere...
+			if (std::find_if(
+				target_function_instructions.cbegin(),
+				target_function_instructions.cend(),
+				[](const TargettedInstruction& Instruction)
+				{
+					return Instruction.RawForm.info.mnemonic == ZYDIS_MNEMONIC_CALL;
+				}
+			) != std::cend(target_function_instructions))
+			{
+				// ... it's not our function.
+				continue;
+			}
 
 			// Determine the call instruction's target
 			*ScriptData = reinterpret_cast<FNScriptData>(call_address);
