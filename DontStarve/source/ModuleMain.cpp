@@ -1,15 +1,20 @@
 #include <map>
+#include <cmath>
 #include <YYToolkit/Shared.hpp>
 using namespace Aurie;
 using namespace YYTK;
 
 static YYTKInterface* g_ModuleInterface = nullptr;
-static int ari_hunger_value = 100;
+static int ari_hunger_value = 5;
 static bool ari_is_hungry = false;
 static bool is_tracked_time_interval = false;
 static int time_of_last_tick = 0; // TODO: Set this on file load.
 static int held_item_id = -1;
 static std::string held_item_name;
+static bool game_is_active = false;
+
+static bool use_health_instead_of_stamina = false;
+static int hunger_stamina_health_penatly = 1;
 
 static std::map<std::string, int> item_name_to_stars_map = {
 	// Forage
@@ -240,6 +245,8 @@ void ObjectCallback(
 	if (!strstr(self->m_Object->m_Name, "obj_ari"))
 		return;
 
+	//--------------------------------------------------------
+	// TODO: Move this to its own function.
 	CInstance* global_instance = nullptr;
 	g_ModuleInterface->GetGlobalInstance(&global_instance);
 
@@ -264,6 +271,34 @@ void ObjectCallback(
 		}
 	}
 	delete health_penalty;
+
+	//--------------------------------------------------------
+
+	if (use_health_instead_of_stamina) {
+		use_health_instead_of_stamina = false;
+
+		global_instance = nullptr;
+		g_ModuleInterface->GetGlobalInstance(&global_instance);
+
+		script_object = nullptr;
+		g_ModuleInterface->GetNamedRoutinePointer(
+			"gml_Script_modify_health@Ari@Ari",
+			(PVOID*)&script_object
+		);
+
+		health_penalty = new RValue(-5.0);
+		RValue result;
+		script_object->m_Functions->m_ScriptFunction(
+			global_instance->at("__ari").m_Object,
+			self,
+			result,
+			1,
+			{ &health_penalty }
+		);
+			
+		delete health_penalty;
+	}
+
 }
 
 RValue& GmlScriptGetMinutesCallback(
@@ -276,8 +311,8 @@ RValue& GmlScriptGetMinutesCallback(
 {
 	const PFUNC_YYGMLScript original = reinterpret_cast<PFUNC_YYGMLScript>(MmGetHookTrampoline(g_ArSelfModule, "gml_Script_get_minutes"));
 
-	if (time_of_last_tick == 0) {
-		time_of_last_tick = Arguments[0]->m_i64 + 0;
+	if (game_is_active && time_of_last_tick == 0) {
+		time_of_last_tick = 21600;
 	}
 
 	if (Arguments[0]->m_i64 % 1800 == 0 && !is_tracked_time_interval && (Arguments[0]->m_i64 - time_of_last_tick) >= 1800) {
@@ -303,7 +338,7 @@ RValue& GmlScriptGetMinutesCallback(
 	return Result;
 }
 
-RValue& GmlScriptModifyHealthCallback(
+RValue& GmlScriptModifyStaminaCallback(
 	IN CInstance* Self,
 	IN CInstance* Other,
 	OUT RValue& Result,
@@ -311,7 +346,7 @@ RValue& GmlScriptModifyHealthCallback(
 	IN RValue** Arguments
 )
 {
-	const PFUNC_YYGMLScript original = reinterpret_cast<PFUNC_YYGMLScript>(MmGetHookTrampoline(g_ArSelfModule, "modify_health"));
+	const PFUNC_YYGMLScript original = reinterpret_cast<PFUNC_YYGMLScript>(MmGetHookTrampoline(g_ArSelfModule, "gml_Script_modify_stamina@Ari@Ari"));
 	if (Arguments[0]->m_Real >= 0) {
 		CScript* gml_script_item_id_to_name = nullptr;
 		g_ModuleInterface->GetNamedRoutinePointer(
@@ -333,18 +368,37 @@ RValue& GmlScriptModifyHealthCallback(
 
 		if (item_name_to_stars_map.count(item_id_as_string.AsString().data()) > 0)
 		{
-			ari_hunger_value += item_name_to_stars_map[item_id_as_string.AsString().data()];
+			ari_hunger_value += 2 * item_name_to_stars_map[item_id_as_string.AsString().data()]; // TODO: Testing 2x multiplier for balancing.
 			if (ari_hunger_value > 100) {
 				ari_hunger_value = 100;
 			}
-			g_ModuleInterface->Print(CM_AQUA, "[DontStarve] - Increased hunger meter by %d!", item_name_to_stars_map[item_id_as_string.AsString().data()]);
+			g_ModuleInterface->Print(CM_LIGHTGREEN, "[DontStarve] - Increased hunger meter by %d!", item_name_to_stars_map[item_id_as_string.AsString().data()]);
 		}
 		else {
+			ari_hunger_value -= Arguments[0]->m_Real;
 			g_ModuleInterface->Print(CM_LIGHTYELLOW, "[DontStarve] - Item not in hunger lookup dictionary: (%d) %s", item_id, item_id_as_string.AsString().data());
+			g_ModuleInterface->Print(CM_LIGHTGREEN, "[DontStarve] - Increased hunger meter by %d!", static_cast<int>(Arguments[0]->m_Real));
 
 		}
 
 		delete item_id;
+	}
+	else {
+		//g_ModuleInterface->Print(CM_LIGHTYELLOW, "[DontStarve] - Stamina cost was: %d", static_cast<int>(Arguments[0]->m_Real));
+		int temp = ari_hunger_value += Arguments[0]->m_Real;
+		if (temp < 0) {
+			use_health_instead_of_stamina = true;
+			hunger_stamina_health_penatly = abs(temp);
+			ari_hunger_value = 0;
+			g_ModuleInterface->Print(CM_LIGHTGREEN, "[DontStarve] - Hunger meter depleted! Decreased health by %d!", hunger_stamina_health_penatly);
+		}
+		else {
+			ari_hunger_value += Arguments[0]->m_Real;
+			if (ari_hunger_value < 0) {
+				ari_hunger_value = 0;
+			}
+			g_ModuleInterface->Print(CM_LIGHTGREEN, "[DontStarve] - Decreased hunger meter by %d!", static_cast<int>(Arguments[0]->m_Real));
+		}
 	}
 
 	original(
@@ -375,7 +429,7 @@ RValue& GmlScriptOnDrawGuiCallback(
 		Arguments
 	);
 
-	if (!GameIsPaused())
+	if (game_is_active && !GameIsPaused())
 	{
 		// Hunger Bar Icon
 		RValue hunger_bar_icon_sprite_index = g_ModuleInterface->CallBuiltin(
@@ -394,17 +448,39 @@ RValue& GmlScriptOnDrawGuiCallback(
 		g_ModuleInterface->CallBuiltin(
 			"draw_set_color", {
 			 4235519  // c_orange
-			});
+			}
+		);
 
 		int x1 = 50 + 9;
 		int y1 = 115 + 5;
-		int x2 = x1 + ari_hunger_value * 2; //200; // use hunger level here
+		int x2 = x1 + ari_hunger_value * 2;
 		int y2 = 115 + 40;
 		g_ModuleInterface->CallBuiltin(
 			"draw_rectangle", {
 				x1, y1, x2, y2, false
 			}
 		);
+
+		g_ModuleInterface->Print(CM_AQUA, "[DontStarve] - Orange Rectangle Coordinates: %d, %d, %d, %d", x1, y1, x2, y2);
+
+		// Hunger Bar (Black)
+		g_ModuleInterface->CallBuiltin(
+			"draw_set_color", {
+			 0  // c_black
+			}
+		);
+
+		int _x1 = x2 + 1;
+		int _y1 = 115 + 5;
+		int _x2 = _x1 + ((100 - ari_hunger_value) * 2);
+		int _y2 = 115 + 40;
+		g_ModuleInterface->CallBuiltin(
+			"draw_rectangle", {
+				_x1, _y1, _x2, _y2, false
+			}
+		);
+
+		g_ModuleInterface->Print(CM_AQUA, "[DontStarve] - Black Rectangle Coordinates: %d, %d, %d, %d", _x1, _y1, _x2, _y2);
 
 		// Hunger Bar (Border)
 		RValue hunger_bar_sprite_index = g_ModuleInterface->CallBuiltin(
@@ -470,6 +546,100 @@ RValue& GmlScriptHeldItemCallback(
 	return Result;
 }
 
+RValue& GmlScriptSetupMainScreenCallback(
+	IN CInstance* Self,
+	IN CInstance* Other,
+	OUT RValue& Result,
+	IN int ArgumentCount,
+	IN RValue** Arguments
+)
+{
+	game_is_active = false;
+	time_of_last_tick = 0;
+	ari_hunger_value = 5;
+
+	const PFUNC_YYGMLScript original = reinterpret_cast<PFUNC_YYGMLScript>(MmGetHookTrampoline(g_ArSelfModule, "gml_Script_setup_main_screen@TitleMenu@TitleMenu"));
+	original(
+		Self,
+		Other,
+		Result,
+		ArgumentCount,
+		Arguments
+	);
+
+	return Result;
+}
+
+RValue& GmlScriptGetWeatherCallback(
+	IN CInstance* Self,
+	IN CInstance* Other,
+	OUT RValue& Result,
+	IN int ArgumentCount,
+	IN RValue** Arguments
+)
+{
+	game_is_active = true;
+
+	const PFUNC_YYGMLScript original = reinterpret_cast<PFUNC_YYGMLScript>(MmGetHookTrampoline(g_ArSelfModule, "gml_Script_get_weather@WeatherManager@Weather"));
+	original(
+		Self,
+		Other,
+		Result,
+		ArgumentCount,
+		Arguments
+	);
+
+	return Result;
+}
+
+RValue& GmlScriptSetTimeCallback(
+	IN CInstance* Self,
+	IN CInstance* Other,
+	OUT RValue& Result,
+	IN int ArgumentCount,
+	IN RValue** Arguments
+)
+{
+	if (time_of_last_tick == 0)
+	{
+		time_of_last_tick = Arguments[0]->m_i64;
+	}
+
+	const PFUNC_YYGMLScript original = reinterpret_cast<PFUNC_YYGMLScript>(MmGetHookTrampoline(g_ArSelfModule, "gml_Script_set_time@Clock@Clock"));
+	original(
+		Self,
+		Other,
+		Result,
+		ArgumentCount,
+		Arguments
+	);
+
+	return Result;
+}
+
+RValue& TestHookCallback(
+	IN CInstance* Self,
+	IN CInstance* Other,
+	OUT RValue& Result,
+	IN int ArgumentCount,
+	IN RValue** Arguments
+)
+{
+	// end of day testing: gml_Script_end_day
+	time_of_last_tick = 0;
+
+	const PFUNC_YYGMLScript original = reinterpret_cast<PFUNC_YYGMLScript>(MmGetHookTrampoline(g_ArSelfModule, "TestHook"));
+	original(
+		Self,
+		Other,
+		Result,
+		ArgumentCount,
+		Arguments
+	);
+
+	return Result;
+}
+
 void CreateHookGmlScriptGetMinutes(AurieStatus &status)
 {
 	CScript* gml_script_get_minutes = nullptr;
@@ -497,30 +667,30 @@ void CreateHookGmlScriptGetMinutes(AurieStatus &status)
 	}
 }
 
-void CreateHookGmlScriptModifyHealth(AurieStatus &status)
+void CreateHookGmlScriptModifyStamina(AurieStatus &status)
 {
-	CScript* gml_script_modify_health = nullptr;
+	CScript* gml_script_modify_stamina = nullptr;
 	status = g_ModuleInterface->GetNamedRoutinePointer(
-		"gml_Script_modify_health@Ari@Ari",
-		(PVOID*)&gml_script_modify_health
+		"gml_Script_modify_stamina@Ari@Ari",
+		(PVOID*)&gml_script_modify_stamina
 	);
 
 	if (!AurieSuccess(status))
 	{
-		g_ModuleInterface->Print(CM_LIGHTRED, "[DontStarve] - Failed to get script (gml_Script_modify_health@Ari@Ari)!");
+		g_ModuleInterface->Print(CM_LIGHTRED, "[DontStarve] - Failed to get script (gml_Script_modify_stamina@Ari@Ari)!");
 	}
 
 	status = MmCreateHook(
 		g_ArSelfModule,
-		"modify_health",
-		gml_script_modify_health->m_Functions->m_ScriptFunction,
-		GmlScriptModifyHealthCallback,
+		"gml_Script_modify_stamina@Ari@Ari",
+		gml_script_modify_stamina->m_Functions->m_ScriptFunction,
+		GmlScriptModifyStaminaCallback,
 		nullptr
 	);
 
 	if (!AurieSuccess(status))
 	{
-		g_ModuleInterface->Print(CM_LIGHTRED, "[DontStarve] - Failed to hook script (gml_Script_modify_health@Ari@Ari)!");
+		g_ModuleInterface->Print(CM_LIGHTRED, "[DontStarve] - Failed to hook script (gml_Script_modify_stamina@Ari@Ari)!");
 	}
 }
 
@@ -579,7 +749,116 @@ void CreateHookGmlScriptHeldItem(AurieStatus& status)
 	}
 }
 
+void CreateHookGmlScriptSetupMainScreen(AurieStatus& status)
+{
+	CScript* gml_script_setup_main_screen = nullptr;
+	status = g_ModuleInterface->GetNamedRoutinePointer(
+		"gml_Script_setup_main_screen@TitleMenu@TitleMenu",
+		(PVOID*)&gml_script_setup_main_screen
+	);
 
+	if (!AurieSuccess(status))
+	{
+		g_ModuleInterface->Print(CM_LIGHTGREEN, "[DontStarve] - Failed to get script (gml_Script_setup_main_screen@TitleMenu@TitleMenu)!");
+	}
+
+	status = MmCreateHook(
+		g_ArSelfModule,
+		"gml_Script_setup_main_screen@TitleMenu@TitleMenu",
+		gml_script_setup_main_screen->m_Functions->m_ScriptFunction,
+		GmlScriptSetupMainScreenCallback,
+		nullptr
+	);
+
+
+	if (!AurieSuccess(status))
+	{
+		g_ModuleInterface->Print(CM_LIGHTGREEN, "[DontStarve] - Failed to hook script (gml_Script_setup_main_screen@TitleMenu@TitleMenu)!");
+	}
+}
+
+void CreateHookGmlScriptGetWeather(AurieStatus& status)
+{
+	CScript* gml_script_get_weather = nullptr;
+	status = g_ModuleInterface->GetNamedRoutinePointer(
+		"gml_Script_get_weather@WeatherManager@Weather",
+		(PVOID*)&gml_script_get_weather
+	);
+
+	if (!AurieSuccess(status))
+	{
+		g_ModuleInterface->Print(CM_LIGHTGREEN, "[DontStarve] - Failed to get script (gml_Script_get_weather@WeatherManager@Weather)!");
+	}
+
+	status = MmCreateHook(
+		g_ArSelfModule,
+		"gml_Script_get_weather@WeatherManager@Weather",
+		gml_script_get_weather->m_Functions->m_ScriptFunction,
+		GmlScriptGetWeatherCallback,
+		nullptr
+	);
+
+
+	if (!AurieSuccess(status))
+	{
+		g_ModuleInterface->Print(CM_LIGHTGREEN, "[DontStarve] - Failed to hook script (gml_Script_get_weather@WeatherManager@Weather)!");
+	}
+}
+
+void CreateHookGmlScriptSetTime(AurieStatus& status)
+{
+	CScript* gml_script_set_time = nullptr;
+	status = g_ModuleInterface->GetNamedRoutinePointer(
+		"gml_Script_set_time@Clock@Clock",
+		(PVOID*)&gml_script_set_time
+	);
+
+	if (!AurieSuccess(status))
+	{
+		g_ModuleInterface->Print(CM_LIGHTGREEN, "[DontStarve] - Failed to get script (gml_Script_set_time@Clock@Clock)!");
+	}
+
+	status = MmCreateHook(
+		g_ArSelfModule,
+		"gml_Script_set_time@Clock@Clock",
+		gml_script_set_time->m_Functions->m_ScriptFunction,
+		GmlScriptSetTimeCallback,
+		nullptr
+	);
+
+
+	if (!AurieSuccess(status))
+	{
+		g_ModuleInterface->Print(CM_LIGHTGREEN, "[DontStarve] - Failed to hook script gml_Script_set_time@Clock@Clock)!");
+	}
+}
+
+void CreateTestHook(AurieStatus& status, const char* script_name)
+{
+	CScript* gml_script = nullptr;
+	status = g_ModuleInterface->GetNamedRoutinePointer(
+		script_name,
+		(PVOID*)&gml_script
+	);
+
+	if (!AurieSuccess(status))
+	{
+		g_ModuleInterface->Print(CM_LIGHTGREEN, "[DontStarve] - Failed to get script (%s)!", script_name);
+	}
+
+	status = MmCreateHook(
+		g_ArSelfModule,
+		"TestHook",
+		gml_script->m_Functions->m_ScriptFunction,
+		TestHookCallback,
+		nullptr
+	);
+
+	if (!AurieSuccess(status))
+	{
+		g_ModuleInterface->Print(CM_LIGHTGREEN, "[DontStarve] - Failed to hook script (%s)!", script_name);
+	}
+}
 
 EXPORTED AurieStatus ModuleInitialize(
 	IN AurieModule* Module,
@@ -621,7 +900,7 @@ EXPORTED AurieStatus ModuleInitialize(
 		return status;
 	}
 
-	CreateHookGmlScriptModifyHealth(status);
+	CreateHookGmlScriptModifyStamina(status);
 	if (!AurieSuccess(status))
 	{
 		g_ModuleInterface->Print(CM_LIGHTRED, "[DontStarve] - Exiting due to failure on start!");
@@ -636,6 +915,34 @@ EXPORTED AurieStatus ModuleInitialize(
 	}
 
 	CreateHookGmlScriptHeldItem(status);
+	if (!AurieSuccess(status))
+	{
+		g_ModuleInterface->Print(CM_LIGHTRED, "[DontStarve] - Exiting due to failure on start!");
+		return status;
+	}
+
+	CreateHookGmlScriptSetupMainScreen(status);
+	if (!AurieSuccess(status))
+	{
+		g_ModuleInterface->Print(CM_LIGHTRED, "[DontStarve] - Exiting due to failure on start!");
+		return status;
+	}
+
+	CreateHookGmlScriptGetWeather(status);
+	if (!AurieSuccess(status))
+	{
+		g_ModuleInterface->Print(CM_LIGHTRED, "[DontStarve] - Exiting due to failure on start!");
+		return status;
+	}
+
+	CreateHookGmlScriptSetTime(status);
+	if (!AurieSuccess(status))
+	{
+		g_ModuleInterface->Print(CM_LIGHTRED, "[DontStarve] - Exiting due to failure on start!");
+		return status;
+	}
+
+	CreateTestHook(status, "gml_Script_end_day");
 	if (!AurieSuccess(status))
 	{
 		g_ModuleInterface->Print(CM_LIGHTRED, "[DontStarve] - Exiting due to failure on start!");
