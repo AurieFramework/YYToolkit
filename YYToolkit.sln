@@ -13,6 +13,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DontStarve", "DontStarve\Do
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Telepop", "Telepop\Telepop.vcxproj", "{4AEB7505-187E-4CC6-9BB0-A59EB42074AD}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Zoomies", "Zoomies\Zoomies.vcxproj", "{A8486853-6491-4BDF-9F90-B5E0D9E85A31}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -61,6 +63,14 @@ Global
 		{4AEB7505-187E-4CC6-9BB0-A59EB42074AD}.Release|x64.Build.0 = Release|x64
 		{4AEB7505-187E-4CC6-9BB0-A59EB42074AD}.Release|x86.ActiveCfg = Release|Win32
 		{4AEB7505-187E-4CC6-9BB0-A59EB42074AD}.Release|x86.Build.0 = Release|Win32
+		{A8486853-6491-4BDF-9F90-B5E0D9E85A31}.Debug|x64.ActiveCfg = Debug|x64
+		{A8486853-6491-4BDF-9F90-B5E0D9E85A31}.Debug|x64.Build.0 = Debug|x64
+		{A8486853-6491-4BDF-9F90-B5E0D9E85A31}.Debug|x86.ActiveCfg = Debug|Win32
+		{A8486853-6491-4BDF-9F90-B5E0D9E85A31}.Debug|x86.Build.0 = Debug|Win32
+		{A8486853-6491-4BDF-9F90-B5E0D9E85A31}.Release|x64.ActiveCfg = Release|x64
+		{A8486853-6491-4BDF-9F90-B5E0D9E85A31}.Release|x64.Build.0 = Release|x64
+		{A8486853-6491-4BDF-9F90-B5E0D9E85A31}.Release|x86.ActiveCfg = Release|Win32
+		{A8486853-6491-4BDF-9F90-B5E0D9E85A31}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
