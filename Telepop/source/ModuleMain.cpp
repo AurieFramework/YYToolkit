@@ -2,73 +2,28 @@
 using namespace Aurie;
 using namespace YYTK;
 
-static YYTKInterface* g_ModuleInterface = nullptr;
-static int held_item_id = -1;
-static bool teleport_ari = false;
+static const int INVALID_ITEM_ID = -1;
+static const int BLACKBERRY_JAM_ITEM_ID = 113;
+static const int BLUEBERRY_JAM_ITEM_ID = 116;
+static const int MARMALADE_ITEM_ID = 798;
+static const int ROSEHIP_JAM_ITEM_ID = 1047;
 
-// -----------------
-// 8 = beach (1722, 505)
-// 25 = farm (809, 306)
-// 46 = mines (216, 198)
-// 56 = town (1097, 1323)
-static int teleportation_id = 56;
+static const int MINES_LOCATION_ID = 46;
+static const int BEACH_LOCATION_ID = 8;
+static const int TOWN_LOCATION_ID = 56;
+static const int FARM_LOCATION_ID = 25;
+
+static const std::tuple<int, int> MINES_TELEPORT_POINT = std::make_tuple(216, 198);
+static const std::tuple<int, int> BEACH_TELEPORT_POINT = std::make_tuple(1722, 505);
+static const std::tuple<int, int> TOWN_TELEPORT_POINT = std::make_tuple(1097, 1323);
+static const std::tuple<int, int> FARM_TELEPORT_POINT = std::make_tuple(809, 306);
+
+static YYTKInterface* g_ModuleInterface = nullptr;
+static int held_item_id = INVALID_ITEM_ID;
+static int telepop_destination_id = INVALID_ITEM_ID;
+static bool teleport_ari = false;
 static bool reposition_ari = false;
 static bool room_loaded = false;
-static int frame_counter = 0;
-static int ari_x = 0;
-static int ari_y = 0;
-// ------------------
-
-void FrameCallback(FWFrame& FrameContext)
-{
-	UNREFERENCED_PARAMETER(FrameContext);
-
-	if (GetAsyncKeyState(VK_PAUSE) & 1)
-	{
-		RValue integer_result = g_ModuleInterface->CallBuiltin(
-			"get_integer",
-			{
-				"Please input a teleportation ID.",
-				teleportation_id
-			}
-		);
-
-		if (integer_result.m_Kind != VALUE_UNDEFINED && integer_result.m_Kind != VALUE_UNSET)
-		{
-			teleportation_id = static_cast<int16_t>(integer_result.AsReal());
-		}
-	}
-	if (GetAsyncKeyState(VK_INSERT) & 1)
-	{
-		RValue x_coordinate = g_ModuleInterface->CallBuiltin(
-			"get_integer",
-			{
-				"Please input an X coordinate.",
-				ari_x
-			}
-		);
-
-		if (x_coordinate.m_Kind != VALUE_UNDEFINED && x_coordinate.m_Kind != VALUE_UNSET)
-		{
-			ari_x = static_cast<int16_t>(x_coordinate.AsReal());
-		}
-
-		RValue y_coordinate = g_ModuleInterface->CallBuiltin(
-			"get_integer",
-			{
-				"Please input an Y coordinate.",
-				ari_y
-			}
-		);
-
-		if (y_coordinate.m_Kind != VALUE_UNDEFINED && y_coordinate.m_Kind != VALUE_UNSET)
-		{
-			ari_y = static_cast<int16_t>(y_coordinate.AsReal());
-		}
-	}
-
-	frame_counter++;
-}
 
 void ObjectCallback(
 	IN FWCodeEvent& CodeEvent
@@ -85,64 +40,63 @@ void ObjectCallback(
 	if (!strstr(self->m_Object->m_Name, "obj_ari"))
 		return;
 
-	// ------------------------
-	RValue x;
-	g_ModuleInterface->GetBuiltin(
-		"x",
-		self,
-		NULL_INDEX,
-		x
-	);
-	RValue y;
-	g_ModuleInterface->GetBuiltin(
-		"y",
-		self,
-		NULL_INDEX,
-		y
-	);
-	if (frame_counter % 300 == 0) {
-		g_ModuleInterface->Print(CM_AQUA, "[Telepop] - X,Y COORDS: %f, %f", x.m_Real, y.m_Real);
-	}
-	// ------------------------
-
 	if (teleport_ari)
 	{
-		CScript* gml_script_item_id_to_name = nullptr;
+		CScript* gml_script_goto_location_id = nullptr;
 		g_ModuleInterface->GetNamedRoutinePointer(
 			"gml_Script_goto_location_id",
-			(PVOID*)&gml_script_item_id_to_name
+			(PVOID*)&gml_script_goto_location_id
 		);
 
 		RValue retval;
-		RValue* location_id = new RValue(teleportation_id);
-		gml_script_item_id_to_name->m_Functions->m_ScriptFunction(
+		RValue* location_id = new RValue(telepop_destination_id);
+		gml_script_goto_location_id->m_Functions->m_ScriptFunction(
 			self,
 			other,
 			retval,
 			1,
 			{ &location_id }
 		);
-
 		delete location_id;
+
 		teleport_ari = false;
-		held_item_id = -1;
+		reposition_ari = true;
 
 		g_ModuleInterface->Print(CM_LIGHTGREEN, "[Telepop] - Ari teleported to Town!");
-
-		// --------------------
-		reposition_ari = true;
 	}
 	else if (reposition_ari && room_loaded) {
-		RValue goto_x = ari_x;
-		RValue goto_y = ari_y;
-		g_ModuleInterface->SetBuiltin("x", self, NULL_INDEX, goto_x);
-		g_ModuleInterface->SetBuiltin("y", self, NULL_INDEX, goto_y);
+		RValue x;
+		RValue y;
+		
+		if (telepop_destination_id == MINES_LOCATION_ID) {
+			x = std::get<0>(MINES_TELEPORT_POINT);
+			y = std::get<1>(MINES_TELEPORT_POINT);
+		}
+
+		if (telepop_destination_id == BEACH_LOCATION_ID) {
+			x = std::get<0>(BEACH_TELEPORT_POINT);
+			y = std::get<1>(BEACH_TELEPORT_POINT);
+		}
+
+		if (telepop_destination_id == TOWN_LOCATION_ID) {
+			x = std::get<0>(TOWN_TELEPORT_POINT);
+			y = std::get<1>(TOWN_TELEPORT_POINT);
+		}
+
+		if (telepop_destination_id == FARM_LOCATION_ID) {
+			x = std::get<0>(FARM_TELEPORT_POINT);
+			y = std::get<1>(FARM_TELEPORT_POINT);
+		}
+
+		g_ModuleInterface->SetBuiltin("x", self, NULL_INDEX, x);
+		g_ModuleInterface->SetBuiltin("y", self, NULL_INDEX, y);
+
+		held_item_id = INVALID_ITEM_ID;
+		telepop_destination_id = INVALID_ITEM_ID;
 
 		reposition_ari = false;
 		room_loaded = false;
 	}
-
-
 }
 
 RValue& GmlScriptHeldItemCallback(
@@ -181,9 +135,28 @@ RValue& GmlScriptModifyStaminaCallback(
 	IN RValue** Arguments
 )
 {
-	if (held_item_id == 1047) {
+	if (held_item_id == BLACKBERRY_JAM_ITEM_ID) {
 		teleport_ari = true;
-		held_item_id = -1;
+		telepop_destination_id = MINES_LOCATION_ID;
+		held_item_id = INVALID_ITEM_ID;
+	}
+
+	if (held_item_id == BLUEBERRY_JAM_ITEM_ID) {
+		teleport_ari = true;
+		telepop_destination_id = BEACH_LOCATION_ID;
+		held_item_id = INVALID_ITEM_ID;
+	}
+
+	if (held_item_id == MARMALADE_ITEM_ID) {
+		teleport_ari = true;
+		telepop_destination_id = TOWN_LOCATION_ID;
+		held_item_id = INVALID_ITEM_ID;
+	}
+
+	if (held_item_id == ROSEHIP_JAM_ITEM_ID) {
+		teleport_ari = true;
+		telepop_destination_id = FARM_LOCATION_ID;
+		held_item_id = INVALID_ITEM_ID;
 	}
 
 	const PFUNC_YYGMLScript original = reinterpret_cast<PFUNC_YYGMLScript>(MmGetHookTrampoline(g_ArSelfModule, "gml_Script_modify_stamina@Ari@Ari"));
@@ -211,6 +184,31 @@ RValue& GmlScriptShowRoomTitleCallback(
 	}
 
 	const PFUNC_YYGMLScript original = reinterpret_cast<PFUNC_YYGMLScript>(MmGetHookTrampoline(g_ArSelfModule, "gml_Script_show_room_title"));
+	original(
+		Self,
+		Other,
+		Result,
+		ArgumentCount,
+		Arguments
+	);
+
+	return Result;
+}
+
+RValue& GmlScriptSetupMainScreenCallback(
+	IN CInstance* Self,
+	IN CInstance* Other,
+	OUT RValue& Result,
+	IN int ArgumentCount,
+	IN RValue** Arguments
+)
+{
+	held_item_id = INVALID_ITEM_ID;
+	telepop_destination_id = INVALID_ITEM_ID;
+	teleport_ari = false;
+	room_loaded = false;
+
+	const PFUNC_YYGMLScript original = reinterpret_cast<PFUNC_YYGMLScript>(MmGetHookTrampoline(g_ArSelfModule, "gml_Script_setup_main_screen@TitleMenu@TitleMenu"));
 	original(
 		Self,
 		Other,
@@ -304,6 +302,34 @@ void CreateHookGmlScriptShowRoomTitle(AurieStatus& status)
 	}
 }
 
+void CreateHookGmlScriptSetupMainScreen(AurieStatus& status)
+{
+	CScript* gml_script_setup_main_screen = nullptr;
+	status = g_ModuleInterface->GetNamedRoutinePointer(
+		"gml_Script_setup_main_screen@TitleMenu@TitleMenu",
+		(PVOID*)&gml_script_setup_main_screen
+	);
+
+	if (!AurieSuccess(status))
+	{
+		g_ModuleInterface->Print(CM_LIGHTGREEN, "[DontStarve] - Failed to get script (gml_Script_setup_main_screen@TitleMenu@TitleMenu)!");
+	}
+
+	status = MmCreateHook(
+		g_ArSelfModule,
+		"gml_Script_setup_main_screen@TitleMenu@TitleMenu",
+		gml_script_setup_main_screen->m_Functions->m_ScriptFunction,
+		GmlScriptSetupMainScreenCallback,
+		nullptr
+	);
+
+
+	if (!AurieSuccess(status))
+	{
+		g_ModuleInterface->Print(CM_LIGHTGREEN, "[DontStarve] - Failed to hook script (gml_Script_setup_main_screen@TitleMenu@TitleMenu)!");
+	}
+}
+
 EXPORTED AurieStatus ModuleInitialize(
 	IN AurieModule* Module,
 	IN const fs::path& ModulePath
@@ -323,13 +349,6 @@ EXPORTED AurieStatus ModuleInitialize(
 
 	g_ModuleInterface->Print(CM_LIGHTYELLOW, "[Telepop] - Plugin starting...");
 	
-	g_ModuleInterface->CreateCallback(
-		Module,
-		EVENT_FRAME,
-		FrameCallback,
-		0
-	);
-
 	g_ModuleInterface->CreateCallback(
 		g_ArSelfModule,
 		EVENT_OBJECT_CALL,
@@ -352,6 +371,13 @@ EXPORTED AurieStatus ModuleInitialize(
 	}
 
 	CreateHookGmlScriptShowRoomTitle(status);
+	if (!AurieSuccess(status))
+	{
+		g_ModuleInterface->Print(CM_LIGHTRED, "[Telepop] - Exiting due to failure on start!");
+		return status;
+	}
+
+	CreateHookGmlScriptSetupMainScreen(status);
 	if (!AurieSuccess(status))
 	{
 		g_ModuleInterface->Print(CM_LIGHTRED, "[Telepop] - Exiting due to failure on start!");
