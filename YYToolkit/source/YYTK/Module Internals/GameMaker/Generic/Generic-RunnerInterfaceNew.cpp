@@ -67,7 +67,7 @@ namespace YYTK
 	}
 
 	void GmpRunnerInterfaceHook(
-		IN ProcessorContext64& ProcessorContext
+		IN ProcessorContext& ProcessorContext
 	)
 	{
 #if _WIN64

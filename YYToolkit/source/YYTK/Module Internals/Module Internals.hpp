@@ -73,7 +73,7 @@ namespace YYTK
 	);
 
 	void GmpRunnerInterfaceHook(
-		IN Aurie::ProcessorContext64& Function
+		IN Aurie::ProcessorContext& Function
 	);
 
 	void YYExtensionInitializeDummy(
