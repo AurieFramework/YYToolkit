@@ -49,7 +49,7 @@ namespace YYTK
 
 		// Write credits
 		SetConsoleTitleA("YYToolkit Log");
-		CmWriteOutput(CM_LIGHTBLUE, "YYToolkit by @archie_uwu");
+		CmWriteOutput(CM_LIGHTBLUE, "YYToolkit v%d.%d.%d by @archie_uwu", YYTK_MAJOR, YYTK_MINOR, YYTK_PATCH);
 	}
 
 	void CmWriteInfo(

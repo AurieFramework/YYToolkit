@@ -72,14 +72,18 @@ namespace YYTK
 		OUT YYRunnerInterface& Interface
 	);
 
-	bool GmpHandleInterfaceCreationBP(
-		IN PVOID ProcessorContext,
-		IN uint32_t ExceptionCode
+	void GmpRunnerInterfaceHook(
+		IN Aurie::ProcessorContext64& Function
 	);
 
-	Aurie::AurieStatus GmpBreakpointInterfaceCreation(
+	void YYExtensionInitializeDummy(
+		IN YYRunnerInterface* Interface,
+		IN size_t Size
+	);
+
+	Aurie::AurieStatus GmpCreateHookOnInterfaceCreation(
 		OPTIONAL OUT PVOID* Rip,
-		IN Aurie::AurieBreakpointCallback Callback
+		IN Aurie::AurieMidHookFunction Handler
 	);
 
 	Aurie::AurieStatus GmpFindScriptData(

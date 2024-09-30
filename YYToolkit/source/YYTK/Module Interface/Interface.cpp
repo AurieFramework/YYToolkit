@@ -318,13 +318,12 @@ namespace YYTK
 			// Until v3.4, where a new method is introduced!
 			if (!AurieSuccess(last_status))
 			{
-				PVOID rip = nullptr;
-				last_status = GmpBreakpointInterfaceCreation(
-					&rip,
-					GmpHandleInterfaceCreationBP
+				last_status = GmpCreateHookOnInterfaceCreation(
+					&this->m_ExceptionRIP,
+					GmpRunnerInterfaceHook
 				);
 
-				if (!AurieSuccess(last_status) || !rip)
+				if (!AurieSuccess(last_status) || !this->m_ExceptionRIP)
 				{
 					this->PrintError(
 						__FILE__,
@@ -337,11 +336,11 @@ namespace YYTK
 				}
 				else
 				{
-					m_IsUsingVeh = true;
+					m_IsUsingMidFunctionHook = true;
 					this->Print(
 						CM_LIGHTAQUA,
 						"Game code analysis finished. Breakpoint set on RIP 0x%p.",
-						rip
+						this->m_ExceptionRIP
 					);
 				}
 			}
@@ -371,7 +370,7 @@ namespace YYTK
 			// If we're using VEH, we have to wait until the runner interface is populated
 			// by the exception handler.
 			// We do this by using the event, which is signaled by the exception handler.
-			if (m_IsUsingVeh)
+			if (m_IsUsingMidFunctionHook)
 			{
 				this->Print(
 					CM_LIGHTAQUA,

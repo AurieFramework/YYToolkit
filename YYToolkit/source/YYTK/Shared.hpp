@@ -9,7 +9,7 @@
 
 #define YYTK_MAJOR 3
 #define YYTK_MINOR 4
-#define YYTK_PATCH 3
+#define YYTK_PATCH 4
 
 #ifndef YYTK_CPP_VERSION
 #ifndef _MSVC_LANG
@@ -129,6 +129,7 @@ namespace YYTK
 	struct GCObjectContainer;
 	struct YYRECT;
 	struct CInstanceInternal;
+	struct DLL_RFunction;
 
 	template <typename TKey, typename TValue, int TInitialMask>
 	struct CHashMap;
@@ -1886,6 +1887,28 @@ namespace YYTK
 	};
 
 #if YYTK_DEFINE_INTERNAL
+	struct DLL_RFunction
+	{
+		// The DLL name
+		const char* m_ModuleName;
+
+		// The base address of the DLL
+		PVOID m_DllBaseAddress;
+
+		// Name of the exported function which is called
+		const char* m_FunctionName;
+
+		// The init function
+		void(*m_Function)(YYRunnerInterface* Interface, size_t Size);
+
+		int m_CallingConvention;
+		int m_ArgumentCount;
+		int m_ArgumentKinds[17];
+		int m_ResultKind;
+
+		uint64_t m_Unknown;
+	};
+
 	using CHashMapHash = uint32_t;
 
 	template <typename TKey, typename TValue>

@@ -44,7 +44,7 @@
 #endif // AURIE_FWK_MAJOR
 
 #ifndef AURIE_FWK_MINOR
-#define AURIE_FWK_MINOR 1
+#define AURIE_FWK_MINOR 2
 #endif // AURIE_FWK_MINOR
 
 #ifndef AURIE_FWK_PATCH
@@ -61,6 +61,8 @@ namespace Aurie
 	struct AurieList;
 	struct AurieObject;
 	struct AurieMemoryAllocation;
+	struct AurieInlineHook;
+	struct AurieMidHook;
 	struct AurieHook;
 
 	// Forward declarations (not opaque)
@@ -113,8 +115,8 @@ namespace Aurie
 		AURIE_OBJECT_ALLOCATION = 3,
 		// An AurieHook object
 		AURIE_OBJECT_HOOK = 4,
-		// An AurieBreakpoint object
-		AURIE_OBJECT_BREAKPOINT = 5,
+		// An AurieHook object
+		AURIE_OBJECT_MIDFUNCTION_HOOK = 5,
 	};
 
 	enum AurieModuleOperationType : uint32_t
@@ -127,6 +129,102 @@ namespace Aurie
 		// The call is a ModuleUnload call
 		AURIE_OPERATION_UNLOAD = 3
 	};
+
+	union XmmRegister {
+		uint8_t UInt8[16];
+		uint16_t UInt16[8];
+		uint32_t UInt32[4];
+		uint64_t UInt64[2];
+		float FP32[4];
+		double FP64[2];
+	};
+
+	struct SSEContext32
+	{
+		XmmRegister Xmm0;
+		XmmRegister Xmm1;
+		XmmRegister Xmm2;
+		XmmRegister Xmm3;
+		XmmRegister Xmm4;
+		XmmRegister Xmm5;
+		XmmRegister Xmm6;
+		XmmRegister Xmm7;
+	};
+
+	struct SSEContext64
+	{
+		XmmRegister Xmm0;
+		XmmRegister Xmm1;
+		XmmRegister Xmm2;
+		XmmRegister Xmm3;
+		XmmRegister Xmm4;
+		XmmRegister Xmm5;
+		XmmRegister Xmm6;
+		XmmRegister Xmm7;
+		XmmRegister Xmm8;
+		XmmRegister Xmm9;
+		XmmRegister Xmm10;
+		XmmRegister Xmm11;
+		XmmRegister Xmm12;
+		XmmRegister Xmm13;
+		XmmRegister Xmm14;
+		XmmRegister Xmm15;
+	};
+
+	// In a hook: 
+	// - RIP points to a trampoline containing the replaced instructions.
+	// - RSP is read-only, modifications to it are ignored.
+	// - The top of TrampolineRSP contains the resume address.
+	// - TrampolineRSP can be modified so long as the previous requirement is met.
+	struct ProcessorContext64
+	{
+		SSEContext64 SSE;
+		uint64_t RFlags;
+		uint64_t R15;
+		uint64_t R14;
+		uint64_t R13;
+		uint64_t R12;
+		uint64_t R11;
+		uint64_t R10;
+		uint64_t R9;
+		uint64_t R8;
+		uint64_t RDI;
+		uint64_t RSI;
+		uint64_t RDX;
+		uint64_t RCX;
+		uint64_t RBX;
+		uint64_t RAX;
+		uint64_t RBP;
+		uint64_t RSP;
+		uint64_t TrampolineRSP;
+		uint64_t RIP;
+	};
+
+	// In a hook: 
+	// - EIP points to a trampoline containing the replaced instructions.
+	// - ESP is read-only, modifications to it are ignored.
+	// - The top of TrampolineESP contains the resume address.
+	// - TrampolineESP can be modified so long as the previous requirement is met.
+	struct ProcessorContext32 {
+		SSEContext32 SSE;
+		uint32_t EFlags;
+		uint32_t EDI;
+		uint32_t ESI;
+		uint32_t EDX;
+		uint32_t ECX;
+		uint32_t EBX;
+		uint32_t EAX;
+		uint32_t EBP;
+		uint32_t ESP;
+		uint32_t TrampolineESP;
+		uint32_t EIP;
+	};
+
+#ifndef _WIN32
+	using ProcessorContext = ProcessorContext64;
+#else
+	using ProcessorContext = ProcessorContext32;
+#endif // _WIN32
 
 	constexpr inline bool AurieSuccess(const AurieStatus Status) noexcept
 	{
@@ -228,10 +326,15 @@ namespace Aurie
 		OPTIONAL IN OUT AurieOperationInfo* OperationInfo
 		);
 
-	using AurieBreakpointCallback = bool(*)(
-		IN OUT PVOID ProcessorContext,
-		IN uint32_t ExceptionCode
+#if _WIN64
+	using AurieMidHookFunction = void(*)(
+		IN ProcessorContext64& Context
 		);
+#else
+	using AurieMidHookFunction = void(*)(
+		IN ProcessorContext32& Context
+		);
+#endif // _WIN64
 }
 
 #ifndef AURIE_INCLUDE_PRIVATE
@@ -407,6 +510,16 @@ namespace Aurie
 		return AURIE_API_CALL(MmCreateHook, Module, HookIdentifier, SourceFunction, DestinationFunction, Trampoline);
 	}
 
+	inline AurieStatus MmCreateMidfunctionHook(
+		IN AurieModule* Module,
+		IN std::string_view HookIdentifier,
+		IN PVOID SourceAddress,
+		IN AurieMidHookFunction TargetHandler
+	)
+	{
+		return AURIE_API_CALL(MmCreateMidfunctionHook, Module, HookIdentifier, SourceAddress, TargetHandler);
+	}
+
 	inline AurieStatus MmHookExists(
 		IN AurieModule* Module,
 		IN std::string_view HookIdentifier
@@ -450,22 +563,6 @@ namespace Aurie
 		)
 		{
 			return AURIE_API_CALL(MmpSigscanRegion, RegionBase, RegionSize, Pattern, PatternMask, PatternBase);
-		}
-
-
-		inline AurieStatus MmpSetBreakpoint(
-			IN PVOID Rip,
-			IN AurieBreakpointCallback BreakpointCallback
-		)
-		{
-			return AURIE_API_CALL(MmpSetBreakpoint, Rip, BreakpointCallback);
-		}
-
-		inline AurieStatus MmpUnsetBreakpoint(
-			IN PVOID Rip
-		)
-		{
-			return AURIE_API_CALL(MmpUnsetBreakpoint, Rip);
 		}
 	}
 

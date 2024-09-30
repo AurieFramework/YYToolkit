@@ -13,16 +13,6 @@ namespace YYTK
 			return reinterpret_cast<T>(MmGetHookTrampoline(g_ArSelfModule, Name));
 		}
 
-		BOOL WINAPI HkHeapValidate(
-			IN HANDLE Heap,
-			IN DWORD Flags,
-			IN LPCVOID Memory
-		)
-		{
-			CmWriteInfo("Invalidating heap at 0x%p", Memory);
-			return false;
-		}
-
 		LRESULT WINAPI HkWndProc(
 			IN HWND WindowHandle,
 			IN UINT Message,
@@ -203,19 +193,6 @@ namespace YYTK
 
 			if (!AurieSuccess(last_status))
 				return last_status;
-
-			// We know this to be either true or false, since HkPreinitialize runs after
-			// the runner interface lookup code.
-			if (g_ModuleInterface.m_IsUsingVeh)
-			{
-				last_status = MmCreateHook(
-					g_ArSelfModule,
-					"HeapValidate",
-					HeapValidate,
-					HkHeapValidate,
-					nullptr
-				);
-			}
 			
 			return last_status;
 		}

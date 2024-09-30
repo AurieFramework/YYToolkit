@@ -14,16 +14,17 @@ namespace YYTK
 		// Dictates whether the second stage of initializing completed already.
 		bool m_SecondInitComplete = false;
 
-		// The runner interface stolen by disassembling Extension_PrePrepare()
+		// The runner interface stolen by disassembling Extension_PrePrepare(),
+		// alternatively found by reconstructing the stack (in older games).
 		YYRunnerInterface m_RunnerInterface = {};
 
 		bool m_IsYYCRunner = false;
 
-		// Set to true if VEH is used to get the runner interface.
+		// Set to true if the midfunction hook is used to get the runner interface.
 		// If it is, the runner interface is unavailable during stage 1 init.
-		bool m_IsUsingVeh = false;
+		bool m_IsUsingMidFunctionHook = false;
 
-		// A handle to an event which is signaled by the vectored exception handler.
+		// A handle to an event which is signaled by the mid-function hook.
 		// Once signaled, the runner interface has been populated with values.
 		HANDLE m_RunnerInterfacePopulatedEvent = nullptr;
 
@@ -36,7 +37,7 @@ namespace YYTK
 
 		// The base address of the JS instruction.
 		// Only used if VEH is used.
-		PVOID m_ExtensionPatchBase;
+		PVOID m_ExtensionPatchBase = nullptr;
 	private:
 
 		// A pointer to the functions array in memory

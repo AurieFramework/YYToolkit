@@ -39,29 +39,40 @@ namespace YYTK
 		return instructions;
 	}
 
-	// Handles #GP(0) raised on interface creation.
-	bool GmpHandleInterfaceCreationBP(
-		IN PVOID ProcessorContext,
-		IN uint32_t ExceptionCode
+	// Used to make the runner call our stuff
+	static YYTK::DLL_RFunction g_DummyEntry = {
+		.m_ModuleName = nullptr,
+		.m_DllBaseAddress = nullptr,
+		.m_FunctionName = nullptr,
+		.m_Function = YYExtensionInitializeDummy,
+		.m_ArgumentCount = 0,
+		.m_ResultKind = 0,
+		.m_Unknown = 0
+	};
+
+	void YYExtensionInitializeDummy(
+		IN YYRunnerInterface*,
+		IN size_t
+	)
+	{
+		DLL_RFunction* original_entry = reinterpret_cast<DLL_RFunction*>(g_DummyEntry.m_Unknown);
+
+		if (!original_entry)
+		{
+			CmWriteOutput(
+				CM_LIGHTPURPLE,
+				"[YYExtensionInitialize] I just prevented your game from crashing!"
+			);
+		}
+	}
+
+	void GmpRunnerInterfaceHook(
+		IN ProcessorContext64& ProcessorContext
 	)
 	{
 #if _WIN64
-		PCONTEXT cpu_context = static_cast<PCONTEXT>(ProcessorContext);
-		CmWriteOutput(
-			CM_LIGHTPURPLE,
-			"#GP(0) raised - RIP: 0x%llX, RSP: 0x%llX, RBP: 0x%llX", 
-			cpu_context->Rip, 
-			cpu_context->Rsp, 
-			cpu_context->Rbp
-		);
-
-		// Restore original bytes of the breakpointed instruction.
-		Internal::MmpUnsetBreakpoint(
-			reinterpret_cast<PVOID>(cpu_context->Rip)
-		);
-
 		// Restore original bytes of the JS instruction, which we temporarily patched 
-		// such that we hit the breakpoint unconditionally.
+		// such that we hit this hook unconditionally.
 		WriteProcessMemory(
 			GetCurrentProcess(),
 			g_ModuleInterface.m_ExtensionPatchBase,
@@ -70,175 +81,108 @@ namespace YYTK
 			nullptr
 		);
 
-		// Disassemble at RIP - 0xFFF
-		const auto instructions_prior_to_rip = GmpDisassemble(
-			// - 0xFFF is to offset by the size we want to disassemble, and +5 is the size of the call instruction.
-			// The call instruction is at cpu_context->Rip, and will be the last instruction in instructions_prior_to_rip.
-			reinterpret_cast<PVOID>(cpu_context->Rip - 0xFFF + 5),
-			0xFFF,
-			UINT64_MAX
-		);
-
-		// We have modified the runner to forcefully hit this call instruction, even if it shouldn't.
+		// We're breakpointed prior to a call [reg] instruction.
+		// However, even these kinds of call instructions have to abide by the x64 ABI 
+		// (we don't care about x86, since this method isn't used there).
 		// 
-		// If RIP shouldn't be here, the call instruction will be the one causing a fault, trying
-		// to call into a non-canonical address.
+		// The YYExtensionInitialize function has the following prototype:
+		// void YYExtensionInitialize(
+		//     IN YYRunnerInterface* Functions,
+		//     IN size_t FunctionsSize 
+		// );
+		// 
+		// This means that Functions will be in RCX, and the size of the runner interface in RDX.
+		// However, due to the fact that we're hooked one instruction ABOVE the actual call, this may not hold true.
+		// And in fact, it doesn't in Fields of Mistria, because we've hooked the instruction that moves the 
+		// runner interface pointer into RCX.
 		//
-		// We check the register for nullptr.
+		// lea rcx, [rsp+60h] <==== We're breakpointed here
+		// call qword ptr [rax+18h] <==== This may fault if RAX == nullptr.
 
-		// Get the last call prior to RIP
-		auto last_call_instruction_iterator = std::find_if(
-			instructions_prior_to_rip.rbegin(),
-			instructions_prior_to_rip.rend(),
-			[](const TargettedInstruction& Instruction)
-			{
-				return Instruction.RawForm.info.mnemonic == ZYDIS_MNEMONIC_CALL;
-			}
-		);
+		// Get me 2 instructions at the point where we set the mid-function hook.
+		// 
+		// Since we placed the hook one instruction prior to the CALL (see GmpBreakpointInterfaceCreation),
+		// we have to get 2 instructions (the first one is the JMP to our hook), and get the 2nd one.
+		auto call_instruction = GmpDisassemble(
+			reinterpret_cast<PVOID>(g_ModuleInterface.m_ExceptionRIP),
+			0xFF,
+			2
+		).back().RawForm;
 
-		// No call instruction in the disassembly???
-		if (last_call_instruction_iterator == instructions_prior_to_rip.rend())
-			return true;
+		assert(call_instruction.info.mnemonic == ZYDIS_MNEMONIC_CALL);
 
-		const auto& last_call_instruction = last_call_instruction_iterator->RawForm;
+		// Get me the first instruction at the new RIP (which is our trampoline, ie. the original instructions).
+		// This will be a LEA instruction that loads the address of the runner interface from the stack.
+		auto lea_instruction = GmpDisassemble(
+			reinterpret_cast<PVOID>(ProcessorContext.RIP),
+			0xFF,
+			1
+		).front().RawForm;
 
-		// Instruction should be call qword ptr [reg+offset]
-		assert(last_call_instruction.info.mnemonic == ZYDIS_MNEMONIC_CALL);
+		assert(lea_instruction.info.mnemonic == ZYDIS_MNEMONIC_LEA);
+		assert(lea_instruction.operands[0].type == ZYDIS_OPERAND_TYPE_REGISTER); // We're moving to a register
+		assert(lea_instruction.operands[1].type == ZYDIS_OPERAND_TYPE_MEMORY); // We're moving from memory
+
+		const ZydisRegister target_register = lea_instruction.operands[0].reg.value;
+		assert(target_register == ZYDIS_REGISTER_RCX); // We have to be moving to RCX to get the runner interface
+
+		const ZydisRegister source_base_register = lea_instruction.operands[1].mem.base;
+
+		// We have to be moving from RSP or RBP (the stack)
+		assert(
+			source_base_register == ZYDIS_REGISTER_RBP ||
+			source_base_register == ZYDIS_REGISTER_RSP
+		); 
+
+		// We get the displacement (ie. offset) from the register base
+		const int64_t displacement = lea_instruction.operands[1].mem.disp.value;
+
+		switch (source_base_register)
+		{
+		case ZYDIS_REGISTER_RBP:
+			g_ModuleInterface.m_RunnerInterface = *reinterpret_cast<YYRunnerInterface*>(ProcessorContext.RBP + displacement);
+			break;
+		case ZYDIS_REGISTER_RSP:
+			g_ModuleInterface.m_RunnerInterface = *reinterpret_cast<YYRunnerInterface*>(ProcessorContext.RSP + displacement);
+			break;
+		default:
+			CmWriteError(
+				__FILE__,
+				__LINE__,
+				"Unsupported register '%s' in the LEA instruction!",
+				ZydisRegisterGetString(source_base_register)
+			);
+			break;
+		}
 
 		// Get the register of the call instruction
-		const ZydisRegister call_register = last_call_instruction.operands[0].mem.base;
-		
+		const ZydisRegister call_register = call_instruction.operands[0].mem.base;
+
 		// Determine if the call instruction would cause an access fault
-		bool should_advance_rip = false;
 		switch (call_register)
 		{
 		case ZYDIS_REGISTER_RAX:
-			should_advance_rip = (cpu_context->Rax == 0);
-			break;
-		case ZYDIS_REGISTER_RBX:
-			should_advance_rip = (cpu_context->Rbx == 0);
-			break;
-		case ZYDIS_REGISTER_RCX:
-			should_advance_rip = (cpu_context->Rcx == 0);
-			break;
-		case ZYDIS_REGISTER_RDX:
-			should_advance_rip = (cpu_context->Rdx == 0);
-			break;
-		case ZYDIS_REGISTER_RSI:
-			should_advance_rip = (cpu_context->Rsi == 0);
-			break;
-		case ZYDIS_REGISTER_RDI:
-			should_advance_rip = (cpu_context->Rdi == 0);
-			break;
-		case ZYDIS_REGISTER_R9:
-			should_advance_rip = (cpu_context->R9 == 0);
-			break;
-		case ZYDIS_REGISTER_R10:
-			should_advance_rip = (cpu_context->R10 == 0);
-			break;
-		case ZYDIS_REGISTER_R11:
-			should_advance_rip = (cpu_context->R11 == 0);
-			break;
-		case ZYDIS_REGISTER_R12:
-			should_advance_rip = (cpu_context->R12 == 0);
-			break;
-		case ZYDIS_REGISTER_R13:
-			should_advance_rip = (cpu_context->R13 == 0);
-			break;
-		case ZYDIS_REGISTER_R14:
-			should_advance_rip = (cpu_context->R14 == 0);
-			break;
-		case ZYDIS_REGISTER_R15:
-			should_advance_rip = (cpu_context->R15 == 0);
+			if (ProcessorContext.RAX == 0)
+				ProcessorContext.RAX = reinterpret_cast<uint64_t>(&g_DummyEntry);
 			break;
 		default:
-			CmWriteError(__FILE__, __LINE__, "Unsupported VEH register %lld!", call_register);
+			CmWriteError(
+				__FILE__, 
+				__LINE__, 
+				"Unsupported register '%s' in the call instruction!", 
+				ZydisRegisterGetString(call_register)
+			);
 			break;
 		}
 
-		// Skip the call instruction
-		if (should_advance_rip)
-			cpu_context->Rip += last_call_instruction.info.length;
-
-		size_t lea_mov_chain_start = 0;
-		AurieStatus last_status = AURIE_SUCCESS;
-
-		// Look up the lea-mov chain
-		// We look for at least 3 consecutive ones, since 
-		last_status = GmpFindMnemonicPattern(
-			instructions_prior_to_rip,
-			{
-				ZYDIS_MNEMONIC_LEA,
-				ZYDIS_MNEMONIC_MOV,
-				ZYDIS_MNEMONIC_LEA,
-				ZYDIS_MNEMONIC_MOV,
-				ZYDIS_MNEMONIC_LEA,
-				ZYDIS_MNEMONIC_MOV
-			},
-			lea_mov_chain_start
-		);
-
-		if (!AurieSuccess(last_status))
-			return true;
-
-		// Extract the runner interface instructions starting at the lea-mov chain.
-		auto runner_interface_instructions = GmpFindRunnerInterfaceInstructionsX64(
-			{ instructions_prior_to_rip[lea_mov_chain_start].RawForm.runtime_address }
-		);
-
-		// Determine the interface start on the stack
-		uint64_t lowest_stack_point = UINT64_MAX;
-		for (auto& instruction : runner_interface_instructions)
-		{
-			// Skip non-mov instructions
-			if (instruction.RawForm.info.mnemonic != ZYDIS_MNEMONIC_MOV)
-				continue;
-
-			// Skip mov instructions that don't move to memory
-			// We're looking for mov [mem+something], reg
-			if (instruction.RawForm.operands[0].type != ZYDIS_OPERAND_TYPE_MEMORY)
-				continue;
-
-			if (!instruction.RawForm.operands[0].mem.disp.has_displacement)
-				continue;
-
-			if (instruction.RawForm.operands[1].type != ZYDIS_OPERAND_TYPE_REGISTER)
-				continue;
-
-			const ZydisRegister operand_base = instruction.RawForm.operands[0].mem.base;
-			const int64_t operand_offset = instruction.RawForm.operands[0].mem.disp.value;
-
-			switch (operand_base)
-			{
-			case ZYDIS_REGISTER_RBP: /* fallthrough */
-				if (lowest_stack_point > (cpu_context->Rbp + operand_offset))
-					lowest_stack_point = cpu_context->Rbp + operand_offset;
-				break;
-			case ZYDIS_REGISTER_RSP:
-				if (lowest_stack_point > (cpu_context->Rsp + operand_offset))
-					lowest_stack_point = cpu_context->Rsp + operand_offset;
-				break;
-			}
-		}
-
-		g_ModuleInterface.m_RunnerInterface = *reinterpret_cast<YYRunnerInterface*>(lowest_stack_point);
-		
-		CmWriteOutput(
-			CM_LIGHTPURPLE,
-			"Captured runner interface at stack address 0x%llX",
-			lowest_stack_point
-		);
-
 		SetEvent(g_ModuleInterface.m_RunnerInterfacePopulatedEvent);
-
 #endif
-		return true;
 	}
 
 	// Used if GmpGetRunnerInterface fails in x64.
-	AurieStatus GmpBreakpointInterfaceCreation(
+	AurieStatus GmpCreateHookOnInterfaceCreation(
 		OPTIONAL OUT PVOID* Rip,
-		IN AurieBreakpointCallback Callback
+		IN AurieMidHookFunction Handler
 	)
 	{
 		// Scan the memory for this pattern:
@@ -308,7 +252,6 @@ namespace YYTK
 				48 8D 4C 24 60        lea     rcx, [rsp+800h+var_7A0]
 				FF 50 18              call    qword ptr [rax+18h]
 		*/
-
 
 		AurieStatus last_status = AURIE_SUCCESS;
 		uint64_t text_section_offset = 0;
@@ -511,7 +454,7 @@ namespace YYTK
 			// Nopping the above instruction will cause several issues if no extension that 
 			// has the method exists.
 			// Namely, the call instruction after will fault, due to trying to call into a nullptr address.
-			// We will have to correct that (advance RIP) in the VEH handler.
+			// We will have to correct that (set a dummy DLL entry) in our hook.
 
 			// The runner interface init code is terminated with a call instruction.
 			// This instruction is executed unconditionally.
@@ -532,15 +475,17 @@ namespace YYTK
 
 			// By now we know we have the correct address
 
-			// We will breakpoint the call instruction.
+			// We will hook the instruction right before the call instruction.
+			// Hooking the call instruction will cause the game to hang, idfk why.
 			const PVOID bp_address = reinterpret_cast<PVOID>(
-				runner_interface_instructions[call_index].RawForm.runtime_address
-				);
+				runner_interface_instructions[call_index - 1].RawForm.runtime_address
+			);
 
-			// Set the breakpoint.
-			last_status = Internal::MmpSetBreakpoint(
+			MmCreateMidfunctionHook(
+				g_ArSelfModule,
+				"RunnerInterface",
 				bp_address,
-				Callback
+				Handler
 			);
 
 			// If we failed, return the error code.
