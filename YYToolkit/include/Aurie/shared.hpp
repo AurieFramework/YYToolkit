@@ -220,7 +220,7 @@ namespace Aurie
 		uint32_t EIP;
 	};
 
-#ifndef _WIN32
+#ifdef _WIN64
 	using ProcessorContext = ProcessorContext64;
 #else
 	using ProcessorContext = ProcessorContext32;
