@@ -169,10 +169,14 @@
     <ClInclude Include="include\Aurie\shared.hpp" />
     <ClInclude Include="include\FunctionWrapper\FunctionWrapper.hpp" />
     <ClInclude Include="include\Zydis\Zydis.h" />
+    <ClInclude Include="resource.h" />
     <ClInclude Include="source\YYTK\Module Interface\Interface.hpp" />
     <ClInclude Include="source\YYTK\Module Internals\Module Internals.hpp" />
     <ClInclude Include="source\YYTK\Shared.hpp" />
     <ClInclude Include="source\YYTK\Tool.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="YYToolkit.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
