@@ -148,22 +148,22 @@
     <ClCompile Include="source\ModuleMain.cpp" />
     <ClCompile Include="source\YYTK\Module Interface\Interface.cpp" />
     <ClCompile Include="source\YYTK\Module Internals\Console\Console.cpp" />
-    <ClCompile Include="source\YYTK\Module Internals\GameMaker\Generic\Generic.cpp" />
     <ClCompile Include="source\YYTK\Module Internals\GameMaker\Generic\Generic-CodeExecute.cpp" />
     <ClCompile Include="source\YYTK\Module Internals\GameMaker\Generic\Generic-Objects.cpp" />
     <ClCompile Include="source\YYTK\Module Internals\GameMaker\Generic\Generic-Rooms.cpp" />
     <ClCompile Include="source\YYTK\Module Internals\GameMaker\Generic\Generic-RunnerInterfaceNew.cpp" />
     <ClCompile Include="source\YYTK\Module Internals\GameMaker\Generic\Generic-RunnerInterfaceOld.cpp" />
+    <ClCompile Include="source\YYTK\Module Internals\GameMaker\Generic\Generic.cpp" />
     <ClCompile Include="source\YYTK\Module Internals\GameMaker\VM\VM-Arrays.cpp" />
     <ClCompile Include="source\YYTK\Module Internals\GameMaker\VM\VM-BuiltinVariables.cpp" />
     <ClCompile Include="source\YYTK\Module Internals\GameMaker\VM\VM-Functions.cpp" />
     <ClCompile Include="source\YYTK\Module Internals\GameMaker\VM\VM-Rooms.cpp" />
-    <ClCompile Include="source\YYTK\Module Internals\GameMaker\YYC\YYC-Functions.cpp" />
-    <ClCompile Include="source\YYTK\Module Internals\GameMaker\YYC\YYC-Rooms.cpp" />
     <ClCompile Include="source\YYTK\Module Internals\GameMaker\YYC\YYC-Arrays.cpp" />
     <ClCompile Include="source\YYTK\Module Internals\GameMaker\YYC\YYC-BuiltinVariables.cpp" />
+    <ClCompile Include="source\YYTK\Module Internals\GameMaker\YYC\YYC-Functions.cpp" />
+    <ClCompile Include="source\YYTK\Module Internals\GameMaker\YYC\YYC-Rooms.cpp" />
     <ClCompile Include="source\YYTK\Module Internals\Hooks\Hooks.cpp" />
-    <ClCompile Include="source\YYTK\Shared.cpp" />
+    <ClCompile Include="source\YYTK\Shared\YYTK_Shared_Types.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\Aurie\shared.hpp" />
@@ -171,7 +171,10 @@
     <ClInclude Include="include\Zydis\Zydis.h" />
     <ClInclude Include="source\YYTK\Module Interface\Interface.hpp" />
     <ClInclude Include="source\YYTK\Module Internals\Module Internals.hpp" />
-    <ClInclude Include="source\YYTK\Shared.hpp" />
+    <ClInclude Include="source\YYTK\Shared\YYTK_Shared.hpp" />
+    <ClInclude Include="source\YYTK\Shared\YYTK_Shared_Base.hpp" />
+    <ClInclude Include="source\YYTK\Shared\YYTK_Shared_Interface.hpp" />
+    <ClInclude Include="source\YYTK\Shared\YYTK_Shared_Types.hpp" />
     <ClInclude Include="source\YYTK\Tool.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

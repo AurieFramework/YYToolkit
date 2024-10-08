@@ -78,7 +78,7 @@ namespace YYTK
 			"ds_map_find_value",
 			nullptr,
 			nullptr,
-			{ os_info_ds_map, RValue("video_d3d11_device", this) }
+			{ os_info_ds_map, "video_d3d11_device" }
 		);
 
 		// This is not checking the return value of ds_map_find_value,
@@ -100,7 +100,7 @@ namespace YYTK
 			"ds_map_find_value",
 			nullptr,
 			nullptr,
-			{ os_info_ds_map, RValue("video_d3d11_swapchain", this) }
+			{ os_info_ds_map, "video_d3d11_swapchain" }
 		);
 
 		// This is not checking the return value of ds_map_find_value,
@@ -301,6 +301,9 @@ namespace YYTK
 
 		if (!m_FirstInitComplete)
 		{
+			// In this if case, no engine types are supposed to be operated upon.
+			// ObGetInterface (and any RValue operations that require it) will fail!
+
 			// Create the runner interface event
 			m_RunnerInterfacePopulatedEvent = CreateEventA(
 				nullptr,
@@ -367,6 +370,10 @@ namespace YYTK
 		
 		if (!m_SecondInitComplete)
 		{
+			// If we're here, the engine has already been initialized, 
+			// which means we're okay to do any engine operations.
+			// The control flow gets here from the module operation callback before any ModuleInitialize is called.
+
 			// If we're using VEH, we have to wait until the runner interface is populated
 			// by the exception handler.
 			// We do this by using the event, which is signaled by the exception handler.
@@ -453,7 +460,7 @@ namespace YYTK
 			}
 
 			// Set the flag for use later (right after this actually)
-			if (is_runner_yyc.AsBool())
+			if (is_runner_yyc.ToBoolean())
 				m_IsYYCRunner = true;
 
 			// Get the array of builtins
@@ -1010,7 +1017,7 @@ namespace YYTK
 		if (m_BuiltinFunctionCache.contains(FunctionName))
 		{
 			m_BuiltinFunctionCache.at(FunctionName)(
-				&Result,
+				Result,
 				SelfInstance,
 				OtherInstance,
 				static_cast<int>(Arguments.size()),
@@ -1043,7 +1050,7 @@ namespace YYTK
 		);
 
 		function(
-			&Result,
+			Result,
 			SelfInstance,
 			OtherInstance,
 			static_cast<int>(Arguments.size()),
@@ -1224,7 +1231,7 @@ namespace YYTK
 			if (!AurieSuccess(last_status))
 				return last_status;
 
-			instance_variable_count = static_cast<int>(name_count.AsReal());
+			instance_variable_count = name_count.ToInt32();
 		}
 		else
 		{
@@ -1260,26 +1267,13 @@ namespace YYTK
 			if (!AurieSuccess(last_status))
 				return last_status;
 
-			// Loop through all elements of the array
-			for (size_t i = 0; i < name_array.length(); i++)
-			{
-				// Use array_get to not rely on m_RValueArrayOffset
-				RValue name;
-				last_status = CallBuiltinEx(
-					name,
-					"array_get",
-					nullptr,
-					nullptr,
-					{ name_array, static_cast<int64_t>(i) }
-				);
+			auto names = name_array.ToRefVector();
 
-				// If we can't get the name just bail
-				if (!AurieSuccess(last_status))
-					return last_status;
-
-				// Assign the name into our vector
-				instance_variable_names.at(i) = name.AsString().data();
-			}
+			// Each element of instance_variable_names is simply 
+			// the string representation of the corresponding
+			// element inside names.
+			for (auto& name : names)
+				instance_variable_names.push_back(name->ToCString());
 		}
 		else
 		{
@@ -1290,10 +1284,8 @@ namespace YYTK
 			);
 		}
 
-		for (int i = 0; i < instance_variable_count; i++)
+		for (const char* variable_name : instance_variable_names)
 		{
-			const char* variable_name = instance_variable_names.at(i);
-
 			RValue* member_variable = nullptr;
 			AurieStatus last_status = AURIE_SUCCESS;
 
@@ -1335,15 +1327,7 @@ namespace YYTK
 		if (!m_RunnerInterface.YYStrDup)
 			return AURIE_MODULE_INTERNAL_ERROR;
 
-		// Duplicate the string using the runner. If you assign the string directly
-		// to the RValue, which then goes out of use, the runner will try to free
-		// memory that doesn't belong to it, which will cause a segfault.
-		const char* duplicated_string = m_RunnerInterface.YYStrDup(String.data());
-		
-		// At no point should we try to create a null string?
-		assert(duplicated_string != nullptr);
-
-		m_RunnerInterface.YYCreateString(&Value, duplicated_string);
+		m_RunnerInterface.YYCreateString(&Value, String.data());
 
 		return AURIE_SUCCESS;
 	}
@@ -1587,7 +1571,7 @@ namespace YYTK
 		if (!AurieSuccess(last_status))
 			return last_status;
 
-		Size = static_cast<size_t>(possible_size.AsReal());
+		Size = possible_size.ToInt64();
 		return AURIE_SUCCESS;
 	}
 
@@ -1677,10 +1661,10 @@ namespace YYTK
 				{ Object }
 			);
 
-			int64_t object_count = static_cast<int64_t>(CallBuiltin(
+			int64_t object_count = CallBuiltin(
 				"instance_number",
 				{ object_index }
-			).AsReal());
+			).ToInt64();
 
 			// Return early if no objects exist
 			if (object_count < 1)
@@ -1700,12 +1684,12 @@ namespace YYTK
 				// If we already got a CInstance* from instance_find, we don't have to pre-process it
 				if (instance.m_Kind == VALUE_OBJECT)
 				{
-					Method(instance.m_Object, instance.m_Object);
+					Method(instance.ToInstance(), instance.ToInstance());
 					continue;
 				}
 
 				// Get the instance ID from the instance
-				int32_t instance_id = static_cast<int32_t>(instance.AsReal());
+				int32_t instance_id = instance.ToInt32();
 
 				// Skip inactive instances / instances that don't exist
 				CInstance* object_instance = nullptr;
@@ -1728,7 +1712,7 @@ namespace YYTK
 		{
 			// We got an instance ID
 			CInstance* instance = nullptr;
-			AurieStatus last_status = GetInstanceObject(static_cast<int32_t>(Object.AsReal()), instance);
+			AurieStatus last_status = GetInstanceObject(Object.ToInt32(), instance);
 
 			// Return if the instance ID is invalid
 			if (!AurieSuccess(last_status))

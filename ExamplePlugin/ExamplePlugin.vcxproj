@@ -141,13 +141,16 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="include\YYToolkit\Shared.cpp" />
+    <ClCompile Include="include\YYToolkit\YYTK_Shared_Types.cpp" />
     <ClCompile Include="source\ModuleMain.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\Aurie\shared.hpp" />
     <ClInclude Include="include\FunctionWrapper\FunctionWrapper.hpp" />
-    <ClInclude Include="include\YYToolkit\Shared.hpp" />
+    <ClInclude Include="include\YYToolkit\YYTK_Shared.hpp" />
+    <ClInclude Include="include\YYToolkit\YYTK_Shared_Base.hpp" />
+    <ClInclude Include="include\YYToolkit\YYTK_Shared_Interface.hpp" />
+    <ClInclude Include="include\YYToolkit\YYTK_Shared_Types.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
