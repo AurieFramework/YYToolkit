@@ -174,19 +174,9 @@ YYTK::RValue::RValue()
 
 YYTK::RValue::~RValue()
 {
-	// FIXME TODO: Not leak memory
-	//GetInterface()->GetRunnerInterface().FREE_RValue(
-	//	this
-	//);
-}
-
-YYTK::RValue::RValue(
-	IN void* Value
-)
-{
-	*this = RValue();
-	this->m_Kind = VALUE_PTR;
-	this->m_Pointer = Value;
+	GetInterface()->GetRunnerInterface().FREE_RValue(
+		this
+	);
 }
 
 YYTK::RValue::RValue(
@@ -241,6 +231,15 @@ YYTK::RValue::RValue(
 	*this = RValue(std::string(Value.begin(), Value.end()));
 }
 
+YYTK::RValue::RValue(
+	IN void* Pointer
+)
+{
+	*this = RValue();
+	this->m_Kind = VALUE_PTR;
+	this->m_Pointer = Pointer;
+}
+
 RValue::RValue(
 	IN std::string_view Value
 )
@@ -288,6 +287,22 @@ YYTK::RValue::RValue(
 		this,
 		&Other
 	);
+}
+
+RValue& YYTK::RValue::operator=(
+	IN const RValue& Other
+)
+{
+	GetInterface()->GetRunnerInterface().FREE_RValue(
+		this
+	);
+
+	GetInterface()->GetRunnerInterface().COPY_RValue(
+		this,
+		&Other
+	);
+
+	return *this;
 }
 
 YYTK::RValue::RValue(
@@ -575,3 +590,195 @@ CRoomInternal& YYTK::CRoom::GetMembers()
 }
 
 #endif // YYTK_DEFINE_INTERNAL
+
+RValue YYTK::CInstance::ToRValue() const
+{
+	return RValue(this);
+}
+
+RValue* YYTK::CInstance::GetRefMember(
+	IN const char* MemberName
+)
+{
+	RValue* member_value = nullptr;
+
+	AurieStatus last_status = AURIE_SUCCESS;
+	last_status = GetInterface()->GetInstanceMember(
+		this,
+		MemberName,
+		member_value
+	);
+
+	if (!AurieSuccess(last_status))
+	{
+		GetInterface()->GetRunnerInterface().YYError(
+			"[YYToolkit Code Error]\r\n"
+			"Trying to fetch invalid member '%s' from instance!\r\n"
+			"Status code returned: %s",
+			MemberName,
+			AurieStatusToString(last_status)
+		);
+
+		return nullptr;
+	}
+
+	return member_value;
+}
+
+RValue* YYTK::CInstance::GetRefMember(
+	IN const std::string& MemberName
+)
+{
+	RValue* member_value = nullptr;
+
+	AurieStatus last_status = AURIE_SUCCESS;
+	last_status = GetInterface()->GetInstanceMember(
+		this,
+		MemberName.c_str(),
+		member_value
+	);
+
+	if (!AurieSuccess(last_status))
+	{
+		GetInterface()->GetRunnerInterface().YYError(
+			"[YYToolkit Code Error]\r\n"
+			"Trying to fetch invalid member '%s' from instance!\r\n"
+			"Status code returned: %s",
+			MemberName.c_str(),
+			AurieStatusToString(last_status)
+		);
+
+		return nullptr;
+	}
+
+	return member_value;
+}
+
+const RValue* YYTK::CInstance::GetRefMember(
+	IN const char* MemberName
+) const
+{
+	RValue* member_value = nullptr;
+
+	AurieStatus last_status = AURIE_SUCCESS;
+	last_status = GetInterface()->GetInstanceMember(
+		this,
+		MemberName,
+		member_value
+	);
+
+	if (!AurieSuccess(last_status))
+	{
+		GetInterface()->GetRunnerInterface().YYError(
+			"[YYToolkit Code Error]\r\n"
+			"Trying to fetch invalid member '%s' from instance!\r\n"
+			"Status code returned: %s",
+			MemberName,
+			AurieStatusToString(last_status)
+		);
+
+		return nullptr;
+	}
+
+	return member_value;
+}
+
+const RValue* YYTK::CInstance::GetRefMember(
+	IN const std::string& MemberName
+) const
+{
+	RValue* member_value = nullptr;
+
+	AurieStatus last_status = AURIE_SUCCESS;
+	last_status = GetInterface()->GetInstanceMember(
+		this,
+		MemberName.c_str(),
+		member_value
+	);
+
+	if (!AurieSuccess(last_status))
+	{
+		GetInterface()->GetRunnerInterface().YYError(
+			"[YYToolkit Code Error]\r\n"
+			"Trying to fetch invalid member '%s' from instance!\r\n"
+			"Status code returned: %s",
+			MemberName.c_str(),
+			AurieStatusToString(last_status)
+		);
+
+		return nullptr;
+	}
+
+	return member_value;
+}
+
+RValue YYTK::CInstance::GetMember(
+	IN const char* MemberName
+) const
+{
+	RValue* member_value = nullptr;
+
+	AurieStatus last_status = AURIE_SUCCESS;
+	last_status = GetInterface()->GetInstanceMember(
+		this,
+		MemberName,
+		member_value
+	);
+
+	if (!AurieSuccess(last_status))
+	{
+		GetInterface()->GetRunnerInterface().YYError(
+			"[YYToolkit Code Error]\r\n"
+			"Trying to fetch invalid member '%s' from instance!\r\n"
+			"Status code returned: %s",
+			MemberName,
+			AurieStatusToString(last_status)
+		);
+
+		return RValue();
+	}
+
+	return *member_value;
+}
+
+RValue YYTK::CInstance::GetMember(
+	IN const std::string& MemberName
+) const
+{
+	RValue* member_value = nullptr;
+
+	AurieStatus last_status = AURIE_SUCCESS;
+	last_status = GetInterface()->GetInstanceMember(
+		this,
+		MemberName.c_str(),
+		member_value
+	);
+
+	if (!AurieSuccess(last_status))
+	{
+		GetInterface()->GetRunnerInterface().YYError(
+			"[YYToolkit Code Error]\r\n"
+			"Trying to fetch invalid member '%s' from instance!\r\n"
+			"Status code returned: %s",
+			MemberName.c_str(),
+			AurieStatusToString(last_status)
+		);
+
+		return RValue();
+	}
+
+	return *member_value;
+}
+
+int32_t YYTK::CInstance::GetMemberCount() const
+{
+	int32_t member_count = 0;
+
+	// member_count will not be modified if the function fails.
+	GetInterface()->GetInstanceMemberCount(
+		this,
+		member_count
+	);
+
+	return member_count;
+}

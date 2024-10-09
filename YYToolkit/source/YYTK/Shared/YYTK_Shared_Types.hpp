@@ -1579,6 +1579,16 @@ namespace YYTK
 		}
 	};
 
+	template <typename T>
+	concept CGameMakerObject = requires(T Param)
+	{
+		requires std::is_pointer_v<T>;
+		requires 
+			std::is_base_of_v<CInstanceBase, std::remove_pointer_t<T>> ||
+			std::is_base_of_v<YYObjectBase, std::remove_pointer_t<T>> ||
+			std::is_base_of_v<CInstance, std::remove_pointer_t<T>>;
+	};
+
 #pragma pack(push, 4)
 	struct RValue
 	{
@@ -1674,11 +1684,21 @@ namespace YYTK
 		// Empty constructor, creates an undefined RValue (not an unset one).
 		RValue();
 
+		// Copy constructor
+		RValue(
+			IN const RValue& Other
+		);
+
+		// Copy assignment operator
+		RValue& operator=(
+			IN const RValue& Other
+		);
+
 		// Destroys the RValue.
 		~RValue();
 
 		// Creates an INT64-type RValue.
-
+		// A generic overload for any whole number type.
 		template <CIntegerCompatible Integer>
 		RValue(
 			IN const Integer& Value
@@ -1690,9 +1710,10 @@ namespace YYTK
 			this->m_Kind = VALUE_INT64;
 		}
 
+		// Creates an REAL-type RValue.
+		// A generic overload for any floating point type.
 		template <typename TDoubleCompatible>
 			requires std::floating_point<TDoubleCompatible>&& std::is_convertible_v<TDoubleCompatible, double>
-
 		RValue(
 			IN const TDoubleCompatible& Value
 		)
@@ -1703,59 +1724,71 @@ namespace YYTK
 			this->m_Kind = VALUE_REAL;
 		}
 
-		template <typename TGameMakerObject>
-			requires std::is_base_of_v<CInstanceBase, std::remove_pointer_t<TGameMakerObject>>&& std::is_pointer_v<TGameMakerObject>
-
+		// Creates an OBJECT-type RValue.
+		// A generic overload for any pointer, where the pointed-to
+		// class inherits from CInstanceBase.
+		template <CGameMakerObject TGameMakerObject>
 		RValue(
 			IN TGameMakerObject Value
 		)
 		{
 			*this = RValue();
 
-			this->m_Pointer = reinterpret_cast<PVOID>(Value);
+			this->m_Pointer = (PVOID)(Value);
 			this->m_Kind = VALUE_OBJECT;
 		}
 
 		RValue(
-			IN void* Value
+			IN RValue* Pointer
+		) = delete;
+
+		RValue(
+			IN void* Pointer
 		);
 
+		// Creates an ARRAY-type RValue.
 		RValue(
 			IN const std::vector<RValue>& Values
 		);
 
+		// Creates an STRING-type RValue.
 		RValue(
 			IN const std::string& Value
 		);
 
+		// Creates an STRING-type RValue.
+		// Used for UTF-8 strings.
 		RValue(
 			IN const std::u8string& Value
 		);
 
+		// Creates an STRING-type RValue.
 		RValue(
 			IN std::string_view Value
 		);
 
+		// Creates an STRING-type RValue.
+		// Used for UTF-8 strings.
 		RValue(
 			IN std::u8string_view Value
 		);
 
+		// Creates an STRING-type RValue.
 		RValue(
 			IN const char* Value
 		);
 
+		// Creates a BOOL-type RValue.
 		RValue(
 			IN bool Value
 		);
 
-		RValue(
-			IN const RValue& Other
-		);
-
+		// Creates an ARRAY-type RValue.
 		RValue(
 			IN std::initializer_list<RValue> Values
 		);
 
+		// Creates a struct RValue.
 		RValue(
 			IN const std::map<std::string, RValue>& Values
 		);
@@ -1862,6 +1895,45 @@ namespace YYTK
 		PVOID m_FunctionVariables; // YYVAR
 	};
 
+#if not YYTK_DEFINE_INTERNAL
+
+	struct CInstanceBase {};
+	struct YYObjectBase : CInstanceBase {};
+	struct CInstance : YYObjectBase
+	{
+		RValue ToRValue() const;
+
+		RValue* GetRefMember(
+			IN const char* MemberName
+		);
+
+		RValue* GetRefMember(
+			IN const std::string& MemberName
+		);
+
+		const RValue* GetRefMember(
+			IN const char* MemberName
+		) const;
+
+		const RValue* GetRefMember(
+			IN const std::string& MemberName
+		) const;
+
+		RValue GetMember(
+			IN const char* MemberName
+		) const;
+
+		RValue GetMember(
+			IN const std::string& MemberName
+		) const;
+
+		int32_t GetMemberCount() const;
+	};
+
+	struct CScriptRef : YYObjectBase {};
+	struct GCObjectContainer : YYObjectBase {};
+
+#endif // !YYTK_DEFINE_INTERNAL
 #pragma endregion
 
 #pragma region ISA Definitions
@@ -2649,6 +2721,34 @@ namespace YYTK
 		};
 	public:
 		CInstanceInternal& GetMembers();
+
+		RValue ToRValue() const;
+
+		RValue* GetRefMember(
+			IN const char* MemberName
+		);
+
+		RValue* GetRefMember(
+			IN const std::string& MemberName
+		);
+
+		const RValue* GetRefMember(
+			IN const char* MemberName
+		) const;
+
+		const RValue* GetRefMember(
+			IN const std::string& MemberName
+		) const;
+
+		RValue GetMember(
+			IN const char* MemberName
+		) const;
+
+		RValue GetMember(
+			IN const std::string& MemberName
+		) const;
+
+		int32_t GetMemberCount() const;
 	};
 	// sizeof(0x1A8) is for PreMasked instances
 	// sizeof(0x1B0) is for Masked instances

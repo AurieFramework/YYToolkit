@@ -1744,4 +1744,47 @@ namespace YYTK
 
 		return AURIE_SUCCESS;
 	}
+
+	Aurie::AurieStatus YYTKInterfaceImpl::GetInstanceMemberCount(
+		IN RValue Object,
+		OUT int32_t& Count
+	)
+	{
+		AurieStatus last_status = AURIE_SUCCESS;
+
+		// We need object RValues
+		if (Object.m_Kind != VALUE_OBJECT)
+			return AURIE_INVALID_PARAMETER;
+
+		// This function may not be present.
+		RValue result;
+		last_status = CallBuiltinEx(
+			result,
+			"variable_instance_names_count",
+			nullptr,
+			nullptr,
+			{ Object }
+		);
+
+		if (!AurieSuccess(last_status))
+		{
+			// variable_instance_names_count isn't present.
+			// Try to use StructGetKeys. If that fails, we bail.
+
+			if (!m_RunnerInterface.StructGetKeys)
+				return AURIE_UNAVAILABLE;
+			
+			// StructGetKeys returns the count if the last two args are nullptr.
+			Count = m_RunnerInterface.StructGetKeys(
+				&Object,
+				nullptr,
+				nullptr
+			);
+
+			return AURIE_SUCCESS;
+		}
+
+		Count = result.ToInt32();
+		return AURIE_SUCCESS;
+	}
 }

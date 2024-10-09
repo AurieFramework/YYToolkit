@@ -307,6 +307,11 @@ namespace YYTK
 			IN const char* VariableName,
 			OUT int32_t& Hash
 		) override final;
+
+		virtual Aurie::AurieStatus GetInstanceMemberCount(
+			IN RValue Object,
+			OUT int32_t& Count
+		);
 	};
 
 	inline YYTKInterfaceImpl g_ModuleInterface;
