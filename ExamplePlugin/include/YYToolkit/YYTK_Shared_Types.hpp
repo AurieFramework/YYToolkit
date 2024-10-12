@@ -1590,6 +1590,12 @@ namespace YYTK
 	};
 
 #pragma pack(push, 4)
+
+	// Note: 
+	// The inline initialization (setting kind to undefined, etc.) is needed
+	// because *this = RValue() calls the copy constructor which would try to free
+	// an RValue which has not yet been initialized!
+
 	struct RValue
 	{
 		union
@@ -1601,11 +1607,11 @@ namespace YYTK
 			YYObjectBase* m_Object;
 			CInstance* m_Instance;
 
-			PVOID m_Pointer;
+			PVOID m_Pointer = nullptr;
 		};
 
-		uint32_t m_Flags;
-		RValueType m_Kind;
+		uint32_t m_Flags = 0;
+		RValueType m_Kind = VALUE_UNDEFINED;
 
 		/* Explicit conversions */
 
@@ -1713,7 +1719,7 @@ namespace YYTK
 		// Creates an REAL-type RValue.
 		// A generic overload for any floating point type.
 		template <typename TDoubleCompatible>
-			requires std::floating_point<TDoubleCompatible>&& std::is_convertible_v<TDoubleCompatible, double>
+			requires std::floating_point<TDoubleCompatible> && std::is_convertible_v<TDoubleCompatible, double>
 		RValue(
 			IN const TDoubleCompatible& Value
 		)
@@ -1751,41 +1757,30 @@ namespace YYTK
 			IN const std::vector<RValue>& Values
 		);
 
-		// Creates an STRING-type RValue.
-		RValue(
-			IN const std::string& Value
-		);
-
-		// Creates an STRING-type RValue.
-		// Used for UTF-8 strings.
-		RValue(
-			IN const std::u8string& Value
-		);
-
-		// Creates an STRING-type RValue.
+		// Creates a STRING-type RValue.
 		RValue(
 			IN std::string_view Value
 		);
 
-		// Creates an STRING-type RValue.
+		// Creates a STRING-type RValue.
 		// Used for UTF-8 strings.
 		RValue(
 			IN std::u8string_view Value
 		);
 
-		// Creates an STRING-type RValue.
+		// Creates a STRING-type RValue.
 		RValue(
 			IN const char* Value
+		);
+
+		// Creates a STRING-type RValue.
+		RValue(
+			IN const char8_t* Value
 		);
 
 		// Creates a BOOL-type RValue.
 		RValue(
 			IN bool Value
-		);
-
-		// Creates an ARRAY-type RValue.
-		RValue(
-			IN std::initializer_list<RValue> Values
 		);
 
 		// Creates a struct RValue.
@@ -1824,6 +1819,9 @@ namespace YYTK
 		explicit operator int32_t();
 
 		explicit operator int64_t();
+
+	private:
+		void __Free();
 	};
 #pragma pack(pop)
 
@@ -1928,6 +1926,10 @@ namespace YYTK
 		) const;
 
 		int32_t GetMemberCount() const;
+
+		static CInstance* FromInstanceID(
+			IN int32_t InstanceID
+		);
 	};
 
 	struct CScriptRef : YYObjectBase {};
@@ -2749,6 +2751,10 @@ namespace YYTK
 		) const;
 
 		int32_t GetMemberCount() const;
+
+		static CInstance* FromInstanceID(
+			IN int32_t InstanceID
+		);
 	};
 	// sizeof(0x1A8) is for PreMasked instances
 	// sizeof(0x1B0) is for Masked instances

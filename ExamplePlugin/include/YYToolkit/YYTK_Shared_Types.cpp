@@ -174,9 +174,7 @@ YYTK::RValue::RValue()
 
 YYTK::RValue::~RValue()
 {
-	GetInterface()->GetRunnerInterface().FREE_RValue(
-		this
-	);
+	this->__Free();
 }
 
 YYTK::RValue::RValue(
@@ -218,20 +216,6 @@ YYTK::RValue::RValue(
 }
 
 YYTK::RValue::RValue(
-	IN const std::string& Value
-)
-{
-	*this = RValue(std::string_view(Value));
-}
-
-YYTK::RValue::RValue(
-	IN const std::u8string& Value
-)
-{
-	*this = RValue(std::string(Value.begin(), Value.end()));
-}
-
-YYTK::RValue::RValue(
 	IN void* Pointer
 )
 {
@@ -258,7 +242,14 @@ YYTK::RValue::RValue(
 	IN std::u8string_view Value
 )
 {
-	*this = RValue(std::u8string(Value));
+	// Initialize it to just empty stuff
+	*this = RValue();
+
+	// We can ignore this, because if it fails, we're just initialized to UNSET
+	GetInterface()->StringToRValue(
+		reinterpret_cast<const char*>(Value.data()),
+		*this
+	);
 }
 
 YYTK::RValue::RValue(
@@ -266,6 +257,13 @@ YYTK::RValue::RValue(
 )
 {
 	*this = RValue(std::string_view(Value));
+}
+
+YYTK::RValue::RValue(
+	IN const char8_t* Value
+)
+{
+	*this = RValue(std::u8string(Value));
 }
 
 YYTK::RValue::RValue(
@@ -293,9 +291,7 @@ RValue& YYTK::RValue::operator=(
 	IN const RValue& Other
 )
 {
-	GetInterface()->GetRunnerInterface().FREE_RValue(
-		this
-	);
+	this->__Free();
 
 	GetInterface()->GetRunnerInterface().COPY_RValue(
 		this,
@@ -303,44 +299,6 @@ RValue& YYTK::RValue::operator=(
 	);
 
 	return *this;
-}
-
-YYTK::RValue::RValue(
-	IN std::initializer_list<RValue> Values
-)
-{
-	// Initialize to undefined
-	*this = RValue();
-
-	if (!GetInterface()->GetRunnerInterface().YYCreateArray)
-		return;
-
-	// Create a dummy array with the size of Values.size(), and initialize all members to 0
-	std::vector<double> dummy_array(Values.size(), 0.0);
-
-	// Initialize this RValue as an array
-	GetInterface()->GetRunnerInterface().YYCreateArray(
-		this,
-		static_cast<int>(dummy_array.size()),
-		dummy_array.data()
-	);
-
-	// Use direct object manipulation to set the actual values
-	for (size_t index = 0; index < Values.size(); index++)
-	{
-		RValue* member_value = nullptr;
-		AurieStatus last_status = GetInterface()->GetArrayEntry(
-			*this,
-			index,
-			member_value
-		);
-
-		// Make sure we got a valid pointer
-		if (!AurieSuccess(last_status))
-			continue;
-
-		*member_value = std::data(Values)[index];
-	}
 }
 
 YYTK::RValue::RValue(
@@ -470,6 +428,15 @@ YYTK::RValue::operator int32_t()
 YYTK::RValue::operator int64_t()
 {
 	return this->ToInt64();
+}
+
+void YYTK::RValue::__Free()
+{
+	GetInterface()->GetRunnerInterface().FREE_RValue(this);
+	
+	this->m_i64 = 0;
+	this->m_Flags = 0;
+	this->m_Kind = VALUE_UNDEFINED;
 }
 
 #if YYTK_DEFINE_INTERNAL
@@ -781,4 +748,22 @@ int32_t YYTK::CInstance::GetMemberCount() const
 	);
 
 	return member_count;
+}
+
+CInstance* YYTK::CInstance::FromInstanceID(
+	IN int32_t InstanceID
+)
+{
+	CInstance* buffer = nullptr;
+	AurieStatus last_status = AURIE_SUCCESS;
+
+	last_status = GetInterface()->GetInstanceObject(
+		InstanceID,
+		buffer
+	);
+
+	if (!AurieSuccess(last_status))
+		return nullptr;
+
+	return buffer;
 }
