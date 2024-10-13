@@ -187,6 +187,19 @@ namespace YYTK
 			IN RValue Object,
 			OUT int32_t& Count
 		) = 0;
+
+		virtual RValue CallGameScript(
+			IN std::string_view ScriptName,
+			IN const std::vector<RValue>& Arguments
+		) = 0;
+
+		virtual Aurie::AurieStatus CallGameScriptEx(
+			OUT RValue& Result,
+			IN std::string_view ScriptName,
+			IN CInstance* SelfInstance,
+			IN CInstance* OtherInstance,
+			IN const std::vector<RValue>& Arguments
+		) = 0;
 	};
 
 	inline YYTKInterface* GetInterface()
