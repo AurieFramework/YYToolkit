@@ -1,5 +1,8 @@
 #include "../Module Internals.hpp"
 #include <iostream>
+#include <fstream>
+
+static std::ofstream g_LogFile;
 
 namespace YYTK
 {
@@ -50,6 +53,33 @@ namespace YYTK
 		// Write credits
 		SetConsoleTitleA("YYToolkit Log");
 		CmWriteOutput(CM_LIGHTBLUE, "YYToolkit v%d.%d.%d by @archie_uwu", YYTK_MAJOR, YYTK_MINOR, YYTK_PATCH);
+	}
+
+	void CmpCreateLogFile(
+		IN const char* Filename
+	)
+	{
+		g_LogFile = std::ofstream(Filename);
+	}
+
+	void CmWriteLogOutput(
+		IN std::string_view Format,
+		IN ...
+	)
+	{
+		// Parse the VA arguments
+		va_list va_args;
+		va_start(va_args, Format);
+		std::string formatted_output = CmpParseVa(Format.data(), va_args);
+		va_end(va_args);
+
+		g_LogFile << formatted_output << std::endl;
+		g_LogFile.flush();
+	}
+
+	void CmpCloseLogFile()
+	{
+		g_LogFile.close();
 	}
 
 	void CmWriteInfo(
@@ -118,7 +148,7 @@ namespace YYTK
 		std::filesystem::path filepath = Filepath;
 		if (filepath.has_filename())
 			filepath = filepath.filename();
-
+		
 		std::string filename = filepath.string();
 
 		// Print the output together with our fancy formatting

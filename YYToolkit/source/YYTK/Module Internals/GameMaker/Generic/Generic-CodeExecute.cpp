@@ -32,6 +32,13 @@ namespace YYTK
 			"x????xxxxx"
 		);
 
+		CmWriteLogOutput(
+			"[%s:%d] GmpFindCodeExecuteX64() => pattern at 0x%llX",
+			__FILE__,
+			__LINE__,
+			pattern_match
+		);
+
 		if (!pattern_match)
 			return AURIE_MODULE_INITIALIZATION_FAILED;
 
@@ -44,6 +51,14 @@ namespace YYTK
 		// Get the first instruction at that address (the call instruction), and make sure it has the
 		// parameters we expect it to have (ie. is a call, and has 1 visible operand - the address.)
 		ZydisDisassembledInstruction& call_instruction = instructions.front().RawForm;
+
+		CmWriteLogOutput(
+			"[%s:%d] GmpFindCodeExecuteX64() => call_instruction = %s",
+			__FILE__,
+			__LINE__,
+			call_instruction.text
+		);
+
 		if (call_instruction.info.mnemonic != ZYDIS_MNEMONIC_CALL)
 			return AURIE_MODULE_INITIALIZATION_FAILED;
 
@@ -97,6 +112,13 @@ namespace YYTK
 			"x????xxxxx"
 		);
 
+		CmWriteLogOutput(
+			"[%s:%d] GmpFindCodeExecuteX86() => pattern at 0x%llX",
+			__FILE__,
+			__LINE__,
+			pattern_match
+		);
+
 		if (!pattern_match)
 			return AURIE_MODULE_INITIALIZATION_FAILED;
 
@@ -109,6 +131,14 @@ namespace YYTK
 		// Get the first instruction at that address (the call instruction), and make sure it has the
 		// parameters we expect it to have (ie. is a call, and has 1 visible operand - the address.)
 		ZydisDisassembledInstruction& call_instruction = instructions.front().RawForm;
+
+		CmWriteLogOutput(
+			"[%s:%d] GmpFindCodeExecuteX86() => call_instruction = %s",
+			__FILE__,
+			__LINE__,
+			call_instruction.text
+		);
+
 		if (call_instruction.info.mnemonic != ZYDIS_MNEMONIC_CALL)
 			return AURIE_MODULE_INITIALIZATION_FAILED;
 

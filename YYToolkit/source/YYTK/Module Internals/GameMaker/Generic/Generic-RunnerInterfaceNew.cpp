@@ -109,6 +109,13 @@ namespace YYTK
 			2
 		).back().RawForm;
 
+		CmWriteLogOutput(
+			"[%s:%d] GmpRunnerInterfaceHook() => call instruction = %s",
+			__FILE__,
+			__LINE__,
+			call_instruction.text
+		);
+
 		assert(call_instruction.info.mnemonic == ZYDIS_MNEMONIC_CALL);
 
 		// Get me the first instruction at the new RIP (which is our trampoline, ie. the original instructions).
@@ -118,6 +125,13 @@ namespace YYTK
 			0xFF,
 			1
 		).front().RawForm;
+
+		CmWriteLogOutput(
+			"[%s:%d] GmpRunnerInterfaceHook() => lea instruction = %s",
+			__FILE__,
+			__LINE__,
+			lea_instruction.text
+		);
 
 		assert(lea_instruction.info.mnemonic == ZYDIS_MNEMONIC_LEA);
 		assert(lea_instruction.operands[0].type == ZYDIS_OPERAND_TYPE_REGISTER); // We're moving to a register
@@ -281,6 +295,13 @@ namespace YYTK
 			text_section_size
 		);
 
+		CmWriteLogOutput(
+			"[%s:%d] GmpCreateHookOnInterfaceCreation() => .text section spans %lld pages",
+			__FILE__,
+			__LINE__,
+			code_pages
+		);
+
 		for (size_t page_num = 0; page_num < code_pages; page_num++)
 		{
 			PVOID page_base = reinterpret_cast<PVOID>(game_base + text_section_offset + (page_num * PAGE_SIZE));
@@ -396,10 +417,17 @@ namespace YYTK
 			const uintptr_t runner_interface_instructions_base = 
 				runner_interface_instructions.front().RawForm.runtime_address;
 
+			CmWriteLogOutput(
+				"[%s:%d] GmpCreateHookOnInterfaceCreation() => Found RI instructions at 0x%llX",
+				__FILE__,
+				__LINE__,
+				runner_interface_instructions_base
+			);
+
 			// Disassemble some instructions before the runner interface init code begins
 			auto pre_ri_instructions = GmpDisassemble(
-				reinterpret_cast<PVOID>(runner_interface_instructions_base - 0x20),
-				0x20,
+				reinterpret_cast<PVOID>(runner_interface_instructions_base - 0x50),
+				0x50,
 				SIZE_MAX
 			);
 
@@ -422,10 +450,26 @@ namespace YYTK
 
 			// If we failed to find a JS instruction prior to the interface init code, continue
 			if (last_js_iterator == pre_ri_instructions.rend())
+			{
+				CmWriteLogOutput(
+					"[%s:%d] GmpCreateHookOnInterfaceCreation() => last_js_iterator == pre_ri_instructions.rend()",
+					__FILE__,
+					__LINE__,
+					runner_interface_instructions_base
+				);
+
 				continue;
+			}
 
 			// Get the last js instruction from the iterator
 			const auto last_js_instruction = *last_js_iterator;
+
+			CmWriteLogOutput(
+				"[%s:%d] GmpCreateHookOnInterfaceCreation() => last_js_instruction is %s",
+				__FILE__,
+				__LINE__,
+				last_js_instruction.RawForm.text
+			);
 
 			// Save the base address of the JS instruction for restoration purposes.
 			g_ModuleInterface.m_ExtensionPatchBase = 
@@ -468,10 +512,19 @@ namespace YYTK
 				call_index
 			);
 
+			CmWriteLogOutput(
+				"[%s:%d] GmpCreateHookOnInterfaceCreation() => call instruction status %s",
+				__FILE__,
+				__LINE__,
+				AurieStatusToString(last_status)
+			);
+
 			// If we failed to look up the call instruction, we had the wrong address anyway.
 			// Tough luck.
 			if (!AurieSuccess(last_status))
+			{
 				continue;
+			}
 
 			// By now we know we have the correct address
 
@@ -481,11 +534,19 @@ namespace YYTK
 				runner_interface_instructions[call_index - 1].RawForm.runtime_address
 			);
 
-			MmCreateMidfunctionHook(
+			last_status = MmCreateMidfunctionHook(
 				g_ArSelfModule,
 				"RunnerInterface",
 				bp_address,
 				Handler
+			);
+
+			CmWriteLogOutput(
+				"[%s:%d] GmpCreateHookOnInterfaceCreation() => breakpoint at %p => %s",
+				__FILE__,
+				__LINE__,
+				bp_address,
+				AurieStatusToString(last_status)
 			);
 
 			// If we failed, return the error code.

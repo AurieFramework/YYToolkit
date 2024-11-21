@@ -30,9 +30,25 @@ namespace YYTK
 		);
 
 		if (!AurieSuccess(last_status))
+		{
+			CmWriteLogOutput(
+				"[%s:%d] GmpFindCurrentRoomDataX64() => %s, no mnemonic pattern!",
+				__FILE__,
+				__LINE__,
+				AurieStatusToString(last_status)
+			);
+
 			return last_status;
+		}
 
 		const ZydisDisassembledInstruction& move_instruction = instructions.at(target_mov_index).RawForm;
+
+		CmWriteLogOutput(
+			"[%s:%d] GmpFindCurrentRoomDataX64() => mov instruction = %s",
+			__FILE__,
+			__LINE__,
+			move_instruction.text
+		);
 
 		// This should always be the case.
 		// But if it's not, it might cause unforeseen bugs, so we assert that in debug builds
@@ -79,9 +95,25 @@ namespace YYTK
 		);
 
 		if (!AurieSuccess(last_status))
+		{
+			CmWriteLogOutput(
+				"[%s:%d] GmpFindCurrentRoomDataX64() => %s",
+				__FILE__,
+				__LINE__,
+				AurieStatusToString(last_status)
+			);
+
 			return last_status;
+		}
 
 		const ZydisDisassembledInstruction& compare_instruction = instructions.at(target_cmp_index).RawForm;
+
+		CmWriteLogOutput(
+			"[%s:%d] GmpFindCurrentRoomDataX64() => cmp instruction = %s",
+			__FILE__,
+			__LINE__,
+			compare_instruction.text
+		);
 
 		// This should always be the case.
 		// But if it's not, it might cause unforeseen bugs, so we assert that in debug builds

@@ -21,7 +21,7 @@ namespace YYTK
 				48 8D 0D CF 9F 1D 00  lea     rcx, void __cdecl YYprintf(char const * __ptr64,...)
 				48 89 4D 90           mov     [rbp+7C0h+Interface.DebugConsoleOutput], rcx
 				48 8D 0D B4 05 00 00  lea     rcx, void __cdecl ReleaseConsoleOutput(char const * __ptr64,...)
-				... every field assigned here...
+				... every field assigned here ...
 			In Risk of Rain Returns
 				E8 9F 2D 00 00        call    DLL_GetFunc
 				33 C9                 xor     ecx, ecx

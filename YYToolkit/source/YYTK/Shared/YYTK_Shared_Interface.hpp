@@ -200,6 +200,11 @@ namespace YYTK
 			IN CInstance* OtherInstance,
 			IN const std::vector<RValue>& Arguments
 		) = 0;
+
+		virtual bool IsInstanceOfObject(
+			IN const RValue& Instance,
+			IN std::string_view ObjectName
+		) = 0;
 	};
 
 	inline YYTKInterface* GetInterface()

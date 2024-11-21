@@ -325,6 +325,11 @@ namespace YYTK
 			IN CInstance* OtherInstance,
 			IN const std::vector<RValue>& Arguments
 		);
+
+		virtual bool IsInstanceOfObject(
+			IN const RValue& Instance,
+			IN std::string_view ObjectName
+		);
 	};
 
 	inline YYTKInterfaceImpl g_ModuleInterface;

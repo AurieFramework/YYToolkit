@@ -6,7 +6,7 @@ using namespace Aurie;
 
 double YYTK::RValue::ToDouble() const
 {
-    return GetInterface()->GetRunnerInterface().REAL_RValue(this);
+	return GetInterface()->GetRunnerInterface().REAL_RValue(this);
 }
 
 int32_t YYTK::RValue::ToInt32() const
@@ -16,7 +16,7 @@ int32_t YYTK::RValue::ToInt32() const
 
 int64_t YYTK::RValue::ToInt64() const
 {
-    return GetInterface()->GetRunnerInterface().INT64_RValue(this);
+	return GetInterface()->GetRunnerInterface().INT64_RValue(this);
 }
 
 bool YYTK::RValue::ToBoolean() const
@@ -31,12 +31,12 @@ std::string YYTK::RValue::GetKindName() const
 
 YYObjectBase* YYTK::RValue::ToObject() const
 {
-    return ToPointer<YYObjectBase*>();
+	return ToPointer<YYObjectBase*>();
 }
 
 CInstance* YYTK::RValue::ToInstance() const
 {
-    return ToPointer<CInstance*>();
+	return ToPointer<CInstance*>();
 }
 
 const char* YYTK::RValue::ToCString() const
@@ -51,7 +51,7 @@ std::string YYTK::RValue::ToString() const
 
 std::u8string YYTK::RValue::ToUTF8String() const
 {
-    return reinterpret_cast<const char8_t*>(GetInterface()->GetRunnerInterface().YYGetString(this, 0));
+	return reinterpret_cast<const char8_t*>(GetInterface()->GetRunnerInterface().YYGetString(this, 0));
 }
 
 std::map<std::string, RValue*> YYTK::RValue::ToRefMap()
@@ -162,7 +162,7 @@ RValue* YYTK::RValue::ToArray()
 
 void* YYTK::RValue::ToPointer() const
 {
-    return GetInterface()->GetRunnerInterface().PTR_RValue(this);
+	return GetInterface()->GetRunnerInterface().PTR_RValue(this);
 }
 
 YYTK::RValue::RValue()
@@ -270,7 +270,7 @@ YYTK::RValue::RValue(
 	IN bool Value
 )
 {
-	this->m_i64 = static_cast<int64_t>(Value);
+	this->m_Real = static_cast<double>(Value);
 	this->m_Flags = 0;
 	this->m_Kind = VALUE_BOOL;
 }
@@ -289,7 +289,7 @@ YYTK::RValue::RValue(
 
 RValue& YYTK::RValue::operator=(
 	IN const RValue& Other
-)
+	)
 {
 	this->__Free();
 
@@ -326,21 +326,21 @@ YYTK::RValue::RValue(
 
 RValue& YYTK::RValue::operator[](
 	IN size_t Index
-)
+	)
 {
 	return *this->ToRefVector().at(Index);
 }
 
 RValue YYTK::RValue::operator[](
 	IN size_t Index
-) const
+	) const
 {
 	return this->ToVector().at(Index);
 }
 
 RValue& RValue::operator[](
 	IN std::string_view Element
-)
+	)
 {
 	if (!GetInterface())
 		return *this;
@@ -371,7 +371,7 @@ RValue& RValue::operator[](
 
 const RValue& YYTK::RValue::operator[](
 	IN std::string_view MemberName
-) const
+	) const
 {
 	if (!GetInterface())
 		return *this;
@@ -398,6 +398,17 @@ const RValue& YYTK::RValue::operator[](
 	}
 
 	return *instance_member;
+}
+
+bool YYTK::RValue::ContainsValue(
+	IN std::string_view MemberName
+) const
+{
+	RValue* member = this->ToInstance()->GetRefMember(
+		MemberName.data()
+	);
+
+	return member != nullptr;
 }
 
 YYTK::RValue::operator bool()
@@ -433,7 +444,7 @@ YYTK::RValue::operator int64_t()
 void YYTK::RValue::__Free()
 {
 	GetInterface()->GetRunnerInterface().FREE_RValue(this);
-	
+
 	this->m_i64 = 0;
 	this->m_Flags = 0;
 	this->m_Kind = VALUE_UNDEFINED;

@@ -1583,10 +1583,10 @@ namespace YYTK
 	concept CGameMakerObject = requires(T Param)
 	{
 		requires std::is_pointer_v<T>;
-		requires 
-			std::is_base_of_v<CInstanceBase, std::remove_pointer_t<T>> ||
-			std::is_base_of_v<YYObjectBase, std::remove_pointer_t<T>> ||
-			std::is_base_of_v<CInstance, std::remove_pointer_t<T>>;
+		requires
+	std::is_base_of_v<CInstanceBase, std::remove_pointer_t<T>> ||
+		std::is_base_of_v<YYObjectBase, std::remove_pointer_t<T>> ||
+		std::is_base_of_v<CInstance, std::remove_pointer_t<T>>;
 	};
 
 #pragma pack(push, 4)
@@ -1698,7 +1698,7 @@ namespace YYTK
 		// Copy assignment operator
 		RValue& operator=(
 			IN const RValue& Other
-		);
+			);
 
 		// Destroys the RValue.
 		~RValue();
@@ -1719,7 +1719,7 @@ namespace YYTK
 		// Creates an REAL-type RValue.
 		// A generic overload for any floating point type.
 		template <typename TDoubleCompatible>
-			requires std::floating_point<TDoubleCompatible> && std::is_convertible_v<TDoubleCompatible, double>
+			requires std::floating_point<TDoubleCompatible>&& std::is_convertible_v<TDoubleCompatible, double>
 		RValue(
 			IN const TDoubleCompatible& Value
 		)
@@ -1805,6 +1805,10 @@ namespace YYTK
 		const RValue& operator[](
 			IN std::string_view MemberName
 			) const;
+
+		bool ContainsValue(
+			IN std::string_view MemberName
+		) const;
 
 		/* Casting */
 
