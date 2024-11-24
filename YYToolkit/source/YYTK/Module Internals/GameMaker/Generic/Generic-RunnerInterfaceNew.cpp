@@ -426,8 +426,8 @@ namespace YYTK
 
 			// Disassemble some instructions before the runner interface init code begins
 			auto pre_ri_instructions = GmpDisassemble(
-				reinterpret_cast<PVOID>(runner_interface_instructions_base - 0x50),
-				0x50,
+				reinterpret_cast<PVOID>(runner_interface_instructions_base - 0xFF),
+				0xFF,
 				SIZE_MAX
 			);
 
