@@ -71,6 +71,13 @@ namespace YYTK
 		// we need the base address of the game to add to the offset
 		char* game_base = reinterpret_cast<char*>(GetModuleHandleW(nullptr));
 
+		CmWriteLogOutput(
+			"[%s:%d] GmpGetRunnerInterfaceX64() => Game loaded at 0x%p",
+			__FILE__,
+			__LINE__,
+			game_base
+		);
+
 		// Scan for all occurences of this pattern in memory
 		std::vector<size_t> pattern_matches = {};
 		GmpSigscanRegionEx(

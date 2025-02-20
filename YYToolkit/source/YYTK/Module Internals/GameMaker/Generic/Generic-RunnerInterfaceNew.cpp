@@ -426,8 +426,8 @@ namespace YYTK
 
 			// Disassemble some instructions before the runner interface init code begins
 			auto pre_ri_instructions = GmpDisassemble(
-				reinterpret_cast<PVOID>(runner_interface_instructions_base - 0xFF),
-				0xFF,
+				reinterpret_cast<PVOID>(runner_interface_instructions_base - 0xFFF),
+				0xFFF,
 				SIZE_MAX
 			);
 
@@ -439,6 +439,18 @@ namespace YYTK
 			//
 			// This js instruction will be the last instruction hit. 
 			// We modify the instruction to never jump (nopping it), 
+			auto last_js_iterator = std::find_if(
+				pre_ri_instructions.rbegin(),
+				pre_ri_instructions.rend(),
+				[](const TargettedInstruction& instr)
+				{
+					return instr.RawForm.info.mnemonic == ZYDIS_MNEMONIC_JS;
+				}
+			);
+
+			// Find a cmp instruction that reads from memory, and compares to 1.
+			// This is looking for the check "if (Extension_Main_number > 0)".
+			// Omitting this step causes the runner interface to not be created if no extensions are present.
 			auto last_js_iterator = std::find_if(
 				pre_ri_instructions.rbegin(),
 				pre_ri_instructions.rend(),
