@@ -2,7 +2,7 @@
 #define YYTK_TOOL_H_
 
 #include <Zydis/Zydis.h>
-#include "Shared.hpp"
+#include "Shared/YYTK_Shared.hpp"
 
 namespace YYTK
 {

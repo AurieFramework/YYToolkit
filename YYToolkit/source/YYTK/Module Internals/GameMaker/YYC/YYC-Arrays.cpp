@@ -58,7 +58,7 @@ namespace YYTK
 				instructions,
 				{
 					ZYDIS_MNEMONIC_MOV,
-					ZYDIS_MNEMONIC_MOV,
+		ZYDIS_MNEMONIC_MOV,
 					ZYDIS_MNEMONIC_CALL
 				},
 				start_index

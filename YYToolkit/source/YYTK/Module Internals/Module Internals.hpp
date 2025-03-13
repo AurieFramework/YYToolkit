@@ -34,6 +34,17 @@ namespace YYTK
 		IN va_list Arguments
 	);
 
+	void CmpCreateLogFile(
+		IN const char* Filename
+	);
+
+	void CmWriteLogOutput(
+		IN std::string_view Format,
+		IN ...
+	);
+
+	void CmpCloseLogFile();
+
 	void CmpSetTextColor(
 		IN CmColor color
 	);
@@ -166,6 +177,15 @@ namespace YYTK
 			IN IDXGISwapChain* _this,
 			IN unsigned int Sync,
 			IN unsigned int Flags
+		);
+
+		HRESULT WINAPI HkResizeBuffers(
+			IN IDXGISwapChain* _this,
+			IN UINT BufferCount,
+			IN UINT Width,
+			IN UINT Height,
+			IN DXGI_FORMAT NewFormat,
+			IN UINT SwapChainFlags
 		);
 
 		bool HkExecuteIt(

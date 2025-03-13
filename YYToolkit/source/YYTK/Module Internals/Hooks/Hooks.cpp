@@ -5,7 +5,7 @@ namespace YYTK
 {
 	namespace Hooks
 	{
-		inline WNDPROC g_OriginalWindowProc = nullptr;
+		static WNDPROC g_OriginalWindowProc = nullptr;
 
 		template <typename T>
 		T GetHookTrampoline(const char* Name)
@@ -55,7 +55,7 @@ namespace YYTK
 		)
 		{
 			// decltype apparently doesn't work in x86 bruh
-			auto original_function = GetHookTrampoline<decltype(&HkPresent)>("Present");
+			static auto original_function = GetHookTrampoline<decltype(&HkPresent)>("Present");
 
 			FunctionWrapper<HRESULT(IDXGISwapChain*, UINT, UINT)> func_wrapper(
 				original_function,
@@ -88,7 +88,7 @@ namespace YYTK
 			IN UINT SwapChainFlags
 		)
 		{
-			auto original_function = GetHookTrampoline<decltype(&HkResizeBuffers)>("ResizeBuffers");
+			static auto original_function = GetHookTrampoline<decltype(&HkResizeBuffers)>("ResizeBuffers");
 
 			FunctionWrapper<HRESULT(IDXGISwapChain*, UINT, UINT, UINT, DXGI_FORMAT, UINT)> func_wrapper(
 				original_function, 
@@ -126,7 +126,7 @@ namespace YYTK
 			IN INT Flags
 		)
 		{
-			auto original_function = GetHookTrampoline<decltype(&HkExecuteIt)>("ExecuteIt");
+			static auto original_function = GetHookTrampoline<decltype(&HkExecuteIt)>("ExecuteIt");
 
 			FunctionWrapper<decltype(HkExecuteIt)> func_wrapper(
 				original_function,

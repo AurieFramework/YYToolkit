@@ -32,12 +32,20 @@ namespace YYTK
 			if (instr.RawForm.info.mnemonic != ZYDIS_MNEMONIC_CALL)
 				continue;
 
+			CmWriteLogOutput(
+				"[%s:%d] GmpGetFindAllocSlotFromName() => instruction = %s",
+				__FILE__,
+				__LINE__,
+				instr.RawForm.text
+			);
+
 			ZydisCalcAbsoluteAddress(
 				&instr.RawForm.info,
 				&instr.RawForm.operands[0],
 				instr.RawForm.runtime_address,
 				&function_address
 			);
+
 			break;
 		}
 

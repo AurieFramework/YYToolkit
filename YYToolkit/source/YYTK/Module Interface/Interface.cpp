@@ -78,7 +78,7 @@ namespace YYTK
 			"ds_map_find_value",
 			nullptr,
 			nullptr,
-			{ os_info_ds_map, RValue("video_d3d11_device", this) }
+			{ os_info_ds_map, "video_d3d11_device" }
 		);
 
 		// This is not checking the return value of ds_map_find_value,
@@ -100,7 +100,7 @@ namespace YYTK
 			"ds_map_find_value",
 			nullptr,
 			nullptr,
-			{ os_info_ds_map, RValue("video_d3d11_swapchain", this) }
+			{ os_info_ds_map, "video_d3d11_swapchain" }
 		);
 
 		// This is not checking the return value of ds_map_find_value,
@@ -301,6 +301,9 @@ namespace YYTK
 
 		if (!m_FirstInitComplete)
 		{
+			// In this if case, no engine types are supposed to be operated upon.
+			// ObGetInterface (and any RValue operations that require it) will fail!
+
 			// Create the runner interface event
 			m_RunnerInterfacePopulatedEvent = CreateEventA(
 				nullptr,
@@ -314,6 +317,13 @@ namespace YYTK
 				m_RunnerInterface
 			);
 
+			CmWriteLogOutput(
+				"[%s:%d] GmpGetRunnerInterface() => %s", 
+				__FILE__, 
+				__LINE__, 
+				AurieStatusToString(last_status)
+			);
+
 			// If we didn't get that, there's no chance in hell we're doing anything with the runner...
 			// Until v3.4, where a new method is introduced!
 			if (!AurieSuccess(last_status))
@@ -321,6 +331,14 @@ namespace YYTK
 				last_status = GmpCreateHookOnInterfaceCreation(
 					&this->m_ExceptionRIP,
 					GmpRunnerInterfaceHook
+				);
+
+				CmWriteLogOutput(
+					"[%s:%d] GmpCreateHookOnInterfaceCreation() => %s (m_ExceptionRIP = 0x%p)",
+					__FILE__,
+					__LINE__,
+					AurieStatusToString(last_status),
+					this->m_ExceptionRIP
 				);
 
 				if (!AurieSuccess(last_status) || !this->m_ExceptionRIP)
@@ -347,6 +365,13 @@ namespace YYTK
 
 			last_status = Hooks::HkPreinitialize();
 
+			CmWriteLogOutput(
+				"[%s:%d] HkPreinitialize() => %s",
+				__FILE__,
+				__LINE__,
+				AurieStatusToString(last_status)
+			);
+
 			if (!AurieSuccess(last_status))
 			{
 				this->PrintError(
@@ -361,12 +386,22 @@ namespace YYTK
 
 			CmWriteOutput(CM_LIGHTAQUA, "YYTK Next - Early initialization complete.");
 
+			CmWriteLogOutput(
+				"[%s:%d] Stage 1 init OK!",
+				__FILE__,
+				__LINE__
+			);
+
 			m_FirstInitComplete = true;
 			return AURIE_SUCCESS;
 		}
 		
 		if (!m_SecondInitComplete)
 		{
+			// If we're here, the engine has already been initialized, 
+			// which means we're okay to do any engine operations.
+			// The control flow gets here from the module operation callback before any ModuleInitialize is called.
+
 			// If we're using VEH, we have to wait until the runner interface is populated
 			// by the exception handler.
 			// We do this by using the event, which is signaled by the exception handler.
@@ -377,9 +412,21 @@ namespace YYTK
 					"Please wait while the game creates a runner interface."
 				);
 
+				CmWriteLogOutput(
+					"[%s:%d] m_IsUsingMidFunctionHook = true, waiting on runner interface",
+					__FILE__,
+					__LINE__
+				);
+
 				WaitForSingleObject(
 					m_RunnerInterfacePopulatedEvent,
 					INFINITE
+				);
+
+				CmWriteLogOutput(
+					"[%s:%d] m_IsUsingMidFunctionHook = true, runner interface created",
+					__FILE__,
+					__LINE__
 				);
 
 				this->Print(
@@ -398,9 +445,24 @@ namespace YYTK
 				&m_FunctionsArray
 			);
 
+			CmWriteLogOutput(
+				"[%s:%d] YYC::GmpFindFunctionsArray() => %s, 0x%p",
+				__FILE__,
+				__LINE__,
+				AurieStatusToString(last_status),
+				m_FunctionsArray
+			);
+
 			// Before calling anything, we need to know the size of one RFunction entry
 			// This might actually fail if the game is VM, so we can check for that too.
 			m_FunctionEntrySize = this->YkDetermineFunctionEntrySize();
+
+			CmWriteLogOutput(
+				"[%s:%d] m_FunctionEntrySize = %lld",
+				__FILE__,
+				__LINE__,
+				m_FunctionEntrySize
+			);
 
 			// If we failed either getting the functions array, or determining the size,
 			// the game is probably VM, and our initial YYC assumption is wrong.
@@ -410,6 +472,14 @@ namespace YYTK
 				last_status = VM::GmpFindFunctionsArray(
 					m_RunnerInterface,
 					&m_FunctionsArray
+				);
+
+				CmWriteLogOutput(
+					"[%s:%d] VM::GmpFindFunctionsArray() => %s, 0x%p",
+					__FILE__,
+					__LINE__,
+					AurieStatusToString(last_status),
+					m_FunctionsArray
 				);
 
 				// Determine the function entry size again
@@ -439,6 +509,13 @@ namespace YYTK
 				{}
 			);
 
+			CmWriteLogOutput(
+				"[%s:%d] CallBuiltinEx(\"code_is_compiled\") => %s",
+				__FILE__,
+				__LINE__,
+				AurieStatusToString(last_status)
+			);
+
 			// Make sure we succeeded with that call
 			if (!AurieSuccess(last_status))
 			{
@@ -453,7 +530,7 @@ namespace YYTK
 			}
 
 			// Set the flag for use later (right after this actually)
-			if (is_runner_yyc.AsBool())
+			if (is_runner_yyc.ToBoolean())
 				m_IsYYCRunner = true;
 
 			// Get the array of builtins
@@ -473,6 +550,15 @@ namespace YYTK
 				);
 			}
 
+			CmWriteLogOutput(
+				"[%s:%d] GmpGetBuiltinInformation() => %s, count 0x%p, array 0x%p",
+				__FILE__,
+				__LINE__,
+				AurieStatusToString(last_status),
+				m_BuiltinCount,
+				m_BuiltinArray
+			);
+
 			// Make sure we got that. While this isn't critical to YYTK,
 			// it makes mod development way easier.
 			if (!AurieSuccess(last_status))
@@ -491,6 +577,14 @@ namespace YYTK
 			last_status = this->GetNamedRoutinePointer(
 				"array_equals",
 				reinterpret_cast<PVOID*>(&array_equals)
+			);
+
+			CmWriteLogOutput(
+				"[%s:%d] GetNamedRoutinePointer(\"array_equals\") => %s, %p",
+				__FILE__,
+				__LINE__,
+				AurieStatusToString(last_status),
+				array_equals
 			);
 
 			if (!AurieSuccess(last_status))
@@ -522,6 +616,14 @@ namespace YYTK
 				);
 			}
 
+			CmWriteLogOutput(
+				"[%s:%d] GmpFindRVArrayOffset() => %s, 0x%llx",
+				__FILE__,
+				__LINE__,
+				AurieStatusToString(last_status),
+				m_RValueArrayOffset
+			);
+
 			if (!AurieSuccess(last_status))
 			{
 				this->PrintWarning(
@@ -535,6 +637,14 @@ namespace YYTK
 			last_status = this->GetNamedRoutinePointer(
 				"@@CopyStatic@@",
 				reinterpret_cast<PVOID*>(&copy_static)
+			);
+
+			CmWriteLogOutput(
+				"[%s:%d] GetNamedRoutinePointer(\"@@CopyStatic@@\") => %s, 0x%p",
+				__FILE__,
+				__LINE__,
+				AurieStatusToString(last_status),
+				copy_static
 			);
 
 			if (!AurieSuccess(last_status))
@@ -555,6 +665,14 @@ namespace YYTK
 				&m_GetScriptData
 			);
 
+			CmWriteLogOutput(
+				"[%s:%d] GmpFindScriptData() => %s, 0x%p",
+				__FILE__,
+				__LINE__,
+				AurieStatusToString(last_status),
+				m_GetScriptData
+			);
+
 			if (!AurieSuccess(last_status))
 			{
 				this->PrintError(
@@ -572,6 +690,14 @@ namespace YYTK
 			last_status = this->GetNamedRoutinePointer(
 				"room_instance_clear",
 				reinterpret_cast<PVOID*>(&room_instance_clear)
+			);
+
+			CmWriteLogOutput(
+				"[%s:%d] GetNamedRoutinePointer(\"room_instance_clear\") => %s, 0x%p",
+				__FILE__,
+				__LINE__,
+				AurieStatusToString(last_status),
+				room_instance_clear
 			);
 
 			if (!AurieSuccess(last_status))
@@ -601,6 +727,14 @@ namespace YYTK
 				);
 			}
 
+			CmWriteLogOutput(
+				"[%s:%d] GmpFindRoomData() => %s, 0x%p",
+				__FILE__,
+				__LINE__,
+				AurieStatusToString(last_status),
+				m_GetRoomData
+			);
+
 			if (!AurieSuccess(last_status))
 			{
 				this->PrintWarning(
@@ -616,12 +750,26 @@ namespace YYTK
 				builtin_variable_index
 			);
 
+			CmWriteLogOutput(
+				"[%s:%d] GetBuiltinVariableIndex(\"background_color\") => %s",
+				__FILE__,
+				__LINE__,
+				AurieStatusToString(last_status)
+			);
+
 			if (!AurieSuccess(last_status))
 			{
 				// We failed to get background_color (it seems to not exist in Fields of Mistria 2024.6 for example)
 				last_status = GetBuiltinVariableIndex(
 					"room_width",
 					builtin_variable_index
+				);
+
+				CmWriteLogOutput(
+					"[%s:%d] GetBuiltinVariableIndex(\"room_width\") => %s",
+					__FILE__,
+					__LINE__,
+					AurieStatusToString(last_status)
 				);
 
 				// If even room_width fails, we bail.
@@ -644,6 +792,13 @@ namespace YYTK
 				builtin_variable_information
 			);
 
+			CmWriteLogOutput(
+				"[%s:%d] GetBuiltinVariableInformation(builtin_variable_index) => %s",
+				__FILE__,
+				__LINE__,
+				AurieStatusToString(last_status)
+			);
+
 			if (!AurieSuccess(last_status))
 			{
 				this->PrintError(
@@ -659,6 +814,15 @@ namespace YYTK
 			last_status = GmpFindCurrentRoomData(
 				builtin_variable_information->m_SetVariable,
 				&m_RunRoom
+			);
+
+			CmWriteLogOutput(
+				"[%s:%d] GmpFindCurrentRoomData(%p) => %s, 0x%p",
+				__FILE__,
+				__LINE__,
+				builtin_variable_information->m_SetVariable,
+				AurieStatusToString(last_status),
+				m_RunRoom
 			);
 
 			if (!AurieSuccess(last_status))
@@ -749,6 +913,14 @@ namespace YYTK
 				m_EngineSwapchain
 			);
 
+			CmWriteLogOutput(
+				"[%s:%d] HkInitialize(%p) => %s",
+				__FILE__,
+				__LINE__,
+				m_EngineSwapchain,
+				AurieStatusToString(last_status)
+			);
+
 			if (!AurieSuccess(last_status))
 			{
 				this->PrintError(
@@ -813,6 +985,12 @@ namespace YYTK
 				CM_GRAY,
 				"- Runner Edition: %s",
 				m_IsYYCRunner ? "YYC" : "VM"
+			);
+
+			CmWriteLogOutput(
+				"[%s:%d] Stage 2 init OK!",
+				__FILE__,
+				__LINE__
 			);
 
 			m_SecondInitComplete = true;
@@ -964,7 +1142,7 @@ namespace YYTK
 		if (!AurieSuccess(last_status))
 			return last_status;
 
-		*Instance = reinterpret_cast<CInstance*>(m_RunnerInterface.PTR_RValue(&global_scope));
+		*Instance = global_scope.ToInstance();
 
 		return AURIE_SUCCESS;
 	}
@@ -1010,7 +1188,7 @@ namespace YYTK
 		if (m_BuiltinFunctionCache.contains(FunctionName))
 		{
 			m_BuiltinFunctionCache.at(FunctionName)(
-				&Result,
+				Result,
 				SelfInstance,
 				OtherInstance,
 				static_cast<int>(Arguments.size()),
@@ -1043,7 +1221,7 @@ namespace YYTK
 		);
 
 		function(
-			&Result,
+			Result,
 			SelfInstance,
 			OtherInstance,
 			static_cast<int>(Arguments.size()),
@@ -1224,7 +1402,7 @@ namespace YYTK
 			if (!AurieSuccess(last_status))
 				return last_status;
 
-			instance_variable_count = static_cast<int>(name_count.AsReal());
+			instance_variable_count = name_count.ToInt32();
 		}
 		else
 		{
@@ -1260,26 +1438,13 @@ namespace YYTK
 			if (!AurieSuccess(last_status))
 				return last_status;
 
-			// Loop through all elements of the array
-			for (size_t i = 0; i < name_array.length(); i++)
-			{
-				// Use array_get to not rely on m_RValueArrayOffset
-				RValue name;
-				last_status = CallBuiltinEx(
-					name,
-					"array_get",
-					nullptr,
-					nullptr,
-					{ name_array, static_cast<int64_t>(i) }
-				);
+			auto names = name_array.ToRefVector();
 
-				// If we can't get the name just bail
-				if (!AurieSuccess(last_status))
-					return last_status;
-
-				// Assign the name into our vector
-				instance_variable_names.at(i) = name.AsString().data();
-			}
+			// Each element of instance_variable_names is simply 
+			// the string representation of the corresponding
+			// element inside names.
+			for (auto& name : names)
+				instance_variable_names.push_back(name->ToCString());
 		}
 		else
 		{
@@ -1290,10 +1455,8 @@ namespace YYTK
 			);
 		}
 
-		for (int i = 0; i < instance_variable_count; i++)
+		for (const char* variable_name : instance_variable_names)
 		{
-			const char* variable_name = instance_variable_names.at(i);
-
 			RValue* member_variable = nullptr;
 			AurieStatus last_status = AURIE_SUCCESS;
 
@@ -1335,15 +1498,7 @@ namespace YYTK
 		if (!m_RunnerInterface.YYStrDup)
 			return AURIE_MODULE_INTERNAL_ERROR;
 
-		// Duplicate the string using the runner. If you assign the string directly
-		// to the RValue, which then goes out of use, the runner will try to free
-		// memory that doesn't belong to it, which will cause a segfault.
-		const char* duplicated_string = m_RunnerInterface.YYStrDup(String.data());
-		
-		// At no point should we try to create a null string?
-		assert(duplicated_string != nullptr);
-
-		m_RunnerInterface.YYCreateString(&Value, duplicated_string);
+		m_RunnerInterface.YYCreateString(&Value, String.data());
 
 		return AURIE_SUCCESS;
 	}
@@ -1587,7 +1742,7 @@ namespace YYTK
 		if (!AurieSuccess(last_status))
 			return last_status;
 
-		Size = static_cast<size_t>(possible_size.AsReal());
+		Size = possible_size.ToInt64();
 		return AURIE_SUCCESS;
 	}
 
@@ -1677,10 +1832,10 @@ namespace YYTK
 				{ Object }
 			);
 
-			int64_t object_count = static_cast<int64_t>(CallBuiltin(
+			int64_t object_count = CallBuiltin(
 				"instance_number",
 				{ object_index }
-			).AsReal());
+			).ToInt64();
 
 			// Return early if no objects exist
 			if (object_count < 1)
@@ -1700,12 +1855,12 @@ namespace YYTK
 				// If we already got a CInstance* from instance_find, we don't have to pre-process it
 				if (instance.m_Kind == VALUE_OBJECT)
 				{
-					Method(instance.m_Object, instance.m_Object);
+					Method(instance.ToInstance(), instance.ToInstance());
 					continue;
 				}
 
 				// Get the instance ID from the instance
-				int32_t instance_id = static_cast<int32_t>(instance.AsReal());
+				int32_t instance_id = instance.ToInt32();
 
 				// Skip inactive instances / instances that don't exist
 				CInstance* object_instance = nullptr;
@@ -1728,7 +1883,7 @@ namespace YYTK
 		{
 			// We got an instance ID
 			CInstance* instance = nullptr;
-			AurieStatus last_status = GetInstanceObject(static_cast<int32_t>(Object.AsReal()), instance);
+			AurieStatus last_status = GetInstanceObject(Object.ToInt32(), instance);
 
 			// Return if the instance ID is invalid
 			if (!AurieSuccess(last_status))
@@ -1759,5 +1914,175 @@ namespace YYTK
 		);
 
 		return AURIE_SUCCESS;
+	}
+
+	AurieStatus YYTKInterfaceImpl::GetInstanceMemberCount(
+		IN RValue Object,
+		OUT int32_t& Count
+	)
+	{
+		AurieStatus last_status = AURIE_SUCCESS;
+
+		// We need object RValues
+		if (Object.m_Kind != VALUE_OBJECT)
+			return AURIE_INVALID_PARAMETER;
+
+		// This function may not be present.
+		RValue result;
+		last_status = CallBuiltinEx(
+			result,
+			"variable_instance_names_count",
+			nullptr,
+			nullptr,
+			{ Object }
+		);
+
+		if (!AurieSuccess(last_status))
+		{
+			// variable_instance_names_count isn't present.
+			// Try to use StructGetKeys. If that fails, we bail.
+
+			if (!m_RunnerInterface.StructGetKeys)
+				return AURIE_UNAVAILABLE;
+			
+			// StructGetKeys returns the count if the last two args are nullptr.
+			Count = m_RunnerInterface.StructGetKeys(
+				&Object,
+				nullptr,
+				nullptr
+			);
+
+			return AURIE_SUCCESS;
+		}
+
+		Count = result.ToInt32();
+		return AURIE_SUCCESS;
+	}
+
+	RValue YYTKInterfaceImpl::CallGameScript(
+		IN std::string_view ScriptName, 
+		IN const std::vector<RValue>& Arguments
+	)
+	{
+		AurieStatus last_status = AURIE_SUCCESS;
+		CInstance* global_instance = nullptr;
+
+		// Get the global instance, which is the context we'll use
+		// for the call to the script.
+		last_status = this->GetGlobalInstance(
+			&global_instance
+		);
+
+		if (!AurieSuccess(last_status))
+			return last_status;
+
+		// Call the script.
+		RValue result;
+		last_status = this->CallGameScriptEx(
+			result,
+			ScriptName,
+			global_instance,
+			global_instance,
+			Arguments
+		);
+
+		return result;
+	}
+
+	AurieStatus YYTKInterfaceImpl::CallGameScriptEx(
+		OUT RValue& Result,
+		IN std::string_view ScriptName,
+		IN CInstance* SelfInstance,
+		IN CInstance* OtherInstance,
+		IN const std::vector<RValue>& Arguments
+	)
+	{
+		AurieStatus last_status = AURIE_SUCCESS;
+
+		// We need to be safe here, as the caller might pass
+		// in a name of a built-in function.
+		//
+		// Since there is no OBJECT_TYPE-like mechanism in YYToolkit, 
+		// we need to check it via the ID. Scripts have an ID > 100'000.
+		int function_index = -1;
+		last_status = this->GetNamedRoutineIndex(
+			ScriptName.data(),
+			&function_index
+		);
+
+		if (!AurieSuccess(last_status))
+			return AURIE_OBJECT_NOT_FOUND;
+
+		// Reject IDs under 100'000 (built-in functions)
+		// and IDs that are above or equal to 500'000 (extension functions).
+		if (function_index < 100'000 || function_index >= 500'000)
+			return AURIE_INVALID_PARAMETER;
+
+		// Get the actual script object
+		CScript* script_object = nullptr;
+		last_status = this->GetScriptData(
+			function_index - 100'000,
+			script_object
+		);
+
+		// If we failed getting it, we return the status code
+		// returned by GetScriptData.
+		if (!AurieSuccess(last_status))
+			return last_status;
+
+		// Is there a function linked to this script?
+		if (!script_object->m_Functions)
+			return AURIE_ACCESS_DENIED;
+
+		// Is the function linked to this script valid?
+		if (!script_object->m_Functions->m_ScriptFunction)
+			return AURIE_ACCESS_DENIED;
+
+		// Create a vector with a pre-allocated array
+		std::vector<const RValue*> rvalue_pointers;
+		rvalue_pointers.reserve(Arguments.size());
+
+		// Push all the arguments back in there
+		for (const auto& arg : Arguments)
+			rvalue_pointers.push_back(&arg);
+
+		// Call the actual script
+		script_object->m_Functions->m_ScriptFunction(
+			SelfInstance,
+			OtherInstance,
+			Result,
+			static_cast<int>(rvalue_pointers.size()),
+			const_cast<RValue**>(rvalue_pointers.data())
+		);
+
+		return AURIE_SUCCESS;
+	}
+
+	bool YYTKInterfaceImpl::IsInstanceOfObject(
+		IN const RValue& Instance, 
+		IN std::string_view ObjectName
+	)
+	{
+		// Instance should refer to an object
+		if (Instance.m_Kind != VALUE_OBJECT)
+			return false;
+
+		// Extract the object from the RValue
+		YYObjectBase* object = Instance.ToObject();
+
+		// Figure out if the object qualifies as an instance
+		if (!object || object->m_ObjectKind != OBJECT_KIND_CINSTANCE)
+			return false;
+
+		// If the instance has no parent object
+		if (!Instance.ToInstance()->m_Object)
+			return false;
+
+		// If the parent object is nameless
+		if (!Instance.ToInstance()->m_Object->m_Name)
+			return false;
+
+		// Compare the names
+		return _stricmp(ObjectName.data(), Instance.ToInstance()->m_Object->m_Name) == 0;
 	}
 }
