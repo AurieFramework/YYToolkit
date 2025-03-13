@@ -31,13 +31,9 @@ namespace YYTK
 		// The instruction pointer of the Extension_PrePrepare breakpoint.
 		PVOID m_ExceptionRIP = nullptr;
 
-		// Original bytes of Extension_PrePrepare's JS instruction.
-		// Only used if VEH is used.
-		std::vector<uint8_t> m_ExtensionPatchBytes;
-
-		// The base address of the JS instruction.
-		// Only used if VEH is used.
-		PVOID m_ExtensionPatchBase = nullptr;
+		// Used to pass data to the midfunction hook. It's the base address
+		// of the lea-mov pairs that construct the Runner Interface on the stack.
+		uint64_t m_RunnerInterfaceBase = 0;
 	private:
 
 		// A pointer to the functions array in memory

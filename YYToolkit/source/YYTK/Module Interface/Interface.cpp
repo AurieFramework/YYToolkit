@@ -2051,7 +2051,7 @@ namespace YYTK
 			SelfInstance,
 			OtherInstance,
 			Result,
-			rvalue_pointers.size(),
+			static_cast<int>(rvalue_pointers.size()),
 			const_cast<RValue**>(rvalue_pointers.data())
 		);
 
@@ -2063,20 +2063,26 @@ namespace YYTK
 		IN std::string_view ObjectName
 	)
 	{
+		// Instance should refer to an object
 		if (Instance.m_Kind != VALUE_OBJECT)
 			return false;
 
+		// Extract the object from the RValue
 		YYObjectBase* object = Instance.ToObject();
 
+		// Figure out if the object qualifies as an instance
 		if (!object || object->m_ObjectKind != OBJECT_KIND_CINSTANCE)
 			return false;
 
+		// If the instance has no parent object
 		if (!Instance.ToInstance()->m_Object)
 			return false;
 
+		// If the parent object is nameless
 		if (!Instance.ToInstance()->m_Object->m_Name)
 			return false;
 
+		// Compare the names
 		return _stricmp(ObjectName.data(), Instance.ToInstance()->m_Object->m_Name) == 0;
 	}
 }
