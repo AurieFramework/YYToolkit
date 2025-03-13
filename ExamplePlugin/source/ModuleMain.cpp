@@ -27,13 +27,10 @@ EXPORTED AurieStatus ModuleInitialize(
 
 	// Gets a handle to the interface exposed by YYTK
 	// You can keep this pointer for future use, as it will not change unless YYTK is unloaded.
-	last_status = ObGetInterface(
-		"YYTK_Main",
-		(AurieInterfaceBase*&)(g_ModuleInterface)
-	);
+	g_ModuleInterface = YYTK::GetInterface();
 
 	// If we can't get the interface, we fail loading.
-	if (!AurieSuccess(last_status))
+	if (!g_ModuleInterface)
 		return AURIE_MODULE_DEPENDENCY_NOT_RESOLVED;
 
 	g_ModuleInterface->Print(CM_LIGHTGREEN, "[Example Plugin] - Hello from PluginEntry!");
