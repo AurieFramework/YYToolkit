@@ -95,7 +95,6 @@ EXPORTED AurieStatus ModuleUnload(
 
 	YYTK::CmpCloseLogFile();
 
-
 	UNREFERENCED_PARAMETER(Module);
 	UNREFERENCED_PARAMETER(ModulePath);
 
