@@ -17,7 +17,9 @@ namespace YYTK
 			RFunctionStringRef& function_entry = functions_array->GetIndexReferential(Index);
 
 			// Save stuff into the variables
-			FunctionName = function_entry.m_Name;
+			if (function_entry.m_Name)
+				FunctionName = function_entry.m_Name;
+
 			FunctionRoutine = function_entry.m_Routine;
 			ArgumentCount = function_entry.m_ArgumentCount;
 		}
@@ -27,8 +29,9 @@ namespace YYTK
 			
 			// Properly null-terminate the string
 			char string_buffer[70] = { 0 };
-			strncpy_s(string_buffer, function_entry.m_Name, 64);
-
+			if (function_entry.m_Name)
+				strncpy_s(string_buffer, function_entry.m_Name, 64);
+			
 			// You know the rest...
 			FunctionName = string_buffer;
 			FunctionRoutine = function_entry.m_Routine;
@@ -1344,11 +1347,47 @@ namespace YYTK
 		if (Instance.m_Kind != VALUE_OBJECT)
 			return AURIE_INVALID_PARAMETER;
 
-		// If we don't have the interface function, we use a fallback method
-		if (!m_RunnerInterface.StructGetMember)
+		RValue* member_value = nullptr;
+
+
+		// If StructGetMember is available, use it.
+		if (m_RunnerInterface.StructGetMember)
 		{
-			int32_t variable_hash = 0;
+			member_value = m_RunnerInterface.StructGetMember(&Instance, MemberName);
+		}
+
+		// If StructGetMember failed or isn't available, we try the other way:
+		if (!member_value)
+		{
 			AurieStatus last_status = AURIE_SUCCESS;
+
+			RValue variable_exists;
+			int32_t variable_hash = 0;
+
+			// Call variable_instance_exists to make sure the variable exists.
+			// If we don't do this, GetVariableSlot will implicitely create it for us, leading to unexpected behavior.
+			last_status = CallBuiltinEx(
+				variable_exists,
+				"variable_instance_exists",
+				nullptr,
+				nullptr,
+				{ Instance, MemberName }
+			);
+
+			// If the method call failed, we can skip it (unsupported runner?)
+			if (!AurieSuccess(last_status))
+				return last_status;
+
+			// If there variable doesn't exist, we don't wanna implicitely create it. Return AURIE_OBJECT_NOT_FOUND instead.
+			if (!variable_exists.ToBoolean())
+				return AURIE_OBJECT_NOT_FOUND;
+
+			CmWriteLogOutput(
+				"[%s:%d] GetInstanceMember() => StructGetMember failed on variable %s, but variable does exist?",
+				__FILE__,
+				__LINE__,
+				MemberName
+			);
 
 			last_status = this->GetVariableSlot(
 				Instance,
@@ -1356,14 +1395,14 @@ namespace YYTK
 				variable_hash
 			);
 
+			// If GetVariableSlot fails (which it only does if the internal function is unavailable)
+			// we return the last status.
 			if (!AurieSuccess(last_status))
 				return last_status;
 
-			Member = &Instance.m_Object->InternalGetYYVarRef(variable_hash);
-			return AURIE_SUCCESS;
+			// Otherwise we try to get the internal value and write it to InternalGetYYVarRef
+			member_value = &Instance.m_Object->InternalGetYYVarRef(variable_hash);
 		}
-
-		RValue* member_value = m_RunnerInterface.StructGetMember(&Instance, MemberName);
 
 		if (!member_value)
 			return AURIE_OBJECT_NOT_FOUND;

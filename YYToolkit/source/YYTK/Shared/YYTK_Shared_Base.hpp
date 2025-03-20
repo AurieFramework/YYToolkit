@@ -24,7 +24,7 @@
 #endif // YYTK_MINOR
 
 #ifndef YYTK_PATCH
-#define YYTK_PATCH 0
+#define YYTK_PATCH 1
 #endif
 
 #ifndef YYTK_VERSION_STRING
