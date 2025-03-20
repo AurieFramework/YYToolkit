@@ -360,7 +360,7 @@ namespace YYTK
 		* \brief Calls a game script in the global context.
 		* \param ScriptName The name of the script to call, prefixed with gml_Script. Case-sensitive.
 		* \param Arguments The arguments to pass into the script.
-		* \return AURIE_SUCCESS on success. AURIE_INVALID_PARAMETER if Object is an invalid type.
+		* \return An RValue representing the return value of the script.
 		*/
 		virtual RValue CallGameScript(
 			IN std::string_view ScriptName,
