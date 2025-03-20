@@ -147,6 +147,39 @@ std::vector<RValue> YYTK::RValue::ToVector() const
 	return result;
 }
 
+RValue* YYTK::RValue::GetRefMember(
+	IN const char* MemberName
+)
+{
+	return this->ToInstance()->GetRefMember(MemberName);
+}
+
+RValue* YYTK::RValue::GetRefMember(
+	IN const std::string& MemberName
+)
+{
+	return this->ToInstance()->GetRefMember(MemberName);
+}
+
+RValue YYTK::RValue::GetMember(
+	IN const char* MemberName
+) const
+{
+	return this->ToInstance()->GetMember(MemberName);
+}
+
+RValue YYTK::RValue::GetMember(
+	IN const std::string& MemberName
+) const
+{
+	return this->ToInstance()->GetMember(MemberName);
+}
+
+int32_t YYTK::RValue::GetMemberCount() const
+{
+	return this->ToInstance()->GetMemberCount();
+}
+
 RValue* YYTK::RValue::ToArray()
 {
 	RValue* array_start = nullptr;

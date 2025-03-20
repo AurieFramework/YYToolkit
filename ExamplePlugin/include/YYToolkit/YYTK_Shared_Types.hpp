@@ -1681,6 +1681,43 @@ namespace YYTK
 		// Elements of the vector are copies of the array members.
 		std::vector<RValue> ToVector() const;
 
+		// Retrieves a nested member from the RValue.
+		// Only applicable for VALUE_OBJECT RValues.
+		//
+		// The returned value is a pointer to the variable.
+		// If the variable does not exist, the function returns NULL.
+		RValue* GetRefMember(
+			IN const char* MemberName
+		);
+
+		// Retrieves a nested member from the RValue.
+		// Only applicable for VALUE_OBJECT RValues.
+		//
+		// The returned value is a pointer to the variable.
+		RValue* GetRefMember(
+			IN const std::string& MemberName
+		);
+
+		// Retrieves a nested member from the RValue.
+		// Only applicable for VALUE_OBJECT RValues.
+		//
+		// The returned value is a copy of the variable.
+		RValue GetMember(
+			IN const char* MemberName
+		) const;
+
+		// Retrieves a nested member from the RValue.
+		// Only applicable for VALUE_OBJECT RValues.
+		//
+		// The returned value is a copy of the variable.
+		RValue GetMember(
+			IN const std::string& MemberName
+		) const;
+
+		// Retrieves the member variable count from the RValue.
+		// Only applicable for VALUE_OBJECT RValues.
+		int32_t GetMemberCount() const;
+
 		// Converts the RValue into a C-style array of RValues.
 		// Only applicable for VALUE_ARRAY RValues.
 		RValue* ToArray();
