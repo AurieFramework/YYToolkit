@@ -1,4 +1,5 @@
 #include "../Module Internals.hpp"
+#include <stacktrace>
 using namespace Aurie;
 
 namespace YYTK
@@ -154,6 +155,111 @@ namespace YYTK
 			);
 		}
 
+		void HkYYError(
+			IN const char* Format,
+			IN ...
+		)
+		{	
+			// Parse Format and va_args to get the runner-provided information.
+			std::string runner_provided_info_formatted;
+			{
+				va_list list, copy_of_list;
+				va_start(list, Format);
+				va_copy(copy_of_list, list);
+
+				// Compute the required size. We use a copy of "list" to prevent the internal stack pointer from being moved.
+				const int size_required = vsnprintf(nullptr, 0, Format, copy_of_list) + 1;
+
+				va_end(copy_of_list);
+
+				// Allocate memory for the formatted string
+				char* formatted_cstring = static_cast<char*>(MmAllocateMemory(g_ArSelfModule, size_required));
+				vsnprintf(formatted_cstring, size_required, Format, list);
+				va_end(list);
+
+				runner_provided_info_formatted = formatted_cstring;
+
+				MmFreeMemory(g_ArSelfModule, formatted_cstring);
+				formatted_cstring = nullptr;
+			}
+
+			// Message header
+			std::string yytk_crash_message =
+				"\n"
+				"A fatal game error has occured.\n"
+				"Runner caught the exception; the exception_unhandled_handler callback has not been invoked.\n"
+				"\n"
+				"Runner-given error information:\n";
+
+			// Append the runner-provided information
+			yytk_crash_message.append(runner_provided_info_formatted);
+
+			// Stacktrace header
+			yytk_crash_message.append(
+				"\n\n"
+				"Stacktrace:\n"
+				" #\tRetAddr         \tCall Site\n"
+			);
+
+			// Capture stacktrace
+			const auto stacktrace = std::stacktrace::current();
+
+			// Log all functions in the trace
+			size_t function_index = 0;
+			for (auto& entry : stacktrace)
+			{
+				// description will be empty if resolve_game_symbol fails.
+				std::string description = GmResolveGameSymbolFromAddress(stacktrace._To_voidptr_array()[function_index]);
+				if (description.empty())
+					description = entry.description();
+
+				yytk_crash_message.append(
+					std::format("{:02}\t{:016X}\t{}\n", 
+						function_index, 
+						reinterpret_cast<uint64_t>(stacktrace._To_voidptr_array()[function_index]),
+						description
+					)
+				);
+				function_index++;
+			}
+			
+			// More information
+			yytk_crash_message.append("\n");
+			yytk_crash_message.append("YYTK Version: ");
+			yytk_crash_message.append(YYTK_VERSION_STRING);
+			yytk_crash_message.append("\n");
+			yytk_crash_message.append("Aurie Module List:\n");
+
+			// Loop all modules - this is undocumented and plugins should not use this, but we do.
+			AurieModule* current_module = g_ArSelfModule;
+			do
+			{
+				// The method doesn't modify module_name unless it succeeds.
+				std::wstring module_name = L"<unknown>";
+				MdGetImageFilename(current_module, module_name);
+
+				// Convert to UTF-8
+				const std::string module_name_utf8(module_name.begin(), module_name.end());
+
+				const uint64_t module_address = reinterpret_cast<uint64_t>(Internal::MdpGetModuleBaseAddress(current_module));
+				yytk_crash_message.append(std::format("- {:016X} {}\n", module_address, module_name_utf8));
+
+				// Go to the next module
+				Internal::MdpGetNextModule(current_module, current_module);
+			} while (current_module != g_ArSelfModule);
+
+			CmWriteLogOutput(yytk_crash_message);
+			
+			std::string yytk_info = "\r\n\r\n********************************************\r\n";
+			yytk_info.append("YYToolkit is loaded. Relevant information has been logged to YYToolkit.log in the game directory.\r\n");
+			yytk_info.append("Please provide the entire log file to aid in debugging.\r\n");
+			yytk_info.append("********************************************\r\n");
+
+			return GetHookTrampoline<decltype(&HkYYError)>("YYError")(
+				(runner_provided_info_formatted + yytk_info).c_str()
+			);
+		}
+
 		AurieStatus HkPreinitialize()
 		{
 			/*
@@ -193,6 +299,8 @@ namespace YYTK
 
 			if (!AurieSuccess(last_status))
 				return last_status;
+
+			g_ModuleInterface.m_CodeExecute = code_execute;
 			
 			return last_status;
 		}
@@ -245,6 +353,14 @@ namespace YYTK
 
 			if (!AurieSuccess(last_status))
 				return AURIE_MODULE_INITIALIZATION_FAILED;
+
+			last_status = MmCreateHook(
+				g_ArSelfModule,
+				"YYError",
+				g_ModuleInterface.GetRunnerInterface().YYError,
+				HkYYError,
+				nullptr
+			);
 
 			g_OriginalWindowProc = reinterpret_cast<WNDPROC>(SetWindowLongPtr(
 				WindowHandle,

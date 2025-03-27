@@ -34,6 +34,10 @@ namespace YYTK
 		// Used to pass data to the midfunction hook. It's the base address
 		// of the lea-mov pairs that construct the Runner Interface on the stack.
 		uint64_t m_RunnerInterfaceBase = 0;
+
+		// A pointer to Code_Execute - not a trampoline, just the actual function
+		PVOID m_CodeExecute = nullptr;
+
 	private:
 
 		// A pointer to the functions array in memory
@@ -87,6 +91,7 @@ namespace YYTK
 		std::vector<ModuleCallbackDescriptor> m_RegisteredCallbacks;
 
 		// === Internal functions ===
+
 		void YkExtractFunctionEntry(
 			IN size_t Index,
 			OUT std::string& FunctionName,
@@ -307,12 +312,12 @@ namespace YYTK
 		virtual Aurie::AurieStatus GetInstanceMemberCount(
 			IN RValue Object,
 			OUT int32_t& Count
-		);
+		) override final;
 
 		virtual RValue CallGameScript(
 			IN std::string_view ScriptName,
 			IN const std::vector<RValue>& Arguments
-		);
+		) override final;
 
 		virtual Aurie::AurieStatus CallGameScriptEx(
 			OUT RValue& Result,
@@ -320,12 +325,12 @@ namespace YYTK
 			IN CInstance* SelfInstance,
 			IN CInstance* OtherInstance,
 			IN const std::vector<RValue>& Arguments
-		);
+		) override final;
 
 		virtual bool IsInstanceOfObject(
 			IN const RValue& Instance,
 			IN std::string_view ObjectName
-		);
+		) override final;
 	};
 
 	inline YYTKInterfaceImpl g_ModuleInterface;

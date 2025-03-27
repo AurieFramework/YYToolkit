@@ -140,7 +140,7 @@
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <AdditionalIncludeDirectories>$(ProjectDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <Optimization>MaxSpeed</Optimization>
+      <Optimization>Disabled</Optimization>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <AdditionalOptions>/d1trimfile:"$(SolutionDir)\" %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
@@ -177,6 +177,7 @@
     <ClInclude Include="include\Aurie\shared.hpp" />
     <ClInclude Include="include\FunctionWrapper\FunctionWrapper.hpp" />
     <ClInclude Include="include\Zydis\Zydis.h" />
+    <ClInclude Include="resource.h" />
     <ClInclude Include="source\YYTK\Module Interface\Interface.hpp" />
     <ClInclude Include="source\YYTK\Module Internals\Module Internals.hpp" />
     <ClInclude Include="source\YYTK\Shared\YYTK_Shared.hpp" />
@@ -184,6 +185,9 @@
     <ClInclude Include="source\YYTK\Shared\YYTK_Shared_Interface.hpp" />
     <ClInclude Include="source\YYTK\Shared\YYTK_Shared_Types.hpp" />
     <ClInclude Include="source\YYTK\Tool.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="YYToolkit.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

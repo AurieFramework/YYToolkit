@@ -53,3 +53,9 @@ YYTK is split on two branches, that being [Legacy](https://github.com/AurieFrame
   - [MousieDev](https://github.com/MousieDev) for creating makefiles (which probably don't work at this point)
   - [Miepee](https://github.com/Miepee) for the awesome icon!
   - [TheEternalShine](https://github.com/TheEternalShine) for testing and giving feedback on in-development versions of the tool.
+ 
+## Donations
+YYToolkit is, and likely always will be, free software.
+
+If you wish to support my efforts of developing YYToolkit and the Aurie Framework, reach out to me on Discord using the @archie_uwu username.
+I currently only accept donations through international bank transfer.

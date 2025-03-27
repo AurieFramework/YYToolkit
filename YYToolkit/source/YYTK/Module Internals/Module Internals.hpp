@@ -79,6 +79,11 @@ namespace YYTK
 	);
 
 	// Shared, directly GM related
+
+	std::string GmResolveGameSymbolFromAddress(
+		IN LPCVOID Address
+	);
+
 	Aurie::AurieStatus GmpGetRunnerInterface(
 		OUT YYRunnerInterface& Interface
 	);
@@ -194,6 +199,11 @@ namespace YYTK
 			IN CCode* CodeObject,
 			IN RValue* Arguments,
 			IN INT Flags
+		);
+
+		void HkYYError(
+			IN const char* ErrorString,
+			IN ...
 		);
 
 		// Meant for Stage 1 of loading in g_ModuleInterface

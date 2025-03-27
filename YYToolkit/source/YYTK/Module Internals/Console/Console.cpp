@@ -11,7 +11,7 @@ namespace YYTK
 		IN va_list Arguments
 	)
 	{
-		constexpr size_t max_length = 1024;
+		constexpr size_t max_length = 4096;
 		size_t length = strlen(Format);
 
 		if (length >= max_length)
