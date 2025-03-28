@@ -248,7 +248,11 @@ namespace YYTK
 				Internal::MdpGetNextModule(current_module, current_module);
 			} while (current_module != g_ArSelfModule);
 
-			CmWriteLogOutput(yytk_crash_message);
+			DbgPrintEx(
+				LOG_SEVERITY_CRITICAL, 
+				"%s",
+				yytk_crash_message.c_str()
+			);
 			
 			std::string yytk_info = "\r\n\r\n********************************************\r\n";
 			yytk_info.append("YYToolkit is loaded. Relevant information has been logged to YYToolkit.log in the game directory.\r\n");

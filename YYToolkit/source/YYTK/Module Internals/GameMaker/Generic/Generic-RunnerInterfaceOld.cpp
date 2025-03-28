@@ -71,7 +71,8 @@ namespace YYTK
 		// we need the base address of the game to add to the offset
 		char* game_base = reinterpret_cast<char*>(GetModuleHandleW(nullptr));
 
-		CmWriteLogOutput(
+		DbgPrintEx(
+			LOG_SEVERITY_TRACE,
 			"[%s:%d] GmpGetRunnerInterfaceX64() => Game loaded at 0x%p",
 			__FILE__,
 			__LINE__,
@@ -117,7 +118,8 @@ namespace YYTK
 		if (instructions.empty())
 			return AURIE_OBJECT_NOT_FOUND;
 
-		CmWriteWarning(
+		DbgPrintEx(
+			LOG_SEVERITY_DEBUG,
 			"Found %lld functions in %lld assembly instructions!",
 			GmpCountInstructionReferences(instructions),
 			instructions.size()
@@ -162,7 +164,8 @@ namespace YYTK
 		if (target_register == ZYDIS_REGISTER_NONE)
 			return AURIE_OBJECT_NOT_FOUND;
 
-		CmWriteWarning(
+		DbgPrintEx(
+			LOG_SEVERITY_DEBUG,
 			"Target register is %s!",
 			ZydisRegisterGetString(target_register)
 		);
@@ -209,7 +212,8 @@ namespace YYTK
 			}
 		}
 
-		CmWriteWarning(
+		DbgPrintEx(
+			LOG_SEVERITY_DEBUG,
 			"Interface starts on stack offset %lld",
 			interface_start_on_stack
 		);
@@ -285,7 +289,8 @@ namespace YYTK
 			);
 		}
 
-		CmWriteWarning(
+		DbgPrintEx(
+			LOG_SEVERITY_DEBUG,
 			"Associated %lld LEA + MOV instructions!",
 			associated_leas.size()
 		);
@@ -321,7 +326,8 @@ namespace YYTK
 			// but not in LTS. Ask nik / nkrapivin for more info.
 			if (mov_displacement >= sizeof(YYRunnerInterface))
 			{
-				CmWriteWarning(
+				DbgPrintEx(
+					LOG_SEVERITY_WARNING,
 					"YYRunnerInterface+0x%04llx = 0x%p, but sizeof(YYRunnerInterface) = 0x%llx",
 					mov_displacement,
 					lea.FunctionTarget,
@@ -457,7 +463,8 @@ namespace YYTK
 
 			if (mov_instructions.size() > 80 && mov_instructions.size() < 104)
 			{
-				CmWriteWarning(
+				DbgPrintEx(
+					LOG_SEVERITY_TRACE,
 					"Found %d functions in %d assembly instructions!",
 					mov_instructions.size(),
 					instructions.size()
@@ -486,7 +493,8 @@ namespace YYTK
 			if (offset >= sizeof(YYRunnerInterface))
 			{
 				// TODO: instr.operands[1].imm.value might be relative?
-				CmWriteWarning(
+				DbgPrintEx(
+					LOG_SEVERITY_WARNING,
 					"YYRunnerInterface+0x%04llx = 0x%p, but sizeof(YYRunnerInterface) = 0x%x",
 					offset,
 					instr.operands[1].imm.value,

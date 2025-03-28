@@ -32,7 +32,8 @@ namespace YYTK
 			if (instr.RawForm.info.mnemonic != ZYDIS_MNEMONIC_CALL)
 				continue;
 
-			CmWriteLogOutput(
+			DbgPrintEx(
+				LOG_SEVERITY_TRACE,
 				"[%s:%d] GmpGetFindAllocSlotFromName() => instruction = %s",
 				__FILE__,
 				__LINE__,

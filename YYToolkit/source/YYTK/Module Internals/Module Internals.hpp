@@ -6,53 +6,8 @@
 
 namespace YYTK
 {
-	void CmWriteInfo(
-		IN std::string_view Format,
-		IN ...
-	);
-
-	void CmWriteOutput(
-		IN CmColor Color,
-		IN std::string_view Format,
-		IN ...
-	);
-
-	void CmWriteWarning(
-		IN std::string_view Format,
-		IN ...
-	);
-
-	void CmWriteError(
-		IN std::string_view Filepath,
-		IN const int& Line,
-		IN std::string_view Format,
-		IN ...
-	);
-
-	std::string CmpParseVa(
-		IN const char* Format,
-		IN va_list Arguments
-	);
-
-	void CmpCreateLogFile(
-		IN const char* Filename
-	);
-
-	void CmWriteLogOutput(
-		IN std::string_view Format,
-		IN ...
-	);
-
-	void CmpCloseLogFile();
-
-	void CmpSetTextColor(
-		IN CmColor color
-	);
-
-	// Creates a console for the tool to output stuff into
-	void CmpCreateConsole();
-
 	// Shared, not directly GM related
+
 	std::vector<TargettedInstruction> GmpDisassemble(
 		IN PVOID Address,
 		IN size_t MaximumSize,
@@ -90,11 +45,6 @@ namespace YYTK
 
 	void GmpRunnerInterfaceHook(
 		IN Aurie::ProcessorContext& Function
-	);
-
-	void YYExtensionInitializeDummy(
-		IN YYRunnerInterface* Interface,
-		IN size_t Size
 	);
 
 	Aurie::AurieStatus GmpCreateHookOnInterfaceCreation(

@@ -46,9 +46,6 @@ EXPORTED AurieStatus ModulePreinitialize(
 {
 	UNREFERENCED_PARAMETER(ModulePath);
 
-	CmpCreateConsole();
-	CmpCreateLogFile("YYToolkit.log");
-
 	AurieStatus last_status = AURIE_SUCCESS;
 
 	last_status = ObCreateInterface(
@@ -57,7 +54,13 @@ EXPORTED AurieStatus ModulePreinitialize(
 		"YYTK_Main"
 	);
 
-	CmWriteLogOutput("[%s:%d] YYTK_Main interface created with status %s", __FILE__, __LINE__, AurieStatusToString(last_status));
+	DbgPrintEx(
+		LOG_SEVERITY_TRACE,
+		"[%s:%d] YYTK_Main interface created with status %s",
+		__FILE__, 
+		__LINE__, 
+		AurieStatusToString(last_status)
+	);
 
 	if (!AurieSuccess(last_status))
 		return last_status;
@@ -78,25 +81,6 @@ EXPORTED AurieStatus ModuleInitialize(
 
 	if (!g_ModuleInterface.m_SecondInitComplete)
 		return AURIE_MODULE_INITIALIZATION_FAILED;
-
-	return AURIE_SUCCESS;
-}
-
-EXPORTED AurieStatus ModuleUnload(
-	IN AurieModule* Module,
-	IN const fs::path& ModulePath
-)
-{
-	// Close the console window only AFTER freeing it, otherwise we close the game as well!
-	HWND console_window = GetConsoleWindow();
-	FreeConsole();
-	PostMessageW(console_window, WM_CLOSE, 0, 0);
-	CmWriteLogOutput("[%s:%d] Unloading.", __FILE__, __LINE__);
-
-	YYTK::CmpCloseLogFile();
-
-	UNREFERENCED_PARAMETER(Module);
-	UNREFERENCED_PARAMETER(ModulePath);
 
 	return AURIE_SUCCESS;
 }

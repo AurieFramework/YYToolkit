@@ -40,11 +40,11 @@
 #endif
 
 #ifndef AURIE_FWK_MAJOR
-#define AURIE_FWK_MAJOR 1
+#define AURIE_FWK_MAJOR 2
 #endif // AURIE_FWK_MAJOR
 
 #ifndef AURIE_FWK_MINOR
-#define AURIE_FWK_MINOR 2
+#define AURIE_FWK_MINOR 0
 #endif // AURIE_FWK_MINOR
 
 #ifndef AURIE_FWK_PATCH
@@ -303,6 +303,16 @@ namespace Aurie
 		PVOID ModuleBaseAddress;
 	};
 
+	enum AurieLogSeverity : char
+	{
+		LOG_SEVERITY_TRACE = 0,
+		LOG_SEVERITY_DEBUG = 1,
+		LOG_SEVERITY_INFO = 2,
+		LOG_SEVERITY_WARNING = 3,
+		LOG_SEVERITY_ERROR = 4,
+		LOG_SEVERITY_CRITICAL = 5
+	};
+
 	// Always points to the initial Aurie image
 	// Initialized in either ArProcessAttach or __aurie_fwk_init
 	inline AurieModule* g_ArInitialImage = nullptr;
@@ -340,6 +350,7 @@ namespace Aurie
 #ifndef AURIE_INCLUDE_PRIVATE
 #include <functional>
 #include <Windows.h>
+#include <map>
 
 namespace Aurie
 {
@@ -353,6 +364,8 @@ namespace Aurie
 		inline void* (*g_PpGetFrameworkRoutine)(
 			IN const char* ImageExportName
 			);
+
+		inline std::map<std::string, void*> g_FunctionMap;
 
 		EXPORTED inline int WINAPI DllMain(
 			HINSTANCE,  // handle to DLL module
@@ -395,7 +408,11 @@ namespace Aurie
 			template <typename ...TArgs>
 			ReturnType operator()(const char* FunctionName, TArgs&... Args)
 			{
-				auto Func = reinterpret_cast<TFunction*>(g_PpGetFrameworkRoutine(FunctionName));
+				TFunction* Func = nullptr;
+				if (g_FunctionMap.contains(FunctionName))
+					return reinterpret_cast<TFunction*>(g_FunctionMap[FunctionName])(Args...);
+
+				Func = reinterpret_cast<TFunction*>(g_PpGetFrameworkRoutine(FunctionName));
 				if (!Func)
 				{
 					std::string error_string = "Tried to call function ";
@@ -412,7 +429,11 @@ namespace Aurie
 
 			ReturnType operator()(const char* FunctionName)
 			{
-				auto Func = reinterpret_cast<TFunction*>(g_PpGetFrameworkRoutine(FunctionName));
+				TFunction* Func = nullptr;
+				if (g_FunctionMap.contains(FunctionName))
+					return reinterpret_cast<TFunction*>(g_FunctionMap[FunctionName])();
+
+				Func = reinterpret_cast<TFunction*>(g_PpGetFrameworkRoutine(FunctionName));
 				if (!Func)
 				{
 					std::string error_string = "Tried to call function ";
@@ -434,6 +455,57 @@ namespace Aurie
 
 namespace Aurie
 {
+	inline void vDbgPrint(
+		IN const char* Format,
+		IN va_list Arguments
+	)
+	{
+		return AURIE_API_CALL(vDbgPrint, Format, Arguments);
+	}
+
+	inline void DbgPrint(
+		IN const char* Format,
+		IN ...
+	)
+	{
+		va_list list;
+		va_start(list, Format);
+
+		vDbgPrint(
+			Format,
+			list
+		);
+
+		va_end(list);
+	}
+
+	inline void vDbgPrintEx(
+		IN AurieLogSeverity Severity,
+		IN const char* Format,
+		IN va_list Arguments
+	)
+	{
+		return AURIE_API_CALL(vDbgPrintEx, Severity, Format, Arguments);
+	}
+
+	inline void DbgPrintEx(
+		IN AurieLogSeverity Severity,
+		IN const char* Format,
+		IN ...
+	)
+	{
+		va_list list;
+		va_start(list, Format);
+
+		vDbgPrintEx(
+			Severity,
+			Format,
+			list
+		);
+
+		va_end(list);
+	}
+
 	inline AurieStatus ElIsProcessSuspended(
 		OUT bool& Suspended
 	)

@@ -60,7 +60,8 @@ namespace YYTK
 		// instead checking if we even called the function successfully.
 		if (!AurieSuccess(last_status))
 		{
-			this->PrintError(
+			DbgPrintEx(
+				LOG_SEVERITY_CRITICAL,
 				__FILE__,
 				__LINE__,
 				"Failed to call os_get_info function! (%s)",
@@ -88,7 +89,8 @@ namespace YYTK
 		// instead checking if we even called the function successfully.
 		if (!AurieSuccess(last_status))
 		{
-			this->PrintError(
+			DbgPrintEx(
+				LOG_SEVERITY_CRITICAL,
 				__FILE__,
 				__LINE__,
 				"Failed to get video_d3d11_device! (%s)",
@@ -110,7 +112,8 @@ namespace YYTK
 		// instead checking if we even called the function successfully.
 		if (!AurieSuccess(last_status))
 		{
-			this->PrintError(
+			DbgPrintEx(
+				LOG_SEVERITY_CRITICAL,
 				__FILE__,
 				__LINE__,
 				"Failed to get video_d3d11_swapchain! (%s)",
@@ -320,7 +323,8 @@ namespace YYTK
 				m_RunnerInterface
 			);
 
-			CmWriteLogOutput(
+			DbgPrintEx(
+				LOG_SEVERITY_TRACE,
 				"[%s:%d] GmpGetRunnerInterface() => %s", 
 				__FILE__, 
 				__LINE__, 
@@ -336,7 +340,8 @@ namespace YYTK
 					GmpRunnerInterfaceHook
 				);
 
-				CmWriteLogOutput(
+				DbgPrintEx(
+					LOG_SEVERITY_TRACE,
 					"[%s:%d] GmpCreateHookOnInterfaceCreation() => %s (m_ExceptionRIP = 0x%p)",
 					__FILE__,
 					__LINE__,
@@ -346,7 +351,8 @@ namespace YYTK
 
 				if (!AurieSuccess(last_status) || !this->m_ExceptionRIP)
 				{
-					this->PrintError(
+					DbgPrintEx(
+						LOG_SEVERITY_CRITICAL,
 						__FILE__,
 						__LINE__,
 						"Failed to find runner interface! (%s)",
@@ -358,8 +364,7 @@ namespace YYTK
 				else
 				{
 					m_IsUsingMidFunctionHook = true;
-					this->Print(
-						CM_LIGHTAQUA,
+					DbgPrint(
 						"Game code analysis finished. Breakpoint set on RIP 0x%p.",
 						this->m_ExceptionRIP
 					);
@@ -368,7 +373,8 @@ namespace YYTK
 
 			last_status = Hooks::HkPreinitialize();
 
-			CmWriteLogOutput(
+			DbgPrintEx(
+				LOG_SEVERITY_TRACE,
 				"[%s:%d] HkPreinitialize() => %s",
 				__FILE__,
 				__LINE__,
@@ -377,7 +383,8 @@ namespace YYTK
 
 			if (!AurieSuccess(last_status))
 			{
-				this->PrintError(
+				DbgPrintEx(
+					LOG_SEVERITY_CRITICAL,
 					__FILE__,
 					__LINE__,
 					"Failed to initialize stage 1 hooks! (%s)",
@@ -387,9 +394,10 @@ namespace YYTK
 				return last_status;
 			}
 
-			CmWriteOutput(CM_LIGHTAQUA, "YYTK Next - Early initialization complete.");
+			DbgPrint("YYTK Next - Early initialization complete.");
 
-			CmWriteLogOutput(
+			DbgPrintEx(
+				LOG_SEVERITY_TRACE,
 				"[%s:%d] Stage 1 init OK!",
 				__FILE__,
 				__LINE__
@@ -410,12 +418,12 @@ namespace YYTK
 			// We do this by using the event, which is signaled by the exception handler.
 			if (m_IsUsingMidFunctionHook)
 			{
-				this->Print(
-					CM_LIGHTAQUA,
+				DbgPrint(
 					"Please wait while the game creates a runner interface."
 				);
 
-				CmWriteLogOutput(
+				DbgPrintEx(
+					LOG_SEVERITY_TRACE,
 					"[%s:%d] m_IsUsingMidFunctionHook = true, waiting on runner interface",
 					__FILE__,
 					__LINE__
@@ -426,14 +434,14 @@ namespace YYTK
 					INFINITE
 				);
 
-				CmWriteLogOutput(
+				DbgPrintEx(
+					LOG_SEVERITY_TRACE,
 					"[%s:%d] m_IsUsingMidFunctionHook = true, runner interface created",
 					__FILE__,
 					__LINE__
 				);
 
-				this->Print(
-					CM_LIGHTAQUA,
+				DbgPrint(
 					"Runner interface created, proceeding with initialization."
 				);
 			}
@@ -448,7 +456,8 @@ namespace YYTK
 				&m_FunctionsArray
 			);
 
-			CmWriteLogOutput(
+			DbgPrintEx(
+				LOG_SEVERITY_TRACE,
 				"[%s:%d] YYC::GmpFindFunctionsArray() => %s, 0x%p",
 				__FILE__,
 				__LINE__,
@@ -459,8 +468,9 @@ namespace YYTK
 			// Before calling anything, we need to know the size of one RFunction entry
 			// This might actually fail if the game is VM, so we can check for that too.
 			m_FunctionEntrySize = this->YkDetermineFunctionEntrySize();
-
-			CmWriteLogOutput(
+			
+			DbgPrintEx(
+				LOG_SEVERITY_TRACE,
 				"[%s:%d] m_FunctionEntrySize = %lld",
 				__FILE__,
 				__LINE__,
@@ -477,7 +487,8 @@ namespace YYTK
 					&m_FunctionsArray
 				);
 
-				CmWriteLogOutput(
+				DbgPrintEx(
+					LOG_SEVERITY_TRACE,
 					"[%s:%d] VM::GmpFindFunctionsArray() => %s, 0x%p",
 					__FILE__,
 					__LINE__,
@@ -491,7 +502,8 @@ namespace YYTK
 				// Check if we succeeded this time (VM)
 				if (!AurieSuccess(last_status) || !m_FunctionEntrySize)
 				{
-					this->PrintError(
+					DbgPrintEx(
+						LOG_SEVERITY_CRITICAL,
 						__FILE__,
 						__LINE__,
 						"Failed to determine function array size! (%s)",
@@ -512,7 +524,8 @@ namespace YYTK
 				{}
 			);
 
-			CmWriteLogOutput(
+			DbgPrintEx(
+				LOG_SEVERITY_TRACE,
 				"[%s:%d] CallBuiltinEx(\"code_is_compiled\") => %s",
 				__FILE__,
 				__LINE__,
@@ -522,7 +535,8 @@ namespace YYTK
 			// Make sure we succeeded with that call
 			if (!AurieSuccess(last_status))
 			{
-				this->PrintError(
+				DbgPrintEx(
+					LOG_SEVERITY_CRITICAL,
 					__FILE__,
 					__LINE__,
 					"Failed to determine runner edition! (%s)",
@@ -553,7 +567,8 @@ namespace YYTK
 				);
 			}
 
-			CmWriteLogOutput(
+			DbgPrintEx(
+				LOG_SEVERITY_TRACE,
 				"[%s:%d] GmpGetBuiltinInformation() => %s, count 0x%p, array 0x%p",
 				__FILE__,
 				__LINE__,
@@ -566,7 +581,8 @@ namespace YYTK
 			// it makes mod development way easier.
 			if (!AurieSuccess(last_status))
 			{
-				this->PrintError(
+				DbgPrintEx(
+					LOG_SEVERITY_CRITICAL,
 					__FILE__,
 					__LINE__,
 					"Failed to get built-in variable information! (%s)",
@@ -582,7 +598,8 @@ namespace YYTK
 				reinterpret_cast<PVOID*>(&array_equals)
 			);
 
-			CmWriteLogOutput(
+			DbgPrintEx(
+				LOG_SEVERITY_TRACE,
 				"[%s:%d] GetNamedRoutinePointer(\"array_equals\") => %s, %p",
 				__FILE__,
 				__LINE__,
@@ -592,7 +609,8 @@ namespace YYTK
 
 			if (!AurieSuccess(last_status))
 			{
-				this->PrintError(
+				DbgPrintEx(
+					LOG_SEVERITY_CRITICAL,
 					__FILE__,
 					__LINE__,
 					"Failed to find array_equals! (%s)",
@@ -619,7 +637,8 @@ namespace YYTK
 				);
 			}
 
-			CmWriteLogOutput(
+			DbgPrintEx(
+				LOG_SEVERITY_TRACE,
 				"[%s:%d] GmpFindRVArrayOffset() => %s, 0x%llx",
 				__FILE__,
 				__LINE__,
@@ -629,7 +648,8 @@ namespace YYTK
 
 			if (!AurieSuccess(last_status))
 			{
-				this->PrintWarning(
+				DbgPrintEx(
+					LOG_SEVERITY_ERROR,
 					"Failed to find RValue array offset! (%s)",
 					AurieStatusToString(last_status)
 				);
@@ -642,7 +662,8 @@ namespace YYTK
 				reinterpret_cast<PVOID*>(&copy_static)
 			);
 
-			CmWriteLogOutput(
+			DbgPrintEx(
+				LOG_SEVERITY_TRACE,
 				"[%s:%d] GetNamedRoutinePointer(\"@@CopyStatic@@\") => %s, 0x%p",
 				__FILE__,
 				__LINE__,
@@ -652,7 +673,8 @@ namespace YYTK
 
 			if (!AurieSuccess(last_status))
 			{
-				this->PrintError(
+				DbgPrintEx(
+					LOG_SEVERITY_CRITICAL,
 					__FILE__,
 					__LINE__,
 					"Failed to find @@CopyStatic@@ function! (%s)",
@@ -668,7 +690,8 @@ namespace YYTK
 				&m_GetScriptData
 			);
 
-			CmWriteLogOutput(
+			DbgPrintEx(
+				LOG_SEVERITY_TRACE,
 				"[%s:%d] GmpFindScriptData() => %s, 0x%p",
 				__FILE__,
 				__LINE__,
@@ -678,7 +701,8 @@ namespace YYTK
 
 			if (!AurieSuccess(last_status))
 			{
-				this->PrintError(
+				DbgPrintEx(
+					LOG_SEVERITY_CRITICAL,
 					__FILE__,
 					__LINE__,
 					"Failed to find script data! (%s)",
@@ -695,7 +719,8 @@ namespace YYTK
 				reinterpret_cast<PVOID*>(&room_instance_clear)
 			);
 
-			CmWriteLogOutput(
+			DbgPrintEx(
+				LOG_SEVERITY_TRACE,
 				"[%s:%d] GetNamedRoutinePointer(\"room_instance_clear\") => %s, 0x%p",
 				__FILE__,
 				__LINE__,
@@ -705,7 +730,8 @@ namespace YYTK
 
 			if (!AurieSuccess(last_status))
 			{
-				this->PrintError(
+				DbgPrintEx(
+					LOG_SEVERITY_CRITICAL,
 					__FILE__,
 					__LINE__,
 					"Failed to find room_instance_clear function! (%s)",
@@ -730,7 +756,8 @@ namespace YYTK
 				);
 			}
 
-			CmWriteLogOutput(
+			DbgPrintEx(
+				LOG_SEVERITY_TRACE,
 				"[%s:%d] GmpFindRoomData() => %s, 0x%p",
 				__FILE__,
 				__LINE__,
@@ -740,7 +767,8 @@ namespace YYTK
 
 			if (!AurieSuccess(last_status))
 			{
-				this->PrintWarning(
+				DbgPrintEx(
+					LOG_SEVERITY_ERROR,
 					"Failed to find room data! (%s)",
 					AurieStatusToString(last_status)
 				);
@@ -753,7 +781,8 @@ namespace YYTK
 				builtin_variable_index
 			);
 
-			CmWriteLogOutput(
+			DbgPrintEx(
+				LOG_SEVERITY_TRACE,
 				"[%s:%d] GetBuiltinVariableIndex(\"background_color\") => %s",
 				__FILE__,
 				__LINE__,
@@ -768,7 +797,8 @@ namespace YYTK
 					builtin_variable_index
 				);
 
-				CmWriteLogOutput(
+				DbgPrintEx(
+					LOG_SEVERITY_TRACE,
 					"[%s:%d] GetBuiltinVariableIndex(\"room_width\") => %s",
 					__FILE__,
 					__LINE__,
@@ -778,7 +808,8 @@ namespace YYTK
 				// If even room_width fails, we bail.
 				if (!AurieSuccess(last_status))
 				{
-					this->PrintError(
+					DbgPrintEx(
+						LOG_SEVERITY_CRITICAL,
 						__FILE__,
 						__LINE__,
 						"Failed to find built-in variables (background_color & room_width)! (%s)",
@@ -795,7 +826,8 @@ namespace YYTK
 				builtin_variable_information
 			);
 
-			CmWriteLogOutput(
+			DbgPrintEx(
+				LOG_SEVERITY_TRACE,
 				"[%s:%d] GetBuiltinVariableInformation(builtin_variable_index) => %s",
 				__FILE__,
 				__LINE__,
@@ -804,7 +836,8 @@ namespace YYTK
 
 			if (!AurieSuccess(last_status))
 			{
-				this->PrintError(
+				DbgPrintEx(
+					LOG_SEVERITY_CRITICAL,
 					__FILE__,
 					__LINE__,
 					"Failed to get built-in variable information! (%s)",
@@ -819,7 +852,8 @@ namespace YYTK
 				&m_RunRoom
 			);
 
-			CmWriteLogOutput(
+			DbgPrintEx(
+				LOG_SEVERITY_TRACE,
 				"[%s:%d] GmpFindCurrentRoomData(%p) => %s, 0x%p",
 				__FILE__,
 				__LINE__,
@@ -830,7 +864,8 @@ namespace YYTK
 
 			if (!AurieSuccess(last_status))
 			{
-				this->PrintError(
+				DbgPrintEx(
+					LOG_SEVERITY_CRITICAL,
 					__FILE__,
 					__LINE__,
 					"Failed to find current room data! (%s)",
@@ -853,7 +888,8 @@ namespace YYTK
 
 			if (!AurieSuccess(last_status))
 			{
-				this->PrintError(
+				DbgPrintEx(
+					LOG_SEVERITY_CRITICAL,
 					__FILE__,
 					__LINE__,
 					"Failed to get window_handle! (%s)",
@@ -899,7 +935,8 @@ namespace YYTK
 			// If we broke out, AurieSuccess(last_status) will pass.
 			if (!AurieSuccess(last_status))
 			{
-				this->PrintError(
+				DbgPrintEx(
+					LOG_SEVERITY_CRITICAL,
 					__FILE__,
 					__LINE__,
 					"Failed to fetch D3D11 info! (%s)",
@@ -916,7 +953,8 @@ namespace YYTK
 				m_EngineSwapchain
 			);
 
-			CmWriteLogOutput(
+			DbgPrintEx(
+				LOG_SEVERITY_TRACE,
 				"[%s:%d] HkInitialize(%p) => %s",
 				__FILE__,
 				__LINE__,
@@ -926,7 +964,8 @@ namespace YYTK
 
 			if (!AurieSuccess(last_status))
 			{
-				this->PrintError(
+				DbgPrintEx(
+					LOG_SEVERITY_CRITICAL,
 					__FILE__,
 					__LINE__,
 					"Failed to initialize stage 2 hooks! (%s)",
@@ -943,7 +982,8 @@ namespace YYTK
 
 			if (!AurieSuccess(last_status))
 			{
-				this->PrintWarning(
+				DbgPrintEx(
+					LOG_SEVERITY_ERROR,
 					"Failed to find YYObjectBase::Add! (%s)",
 					AurieStatusToString(last_status)
 				);
@@ -958,7 +998,8 @@ namespace YYTK
 
 			if (!AurieSuccess(last_status))
 			{
-				this->PrintWarning(
+				DbgPrintEx(
+					LOG_SEVERITY_ERROR,
 					"Failed to find FindAllocSlot! (%s)",
 					AurieStatusToString(last_status)
 				);
@@ -966,31 +1007,31 @@ namespace YYTK
 				// return last_status;
 			}
 
-			CmWriteOutput(CM_LIGHTAQUA, "YYTK Next - Late initialization complete.");
+			DbgPrint("YYTK Next - Late initialization complete.");
 
-			CmWriteOutput(CM_GRAY, "- m_FunctionsArray at 0x%p", m_FunctionsArray);
-			CmWriteOutput(CM_GRAY, "- m_BuiltinArray at 0x%p", m_BuiltinArray);
-			CmWriteOutput(CM_GRAY, "- m_BuiltinCount at 0x%p", m_BuiltinCount);
-			CmWriteOutput(CM_GRAY, "- m_GetScriptData at 0x%p", m_GetScriptData);
-			CmWriteOutput(CM_GRAY, "- m_EngineSwapchain at 0x%p", m_EngineSwapchain);
-			CmWriteOutput(CM_GRAY, "- m_RValueArrayOffset at 0x%llx", m_RValueArrayOffset);
-			CmWriteOutput(CM_GRAY, "- m_GetRoomData at 0x%p", m_GetRoomData);
-			CmWriteOutput(CM_GRAY, "- m_RunRoom at 0x%p", m_RunRoom);
-			CmWriteOutput(CM_GRAY, "- m_AddToYYObjectBase at 0x%p", m_AddToYYObjectBase);
-			CmWriteOutput(CM_GRAY, "- m_FindAllocSlot at 0x%p", m_FindAllocSlot);
+			DbgPrint("- m_FunctionsArray at 0x%p", m_FunctionsArray);
+			DbgPrint("- m_BuiltinArray at 0x%p", m_BuiltinArray);
+			DbgPrint("- m_BuiltinCount at 0x%p", m_BuiltinCount);
+			DbgPrint("- m_GetScriptData at 0x%p", m_GetScriptData);
+			DbgPrint("- m_EngineSwapchain at 0x%p", m_EngineSwapchain);
+			DbgPrint("- m_RValueArrayOffset at 0x%llx", m_RValueArrayOffset);
+			DbgPrint("- m_GetRoomData at 0x%p", m_GetRoomData);
+			DbgPrint("- m_RunRoom at 0x%p", m_RunRoom);
+			DbgPrint("- m_AddToYYObjectBase at 0x%p", m_AddToYYObjectBase);
+			DbgPrint("- m_FindAllocSlot at 0x%p", m_FindAllocSlot);
 			
-			CmWriteOutput(
-				CM_GRAY,
+			DbgPrint(
 				"- RFunction Entry Type: %s",
 				m_FunctionEntrySize == sizeof(RFunctionStringRef) ? "Referential" : "Embedded"
 			);
-			CmWriteOutput(
-				CM_GRAY,
+
+			DbgPrint(
 				"- Runner Edition: %s",
 				m_IsYYCRunner ? "YYC" : "VM"
 			);
 
-			CmWriteLogOutput(
+			DbgPrintEx(
+				LOG_SEVERITY_TRACE,
 				"[%s:%d] Stage 2 init OK!",
 				__FILE__,
 				__LINE__
@@ -1234,76 +1275,6 @@ namespace YYTK
 		return AURIE_SUCCESS;
 	}
 
-	void YYTKInterfaceImpl::Print(
-		IN CmColor Color, 
-		IN std::string_view Format, 
-		IN ...
-	)
-	{
-		// Parse the VA arguments
-		va_list va_args;
-		va_start(va_args, Format);
-		std::string formatted_output = CmpParseVa(Format.data(), va_args);
-		va_end(va_args);
-
-		return CmWriteOutput(
-			Color,
-			formatted_output
-		);
-	}
-
-	void YYTKInterfaceImpl::PrintInfo(
-		IN std::string_view Format,
-		IN ...
-	)
-	{
-		// Parse the VA arguments
-		va_list va_args;
-		va_start(va_args, Format);
-		std::string formatted_output = CmpParseVa(Format.data(), va_args);
-		va_end(va_args);
-
-		return CmWriteInfo(
-			formatted_output
-		);
-	}
-
-	void YYTKInterfaceImpl::PrintWarning(
-		IN std::string_view Format,
-		IN ...
-	)
-	{
-		// Parse the VA arguments
-		va_list va_args;
-		va_start(va_args, Format);
-		std::string formatted_output = CmpParseVa(Format.data(), va_args);
-		va_end(va_args);
-
-		return CmWriteWarning(
-			formatted_output
-		);
-	}
-
-	void YYTKInterfaceImpl::PrintError(
-		IN std::string_view Filepath,
-		IN const int Line, 
-		IN std::string_view Format,
-		IN ...
-	)
-	{
-		// Parse the VA arguments
-		va_list va_args;
-		va_start(va_args, Format);
-		std::string formatted_output = CmpParseVa(Format.data(), va_args);
-		va_end(va_args);
-
-		return CmWriteError(
-			Filepath,
-			Line,
-			formatted_output
-		);
-	}
-
 	AurieStatus YYTKInterfaceImpl::CreateCallback(
 		IN AurieModule* Module, 
 		IN EventTriggers Trigger, 
@@ -1382,7 +1353,8 @@ namespace YYTK
 			if (!variable_exists.ToBoolean())
 				return AURIE_OBJECT_NOT_FOUND;
 
-			CmWriteLogOutput(
+			DbgPrintEx(
+				LOG_SEVERITY_WARNING,
 				"[%s:%d] GetInstanceMember() => StructGetMember failed on variable %s, but variable does exist?",
 				__FILE__,
 				__LINE__,

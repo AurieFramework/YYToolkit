@@ -184,29 +184,6 @@ namespace YYTK
 			IN std::vector<RValue> Arguments
 		) override final;
 
-		virtual void Print(
-			IN CmColor Color,
-			IN std::string_view Format,
-			IN ...
-		) override final;
-
-		virtual void PrintInfo(
-			IN std::string_view Format,
-			IN ...
-		) override final;
-
-		virtual void PrintWarning(
-			IN std::string_view Format,
-			IN ...
-		) override final;
-
-		virtual void PrintError(
-			IN std::string_view Filepath,
-			IN const int Line,
-			IN std::string_view Format,
-			IN ...
-		) override final;
-
 		virtual Aurie::AurieStatus CreateCallback(
 			IN Aurie::AurieModule* Module,
 			IN EventTriggers Trigger,

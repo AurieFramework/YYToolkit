@@ -31,7 +31,8 @@ namespace YYTK
 
 		if (!AurieSuccess(last_status))
 		{
-			CmWriteLogOutput(
+			DbgPrintEx(
+				LOG_SEVERITY_ERROR,
 				"[%s:%d] GmpFindCurrentRoomDataX64() => %s, no mnemonic pattern!",
 				__FILE__,
 				__LINE__,
@@ -43,7 +44,8 @@ namespace YYTK
 
 		const ZydisDisassembledInstruction& move_instruction = instructions.at(target_mov_index).RawForm;
 
-		CmWriteLogOutput(
+		DbgPrintEx(
+			LOG_SEVERITY_TRACE,
 			"[%s:%d] GmpFindCurrentRoomDataX64() => mov instruction = %s",
 			__FILE__,
 			__LINE__,
@@ -96,7 +98,8 @@ namespace YYTK
 
 		if (!AurieSuccess(last_status))
 		{
-			CmWriteLogOutput(
+			DbgPrintEx(
+				LOG_SEVERITY_ERROR,
 				"[%s:%d] GmpFindCurrentRoomDataX64() => %s",
 				__FILE__,
 				__LINE__,
@@ -108,7 +111,8 @@ namespace YYTK
 
 		const ZydisDisassembledInstruction& compare_instruction = instructions.at(target_cmp_index).RawForm;
 
-		CmWriteLogOutput(
+		DbgPrintEx(
+			LOG_SEVERITY_TRACE,
 			"[%s:%d] GmpFindCurrentRoomDataX64() => cmp instruction = %s",
 			__FILE__,
 			__LINE__,

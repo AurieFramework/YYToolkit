@@ -32,7 +32,8 @@ namespace YYTK
 			"x????xxxxx"
 		);
 
-		CmWriteLogOutput(
+		DbgPrintEx(
+			LOG_SEVERITY_TRACE,
 			"[%s:%d] GmpFindCodeExecuteX64() => pattern at 0x%llX",
 			__FILE__,
 			__LINE__,
@@ -52,7 +53,8 @@ namespace YYTK
 		// parameters we expect it to have (ie. is a call, and has 1 visible operand - the address.)
 		ZydisDisassembledInstruction& call_instruction = instructions.front().RawForm;
 
-		CmWriteLogOutput(
+		DbgPrintEx(
+			LOG_SEVERITY_TRACE,
 			"[%s:%d] GmpFindCodeExecuteX64() => call_instruction = %s",
 			__FILE__,
 			__LINE__,
@@ -112,7 +114,8 @@ namespace YYTK
 			"x????xxxxx"
 		);
 
-		CmWriteLogOutput(
+		DbgPrintEx(
+			LOG_SEVERITY_TRACE,
 			"[%s:%d] GmpFindCodeExecuteX86() => pattern at 0x%llX",
 			__FILE__,
 			__LINE__,
@@ -132,7 +135,8 @@ namespace YYTK
 		// parameters we expect it to have (ie. is a call, and has 1 visible operand - the address.)
 		ZydisDisassembledInstruction& call_instruction = instructions.front().RawForm;
 
-		CmWriteLogOutput(
+		DbgPrintEx(
+			LOG_SEVERITY_TRACE,
 			"[%s:%d] GmpFindCodeExecuteX86() => call_instruction = %s",
 			__FILE__,
 			__LINE__,

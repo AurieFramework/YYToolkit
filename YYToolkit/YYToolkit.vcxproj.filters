@@ -24,9 +24,6 @@
     <ClCompile Include="source\YYTK\Module Interface\Interface.cpp">
       <Filter>Zdrojové soubory</Filter>
     </ClCompile>
-    <ClCompile Include="source\YYTK\Module Internals\Console\Console.cpp">
-      <Filter>Zdrojové soubory</Filter>
-    </ClCompile>
     <ClCompile Include="source\YYTK\Module Internals\GameMaker\Generic\Generic.cpp">
       <Filter>Zdrojové soubory</Filter>
     </ClCompile>

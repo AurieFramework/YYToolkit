@@ -91,49 +91,6 @@ namespace YYTK
 		) = 0;
 
 		/**
-		 * \brief Prints text to the console.
-		 * \param Color The desired text color.
-		 * \param Format A printf-style format string.
-		 */
-		virtual void Print(
-			IN CmColor Color,
-			IN std::string_view Format,
-			IN ...
-		) = 0;
-
-		/**
-		 * \brief Prints info to the console.
-		 * \param Format A printf-style format string.
-		 */
-		virtual void PrintInfo(
-			IN std::string_view Format,
-			IN ...
-		) = 0;
-
-		/**
-		 * \brief Prints a warning to the console.
-		 * \param Format A printf-style format string.
-		 */
-		virtual void PrintWarning(
-			IN std::string_view Format,
-			IN ...
-		) = 0;
-
-		/**
-		 * \brief Prints an error to the console.
-		 * \param Filepath Specify the __FILE__ macro.
-		 * \param Line Specify the __LINE__ macro.
-		 * \param Format A printf-style format string.
-		 */
-		virtual void PrintError(
-			IN std::string_view Filepath,
-			IN const int Line,
-			IN std::string_view Format,
-			IN ...
-		) = 0;
-
-
-		/**
 		 * \brief Defines a callback function for intercepting game events.
 		 * \param Module Specify g_ArSelfModule.
 		 * \param Trigger The event to listen for.

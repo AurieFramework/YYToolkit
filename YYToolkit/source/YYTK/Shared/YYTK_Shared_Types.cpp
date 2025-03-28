@@ -388,7 +388,8 @@ RValue& RValue::operator[](
 	// Prevents access violations, null references are undefined behavior in the C++ standard
 	if (!AurieSuccess(last_status) || !instance_member)
 	{
-		GetInterface()->PrintError(
+		DbgPrintEx(
+			LOG_SEVERITY_ERROR,
 			__FILE__,
 			__LINE__,
 			"Trying to access inaccessible instance member '%s' (%s)!",
@@ -419,7 +420,8 @@ const RValue& YYTK::RValue::operator[](
 	// Prevents access violations, null references are undefined behavior in the C++ standard
 	if (!AurieSuccess(last_status) || !instance_member)
 	{
-		GetInterface()->PrintError(
+		DbgPrintEx(
+			LOG_SEVERITY_ERROR,
 			__FILE__,
 			__LINE__,
 			"Trying to access inaccessible instance member '%s' (%s)!",
@@ -511,7 +513,8 @@ CInstanceInternal& YYTK::CInstance::GetMembers()
 	if (this->WithSkeletonMask.Members.m_ID == self_id)
 		return this->WithSkeletonMask.Members;
 
-	module_interface->PrintError(
+	DbgPrintEx(
+		LOG_SEVERITY_ERROR,
 		__FILE__,
 		__LINE__,
 		"Failed to determine CInstance member offset! Report this to GitHub and include the game name!"

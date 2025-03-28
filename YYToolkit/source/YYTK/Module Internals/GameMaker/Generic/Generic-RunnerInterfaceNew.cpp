@@ -69,36 +69,44 @@ namespace YYTK
 			r14=0000000000000008 r15=000000001e66bb28 tsp=000000296073e148
 		
 		*/
-		CmWriteLogOutput(
+		DbgPrintEx(
+			LOG_SEVERITY_TRACE,
 			"Dumping register state from thread ID %x",
 			GetCurrentThreadId()
 		);
-		CmWriteLogOutput(
+
+		DbgPrintEx(
+			LOG_SEVERITY_TRACE,
 			"    rax=%016llx rbx=%016llx rcx=%016llx",
 			ProcessorContext.RAX, ProcessorContext.RBX, ProcessorContext.RCX
 		);
 
-		CmWriteLogOutput(
+		DbgPrintEx(
+			LOG_SEVERITY_TRACE,
 			"    rdx=%016llx rsi=%016llx rdi=%016llx",
 			ProcessorContext.RDX, ProcessorContext.RSI, ProcessorContext.RDI
 		);
 
-		CmWriteLogOutput(
+		DbgPrintEx(
+			LOG_SEVERITY_TRACE,
 			"    rip=%016llx rsp=%016llx rbp=%016llx",
 			ProcessorContext.RIP, ProcessorContext.RSP, ProcessorContext.RBP
 		);
 
-		CmWriteLogOutput(
+		DbgPrintEx(
+			LOG_SEVERITY_TRACE,
 			"    r8=%016llx r9=%016llx r10=%016llx",
 			ProcessorContext.R8, ProcessorContext.R9, ProcessorContext.R10
 		);
 
-		CmWriteLogOutput(
+		DbgPrintEx(
+			LOG_SEVERITY_TRACE,
 			"    r11=%016llx r12=%016llx r13=%016llx",
 			ProcessorContext.R11, ProcessorContext.R12, ProcessorContext.R13
 		);
 
-		CmWriteLogOutput(
+		DbgPrintEx(
+			LOG_SEVERITY_TRACE,
 			"    r14=%016llx r15=%016llx tsp=%016llx",
 			ProcessorContext.R14, ProcessorContext.R15, ProcessorContext.TrampolineRSP
 		);
@@ -131,7 +139,14 @@ namespace YYTK
 			&current_instruction
 		)))
 		{
-			CmWriteLogOutput("[%s:%d] %016llx | %s", __FILE__, __LINE__, current_instruction.runtime_address, current_instruction.text);
+			DbgPrintEx(
+				LOG_SEVERITY_TRACE, 
+				"[%s:%d] %016llx | %s", 
+				__FILE__,
+				__LINE__, 
+				current_instruction.runtime_address, 
+				current_instruction.text
+			);
 
 			// The chain unconditionally ends on a call instruction - we shouldn't get here though, as 
 			if (current_instruction.info.mnemonic == ZYDIS_MNEMONIC_CALL)
@@ -163,7 +178,8 @@ namespace YYTK
 					// If RSP-relative, it's the instruction before the call, moving RI address to RCX
 					if (current_instruction.operands[1].mem.base == ZYDIS_REGISTER_RSP)
 					{
-						CmWriteLogOutput(
+						DbgPrintEx(
+							LOG_SEVERITY_TRACE,
 							"[%s:%d] Found RSP-relative LEA: %016llx | %s",
 							__FILE__, __LINE__,
 							current_instruction.runtime_address,
@@ -174,7 +190,8 @@ namespace YYTK
 						break;
 					}
 
-					CmWriteLogOutput(
+					DbgPrintEx(
+						LOG_SEVERITY_WARNING,
 						"- Failed to calculate RIP-relative address: %016llx | %s", 
 						current_instruction.runtime_address,
 						current_instruction.text
@@ -219,13 +236,27 @@ namespace YYTK
 		// Copy out everything
 		memcpy(&g_ModuleInterface.m_RunnerInterface, new_rsp + rsp_offset_to_runner_interface, sizeof(YYRunnerInterface));
 
-		CmWriteLogOutput("[%s:%d] New RSP: %llx", __FILE__, __LINE__, new_rsp);
-		CmWriteLogOutput("[%s:%d] New RBP: %llx", __FILE__, __LINE__, new_rbp);
+		DbgPrintEx(
+			LOG_SEVERITY_TRACE, 
+			"[%s:%d] New RSP: %llx",
+			__FILE__, 
+			__LINE__, 
+			new_rsp
+		);
+
+		DbgPrintEx(
+			LOG_SEVERITY_TRACE, 
+			"[%s:%d] New RBP: %llx",
+			__FILE__, 
+			__LINE__,
+			new_rbp
+		);
 
 		for (int offset_to_buffer = 0; offset_to_buffer < (KERNEL_STACK_SIZE / sizeof(uint64_t)); offset_to_buffer += 4)
 		{
 			// Print the address
-			CmWriteLogOutput(
+			DbgPrintEx(
+				LOG_SEVERITY_TRACE,
 				"[%s:%d] 0x%llx | %016llx %016llx %016llx %016llx", 
 				__FILE__, __LINE__,
 				new_stack + (offset_to_buffer * sizeof(uint64_t)),
@@ -333,8 +364,7 @@ namespace YYTK
 		if (!AurieSuccess(last_status))
 			return last_status;
 
-		CmWriteOutput(
-			CM_LIGHTAQUA,
+		DbgPrint(
 			"Please wait while the game is being disassembled. This can take up to a minute on slower hardware."
 		);
 
@@ -343,7 +373,8 @@ namespace YYTK
 			text_section_size
 		);
 
-		CmWriteLogOutput(
+		DbgPrintEx(
+			LOG_SEVERITY_TRACE,
 			"[%s:%d] GmpCreateHookOnInterfaceCreation() => .text section spans %lld pages",
 			__FILE__,
 			__LINE__,
@@ -465,7 +496,8 @@ namespace YYTK
 			const uintptr_t runner_interface_instructions_base = 
 				runner_interface_instructions.front().RawForm.runtime_address;
 
-			CmWriteLogOutput(
+			DbgPrintEx(
+				LOG_SEVERITY_TRACE,
 				"[%s:%d] GmpCreateHookOnInterfaceCreation() => Found RI instructions at 0x%llX",
 				__FILE__,
 				__LINE__,
@@ -506,7 +538,8 @@ namespace YYTK
 			// If we failed to find a stack subtraction instruction?
 			if (last_rsp_sub_iterator == pre_ri_instructions.rend())
 			{
-				CmWriteLogOutput(
+				DbgPrintEx(
+					LOG_SEVERITY_TRACE,
 					"[%s:%d] GmpCreateHookOnInterfaceCreation() => last_rsp_sub_iterator == pre_ri_instructions.rend()",
 					__FILE__,
 					__LINE__,
@@ -521,7 +554,8 @@ namespace YYTK
 			// Get the instruction just after the sub rsp (iterator is reversed, so -1 instead of +1)
 			const auto& instruction_just_after = *(last_rsp_sub_iterator - 1);
 
-			CmWriteLogOutput(
+			DbgPrintEx(
+				LOG_SEVERITY_TRACE,
 				"[%s:%d] GmpCreateHookOnInterfaceCreation() => 0x%llX | %s",
 				__FILE__,
 				__LINE__,
@@ -529,7 +563,8 @@ namespace YYTK
 				last_rsp_sub.RawForm.text
 			);
 
-			CmWriteLogOutput(
+			DbgPrintEx(
+				LOG_SEVERITY_TRACE,
 				"[%s:%d] GmpCreateHookOnInterfaceCreation() => 0x%llX | %s",
 				__FILE__,
 				__LINE__,
@@ -550,7 +585,8 @@ namespace YYTK
 				Handler
 			);
 
-			CmWriteLogOutput(
+			DbgPrintEx(
+				LOG_SEVERITY_TRACE,
 				"[%s:%d] GmpCreateHookOnInterfaceCreation() => breakpoint at %p => %s",
 				__FILE__,
 				__LINE__,
