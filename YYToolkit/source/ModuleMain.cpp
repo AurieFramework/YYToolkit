@@ -39,33 +39,52 @@ EXPORTED void ModuleOperationCallback(
 	}
 }
 
-EXPORTED AurieStatus ModulePreinitialize(
+EXPORTED AurieStatus ModuleEntrypoint(
 	IN AurieModule* Module,
 	IN const fs::path& ModulePath
 )
 {
 	UNREFERENCED_PARAMETER(ModulePath);
 
+	DbgPrintEx(LOG_SEVERITY_INFO, "Waiting for debugger...");
+	while (!IsDebuggerPresent())
+		Sleep(500);
+
 	AurieStatus last_status = AURIE_SUCCESS;
 
 	last_status = ObCreateInterface(
 		Module,
-		&g_ModuleInterface,
-		"YYTK_Main"
+		&g_PrivateInterface,
+		"YYTK_ZeusPrivate"
 	);
 
 	DbgPrintEx(
 		LOG_SEVERITY_TRACE,
-		"[%s:%d] YYTK_Main interface created with status %s",
-		__FILE__, 
-		__LINE__, 
+		"[%s:%d] YYTK_ZeusPrivate interface created with status %s",
+		__FILE__,
+		__LINE__,
 		AurieStatusToString(last_status)
 	);
 
 	if (!AurieSuccess(last_status))
 		return last_status;
 
-	return AURIE_SUCCESS;
+	last_status = ObCreateInterface(
+		Module,
+		&g_ModuleInterface,
+		"YYTK_ZeusMain"
+	);
+
+	DbgPrintEx(
+		LOG_SEVERITY_TRACE,
+		"[%s:%d] YYTK_ZeusMain interface created with status %s",
+		__FILE__,
+		__LINE__,
+		AurieStatusToString(last_status)
+	);
+
+
+	return last_status;
 }
 
 EXPORTED AurieStatus ModuleInitialize(

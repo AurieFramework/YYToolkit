@@ -183,116 +183,25 @@ namespace YYTK
 				formatted_cstring = nullptr;
 			}
 
-			// Message header
-			std::string yytk_crash_message =
-				"\n"
-				"A fatal game error has occured.\n"
-				"Runner caught the exception; the exception_unhandled_handler callback has not been invoked.\n"
-				"\n"
-				"Runner-given error information:\n";
-
-			// Append the runner-provided information
-			yytk_crash_message.append(runner_provided_info_formatted);
-
-			// Stacktrace header
-			yytk_crash_message.append(
-				"\n\n"
-				"Stacktrace:\n"
-				" #\tRetAddr         \tCall Site\n"
-			);
-
-			// Capture stacktrace
-			const auto stacktrace = std::stacktrace::current();
-
-			// Log all functions in the trace
-			size_t function_index = 0;
-			for (auto& entry : stacktrace)
-			{
-				// description will be empty if resolve_game_symbol fails.
-				std::string description = GmResolveGameSymbolFromAddress(stacktrace._To_voidptr_array()[function_index]);
-				if (description.empty())
-					description = entry.description();
-
-				yytk_crash_message.append(
-					std::format("{:02}\t{:016X}\t{}\n", 
-						function_index, 
-						reinterpret_cast<uint64_t>(stacktrace._To_voidptr_array()[function_index]),
-						description
-					)
-				);
-				function_index++;
-			}
-			
-			// More information
-			yytk_crash_message.append("\n");
-			yytk_crash_message.append("YYTK Version: ");
-			yytk_crash_message.append(YYTK_VERSION_STRING);
-			yytk_crash_message.append("\n");
-			yytk_crash_message.append("Aurie Module List:\n");
-
-			// Loop all modules - this is undocumented and plugins should not use this, but we do.
-			AurieModule* current_module = g_ArSelfModule;
-			do
-			{
-				// The method doesn't modify module_name unless it succeeds.
-				std::wstring module_name = L"<unknown>";
-				MdGetImageFilename(current_module, module_name);
-
-				// Convert to UTF-8
-				const std::string module_name_utf8(module_name.begin(), module_name.end());
-
-				const uint64_t module_address = reinterpret_cast<uint64_t>(Internal::MdpGetModuleBaseAddress(current_module));
-				yytk_crash_message.append(std::format("- {:016X} {}\n", module_address, module_name_utf8));
-
-				// Go to the next module
-				Internal::MdpGetNextModule(current_module, current_module);
-			} while (current_module != g_ArSelfModule);
-
-			DbgPrintEx(
-				LOG_SEVERITY_CRITICAL, 
-				"%s",
-				yytk_crash_message.c_str()
-			);
-			
-			std::string yytk_info = "\r\n\r\n********************************************\r\n";
-			yytk_info.append("YYToolkit is loaded. Relevant information has been logged to YYToolkit.log in the game directory.\r\n");
-			yytk_info.append("Please provide the entire log file to aid in debugging.\r\n");
-			yytk_info.append("********************************************\r\n");
-
+		
 			return GetHookTrampoline<decltype(&HkYYError)>("YYError")(
-				(runner_provided_info_formatted + yytk_info).c_str()
+				(runner_provided_info_formatted).c_str()
 			);
 		}
 
-		AurieStatus HkPreinitialize()
+		AurieStatus InitializeStage1Hooks()
 		{
-			/*
-				How hooks are done:
-
-				how 2 CodeExecute:
-					*reusing old YYTK v2 code*
-					scan for AOB:
-						E8 ?? ?? ?? ??		call <ExecuteIt>
-						0F B6 D8			movzx ebx, al
-						3C 01				cmp al, 01
-				how 2 IDXGISwapChain::whatever (for dummies):
-					https://manual.yoyogames.com/GameMaker_Language/GML_Reference/OS_And_Compiler/os_get_info.htm
-					os_get_info returns pointers to swapchain and device
-					hook swapchain Present + ResizeBuffers
-				how 2 windowproc
-					SetWindowLongW
-			*/
 			AurieStatus last_status = AURIE_SUCCESS;
-
 			PVOID code_execute = nullptr;
-			last_status = GmpFindCodeExecute(
-				&code_execute
-			);
+
+			// Try to hook Code_Execute
+			last_status = Zeus::FindCodeExecutionHookpoint(&code_execute);
+
+			DbgPrintEx(LOG_SEVERITY_TRACE, "Zeus::FindCodeExecutionHookpoint => %s", AurieStatusToString(last_status));
 
 			if (!AurieSuccess(last_status))
-				return last_status;
+				return AURIE_MODULE_INTERNAL_ERROR;
 
-			// Hook ExecuteIt
 			last_status = MmCreateHook(
 				g_ArSelfModule,
 				"ExecuteIt",
@@ -301,15 +210,10 @@ namespace YYTK
 				nullptr
 			);
 
-			if (!AurieSuccess(last_status))
-				return last_status;
-
-			g_ModuleInterface.m_CodeExecute = code_execute;
-			
-			return last_status;
+			return AURIE_SUCCESS;
 		}
 
-		Aurie::AurieStatus HkInitialize(
+		Aurie::AurieStatus InitializeStage2Hooks(
 			IN HWND WindowHandle,
 			IN IDXGISwapChain* EngineSwapChain
 		)

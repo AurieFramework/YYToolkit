@@ -7,6 +7,8 @@ namespace YYTK
 {
 	class YYTKInterfaceImpl : public YYTKInterface
 	{
+		friend struct YYTKPrivateInterfaceImpl;
+
 	public:
 		// Dictates whether the first stage of initializing completed already.
 		bool m_FirstInitComplete = false;
@@ -20,24 +22,21 @@ namespace YYTK
 
 		bool m_IsYYCRunner = false;
 
-		// Set to true if the midfunction hook is used to get the runner interface.
-		// If it is, the runner interface is unavailable during stage 1 init.
-		bool m_IsUsingMidFunctionHook = false;
+		// Dictates whether the runner interface is ready to be used.
+		// Is set during stage 2 init. Essentially unblocks spinning calls in PrivateInterface.
+		bool m_IsRunnerInterfaceReady = false;
 
 		// A handle to an event which is signaled by the mid-function hook.
 		// Once signaled, the runner interface has been populated with values.
 		HANDLE m_RunnerInterfacePopulatedEvent = nullptr;
 
 		// The instruction pointer of the Extension_PrePrepare breakpoint.
-		PVOID m_ExceptionRIP = nullptr;
+		PVOID m_RunnerInterfaceHookIP = nullptr;
 
 		// Used to pass data to the midfunction hook. It's the base address
 		// of the lea-mov pairs that construct the Runner Interface on the stack.
-		uint64_t m_RunnerInterfaceBase = 0;
-
-		// A pointer to Code_Execute - not a trampoline, just the actual function
-		PVOID m_CodeExecute = nullptr;
-
+		uint64_t m_RunnerInterfaceSetupStart = 0;
+		uint64_t m_RunnerInterfaceSetupEnd = 0;
 	private:
 
 		// A pointer to the functions array in memory
@@ -143,8 +142,6 @@ namespace YYTK
 			OUT ID3D11Device** DeviceObject,
 			OUT IDXGISwapChain** Swapchain
 		);
-
-		size_t YkDetermineFunctionEntrySize();
 
 		// === Interface Functions ===
 		virtual Aurie::AurieStatus Create() override final;

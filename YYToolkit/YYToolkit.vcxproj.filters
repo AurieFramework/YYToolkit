@@ -21,55 +21,40 @@
     <ClCompile Include="include\Zydis\Zydis.c">
       <Filter>Zdrojové soubory</Filter>
     </ClCompile>
-    <ClCompile Include="source\YYTK\Module Interface\Interface.cpp">
-      <Filter>Zdrojové soubory</Filter>
-    </ClCompile>
-    <ClCompile Include="source\YYTK\Module Internals\GameMaker\Generic\Generic.cpp">
-      <Filter>Zdrojové soubory</Filter>
-    </ClCompile>
-    <ClCompile Include="source\YYTK\Module Internals\GameMaker\Generic\Generic-CodeExecute.cpp">
-      <Filter>Zdrojové soubory</Filter>
-    </ClCompile>
-    <ClCompile Include="source\YYTK\Module Internals\GameMaker\Generic\Generic-Objects.cpp">
-      <Filter>Zdrojové soubory</Filter>
-    </ClCompile>
-    <ClCompile Include="source\YYTK\Module Internals\GameMaker\Generic\Generic-Rooms.cpp">
-      <Filter>Zdrojové soubory</Filter>
-    </ClCompile>
-    <ClCompile Include="source\YYTK\Module Internals\GameMaker\Generic\Generic-RunnerInterfaceNew.cpp">
-      <Filter>Zdrojové soubory</Filter>
-    </ClCompile>
-    <ClCompile Include="source\YYTK\Module Internals\GameMaker\Generic\Generic-RunnerInterfaceOld.cpp">
-      <Filter>Zdrojové soubory</Filter>
-    </ClCompile>
-    <ClCompile Include="source\YYTK\Module Internals\GameMaker\VM\VM-Arrays.cpp">
-      <Filter>Zdrojové soubory</Filter>
-    </ClCompile>
-    <ClCompile Include="source\YYTK\Module Internals\GameMaker\VM\VM-BuiltinVariables.cpp">
-      <Filter>Zdrojové soubory</Filter>
-    </ClCompile>
-    <ClCompile Include="source\YYTK\Module Internals\GameMaker\VM\VM-Functions.cpp">
-      <Filter>Zdrojové soubory</Filter>
-    </ClCompile>
-    <ClCompile Include="source\YYTK\Module Internals\GameMaker\VM\VM-Rooms.cpp">
-      <Filter>Zdrojové soubory</Filter>
-    </ClCompile>
-    <ClCompile Include="source\YYTK\Module Internals\GameMaker\YYC\YYC-Arrays.cpp">
-      <Filter>Zdrojové soubory</Filter>
-    </ClCompile>
-    <ClCompile Include="source\YYTK\Module Internals\GameMaker\YYC\YYC-BuiltinVariables.cpp">
-      <Filter>Zdrojové soubory</Filter>
-    </ClCompile>
-    <ClCompile Include="source\YYTK\Module Internals\GameMaker\YYC\YYC-Functions.cpp">
-      <Filter>Zdrojové soubory</Filter>
-    </ClCompile>
-    <ClCompile Include="source\YYTK\Module Internals\GameMaker\YYC\YYC-Rooms.cpp">
+    <ClCompile Include="source\YYTK\Module Interface\MI_Public.cpp">
       <Filter>Zdrojové soubory</Filter>
     </ClCompile>
     <ClCompile Include="source\YYTK\Module Internals\Hooks\Hooks.cpp">
       <Filter>Zdrojové soubory</Filter>
     </ClCompile>
     <ClCompile Include="source\YYTK\Shared\YYTK_Shared_Types.cpp">
+      <Filter>Zdrojové soubory</Filter>
+    </ClCompile>
+    <ClCompile Include="source\YYTK\Module Internals\Zeus\Zeus-x64.cpp">
+      <Filter>Zdrojové soubory</Filter>
+    </ClCompile>
+    <ClCompile Include="source\YYTK\Module Internals\Zeus\Zeus-x86.cpp">
+      <Filter>Zdrojové soubory</Filter>
+    </ClCompile>
+    <ClCompile Include="source\YYTK\Module Internals\Memory\Memory.cpp">
+      <Filter>Zdrojové soubory</Filter>
+    </ClCompile>
+    <ClCompile Include="source\YYTK\Module Internals\Generic\Generic.cpp">
+      <Filter>Zdrojové soubory</Filter>
+    </ClCompile>
+    <ClCompile Include="source\YYTK\Module Interface\MI_Internal.cpp">
+      <Filter>Zdrojové soubory</Filter>
+    </ClCompile>
+    <ClCompile Include="source\YYTK\Module Interface\MI_Aurie.cpp">
+      <Filter>Zdrojové soubory</Filter>
+    </ClCompile>
+    <ClCompile Include="source\YYTK\Private Interface\PI_Aurie.cpp">
+      <Filter>Zdrojové soubory</Filter>
+    </ClCompile>
+    <ClCompile Include="source\YYTK\Private Interface\PI_Public.cpp">
+      <Filter>Zdrojové soubory</Filter>
+    </ClCompile>
+    <ClCompile Include="source\YYTK\Private Interface\PI_Internal.cpp">
       <Filter>Zdrojové soubory</Filter>
     </ClCompile>
   </ItemGroup>
@@ -83,7 +68,7 @@
     <ClInclude Include="include\FunctionWrapper\FunctionWrapper.hpp">
       <Filter>Hlavičkové soubory</Filter>
     </ClInclude>
-    <ClInclude Include="source\YYTK\Module Interface\Interface.hpp">
+    <ClInclude Include="source\YYTK\Module Interface\MI.hpp">
       <Filter>Hlavičkové soubory</Filter>
     </ClInclude>
     <ClInclude Include="source\YYTK\Module Internals\Module Internals.hpp">
@@ -105,6 +90,9 @@
       <Filter>Hlavičkové soubory</Filter>
     </ClInclude>
     <ClInclude Include="resource.h">
+      <Filter>Hlavičkové soubory</Filter>
+    </ClInclude>
+    <ClInclude Include="source\YYTK\Private Interface\PI.hpp">
       <Filter>Hlavičkové soubory</Filter>
     </ClInclude>
   </ItemGroup>

@@ -1747,9 +1747,8 @@ namespace YYTK
 			IN const Integer& Value
 		)
 		{
-			*this = RValue();
-
 			this->m_i64 = static_cast<int64_t>(Value);
+			this->m_Flags = 0;
 			this->m_Kind = VALUE_INT64;
 		}
 
@@ -1761,9 +1760,8 @@ namespace YYTK
 			IN const TDoubleCompatible& Value
 		)
 		{
-			*this = RValue();
-
 			this->m_Real = static_cast<double>(Value);
+			this->m_Flags = 0;
 			this->m_Kind = VALUE_REAL;
 		}
 
@@ -1775,10 +1773,9 @@ namespace YYTK
 			IN TGameMakerObject Value
 		)
 		{
-			*this = RValue();
-
-			this->m_Pointer = (PVOID)(Value);
+			this->m_Pointer = (PVOID)Value;
 			this->m_Kind = VALUE_OBJECT;
+			this->m_Flags = 0;
 		}
 
 		RValue(
@@ -1860,9 +1857,6 @@ namespace YYTK
 		explicit operator int32_t();
 
 		explicit operator int64_t();
-
-	private:
-		void __Free();
 	};
 #pragma pack(pop)
 
@@ -1900,7 +1894,7 @@ namespace YYTK
 		int m_Flags;
 		YYObjectBase* m_Prototype;
 
-		const char* GetName() const { return this->m_Name; }
+		const char* GetName() const;
 	};
 
 	struct CScript
@@ -1919,7 +1913,7 @@ namespace YYTK
 		const char* m_Name;
 		int m_Offset;
 
-		const char* GetName() const { return this->m_Name; }
+		const char* GetName() const;
 	};
 
 	struct YYGMLFuncs
@@ -2411,6 +2405,8 @@ namespace YYTK
 	// Seems to be mostly stable, some elements at the end are however omitted
 	struct CRoom
 	{
+		friend struct YYTKPrivateInterfaceImpl;
+
 		int32_t m_LastTile;
 		CRoom* m_InstanceHandle;
 		const char* m_Caption;
@@ -2715,6 +2711,8 @@ namespace YYTK
 
 	struct CInstance : YYObjectBase
 	{
+		friend struct YYTKPrivateInterfaceImpl;
+
 		int64_t m_CreateCounter;
 		CObjectGM* m_Object;
 		CPhysicsObject* m_PhysicsObject;

@@ -80,12 +80,6 @@ namespace YYTK
 	static_assert(sizeof(RVariableRoutine) == 32);
 #endif // _WIN64
 
-	struct TargettedInstruction
-	{
-		ZydisDisassembledInstruction RawForm;
-		PVOID FunctionTarget;
-	};
-
 	struct ModuleCallbackDescriptor
 	{
 		Aurie::AurieModule* OwnerModule;
@@ -97,6 +91,7 @@ namespace YYTK
 
 // Private includes
 #include "Module Internals/Module Internals.hpp"
-#include "Module Interface/Interface.hpp"
+#include "Module Interface/MI.hpp"
+#include "Private Interface/PI.hpp"
 
 #endif // YYTK_TOOL_H_

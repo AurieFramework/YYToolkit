@@ -123,6 +123,7 @@
       <AdditionalIncludeDirectories>$(ProjectDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <AdditionalOptions>/d1trimfile:"$(SolutionDir)\" %(AdditionalOptions)</AdditionalOptions>
+      <Optimization>Disabled</Optimization>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -154,22 +155,17 @@
   <ItemGroup>
     <ClCompile Include="include\Zydis\Zydis.c" />
     <ClCompile Include="source\ModuleMain.cpp" />
-    <ClCompile Include="source\YYTK\Module Interface\Interface.cpp" />
-    <ClCompile Include="source\YYTK\Module Internals\GameMaker\Generic\Generic-CodeExecute.cpp" />
-    <ClCompile Include="source\YYTK\Module Internals\GameMaker\Generic\Generic-Objects.cpp" />
-    <ClCompile Include="source\YYTK\Module Internals\GameMaker\Generic\Generic-Rooms.cpp" />
-    <ClCompile Include="source\YYTK\Module Internals\GameMaker\Generic\Generic-RunnerInterfaceNew.cpp" />
-    <ClCompile Include="source\YYTK\Module Internals\GameMaker\Generic\Generic-RunnerInterfaceOld.cpp" />
-    <ClCompile Include="source\YYTK\Module Internals\GameMaker\Generic\Generic.cpp" />
-    <ClCompile Include="source\YYTK\Module Internals\GameMaker\VM\VM-Arrays.cpp" />
-    <ClCompile Include="source\YYTK\Module Internals\GameMaker\VM\VM-BuiltinVariables.cpp" />
-    <ClCompile Include="source\YYTK\Module Internals\GameMaker\VM\VM-Functions.cpp" />
-    <ClCompile Include="source\YYTK\Module Internals\GameMaker\VM\VM-Rooms.cpp" />
-    <ClCompile Include="source\YYTK\Module Internals\GameMaker\YYC\YYC-Arrays.cpp" />
-    <ClCompile Include="source\YYTK\Module Internals\GameMaker\YYC\YYC-BuiltinVariables.cpp" />
-    <ClCompile Include="source\YYTK\Module Internals\GameMaker\YYC\YYC-Functions.cpp" />
-    <ClCompile Include="source\YYTK\Module Internals\GameMaker\YYC\YYC-Rooms.cpp" />
+    <ClCompile Include="source\YYTK\Module Interface\MI_Public.cpp" />
+    <ClCompile Include="source\YYTK\Module Interface\MI_Aurie.cpp" />
+    <ClCompile Include="source\YYTK\Module Interface\MI_Internal.cpp" />
+    <ClCompile Include="source\YYTK\Module Internals\Memory\Memory.cpp" />
     <ClCompile Include="source\YYTK\Module Internals\Hooks\Hooks.cpp" />
+    <ClCompile Include="source\YYTK\Module Internals\Generic\Generic.cpp" />
+    <ClCompile Include="source\YYTK\Module Internals\Zeus\Zeus-x64.cpp" />
+    <ClCompile Include="source\YYTK\Module Internals\Zeus\Zeus-x86.cpp" />
+    <ClCompile Include="source\YYTK\Private Interface\PI_Aurie.cpp" />
+    <ClCompile Include="source\YYTK\Private Interface\PI_Internal.cpp" />
+    <ClCompile Include="source\YYTK\Private Interface\PI_Public.cpp" />
     <ClCompile Include="source\YYTK\Shared\YYTK_Shared_Types.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -177,8 +173,9 @@
     <ClInclude Include="include\FunctionWrapper\FunctionWrapper.hpp" />
     <ClInclude Include="include\Zydis\Zydis.h" />
     <ClInclude Include="resource.h" />
-    <ClInclude Include="source\YYTK\Module Interface\Interface.hpp" />
+    <ClInclude Include="source\YYTK\Module Interface\MI.hpp" />
     <ClInclude Include="source\YYTK\Module Internals\Module Internals.hpp" />
+    <ClInclude Include="source\YYTK\Private Interface\PI.hpp" />
     <ClInclude Include="source\YYTK\Shared\YYTK_Shared.hpp" />
     <ClInclude Include="source\YYTK\Shared\YYTK_Shared_Base.hpp" />
     <ClInclude Include="source\YYTK\Shared\YYTK_Shared_Interface.hpp" />
