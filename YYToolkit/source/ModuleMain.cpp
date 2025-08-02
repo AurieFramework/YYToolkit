@@ -83,7 +83,6 @@ EXPORTED AurieStatus ModuleEntrypoint(
 		AurieStatusToString(last_status)
 	);
 
-
 	return last_status;
 }
 

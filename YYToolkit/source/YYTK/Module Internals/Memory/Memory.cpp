@@ -224,7 +224,7 @@ uintptr_t YYTK::Memory::DmCalculateInstructionAddress(
 
 	uintptr_t address = PostLastInstructionAddress;
 
-	for (int64_t i = (Instructions.size() - 1); i >= Index; i--)
+	for (intptr_t i = (Instructions.size() - 1); i >= Index; i--)
 		address -= Instructions[i].length;
 
 	return address;
@@ -353,7 +353,7 @@ std::vector<size_t> YYTK::Memory::DmSigscanGameEx(
 	{
 		last_match = Aurie::MmSigscanRegion(
 			reinterpret_cast<unsigned char*>(region_start),
-			region_end - region_start,
+			static_cast<size_t>(region_end - region_start),
 			Pattern,
 			Mask
 		);

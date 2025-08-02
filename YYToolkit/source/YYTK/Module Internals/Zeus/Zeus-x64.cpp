@@ -7,21 +7,6 @@ using namespace Aurie;
 #define PAGE_SIZE (0x1000)
 #endif // PAGE_SIZE
 
-
-#define UNW_FLAG_NHANDLER 0x0
-#define UNW_FLAG_EHANDLER 0x1
-#define UNW_FLAG_UHANDLER 0x2
-#define UNW_FLAG_CHAININFO 0x4
-
-typedef struct _UNWIND_INFO {
-	BYTE Version : 3;
-	BYTE Flags : 5;
-	BYTE SizeOfProlog;
-	BYTE CountOfCodes;
-	BYTE FrameRegister : 4;
-	BYTE FrameOffset : 4;
-} UNWIND_INFO, * PUNWIND_INFO;
-
 AurieStatus YYTK::Zeus::FindRunnerInterfaceHookpoint(
 	OUT PVOID* TargetInstruction
 )
