@@ -346,6 +346,48 @@ namespace YYTK
 		return instance_member;
 	}
 
+	bool YYTKPrivateInterfaceImpl::RV_IsUndefined(
+		IN const RValue* Value
+	)
+	{
+		return Value->m_Kind == VALUE_UNDEFINED;
+	}
+
+	bool YYTKPrivateInterfaceImpl::RV_IsUnset(
+		IN const RValue* Value
+	)
+	{
+		return Value->m_Kind == VALUE_UNSET;
+	}
+
+	bool YYTKPrivateInterfaceImpl::RV_IsStruct(
+		IN const RValue* Value
+	)
+	{
+		return Value->m_Kind == VALUE_OBJECT;
+	}
+
+	bool YYTKPrivateInterfaceImpl::RV_IsNumberCompatible(
+		IN const RValue* Value
+	)
+	{
+		return Value->m_Kind == VALUE_REAL || Value->m_Kind == VALUE_INT32 || Value->m_Kind == VALUE_INT64 || Value->m_Kind == VALUE_BOOL;
+	}
+
+	bool YYTKPrivateInterfaceImpl::RV_IsString(
+		IN const RValue* Value
+	)
+	{
+		return Value->m_Kind == VALUE_STRING;
+	}
+
+	bool YYTKPrivateInterfaceImpl::RV_IsArray(
+		IN const RValue* Value
+	)
+	{
+		return Value->m_Kind == VALUE_ARRAY;
+	}
+
 	void YYTKPrivateInterfaceImpl::RV_CreateEmpty(
 		IN RValue* Value
 	)

@@ -46,10 +46,6 @@ EXPORTED AurieStatus ModuleEntrypoint(
 {
 	UNREFERENCED_PARAMETER(ModulePath);
 
-	DbgPrintEx(LOG_SEVERITY_INFO, "Waiting for debugger...");
-	while (!IsDebuggerPresent())
-		Sleep(500);
-
 	AurieStatus last_status = AURIE_SUCCESS;
 
 	last_status = ObCreateInterface(

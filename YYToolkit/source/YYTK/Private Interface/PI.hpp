@@ -114,6 +114,30 @@ namespace YYTK
 			IN std::string_view Index
 		) override final;
 
+		virtual bool RV_IsUndefined(
+			IN const RValue* Value
+		) override final;
+
+		virtual bool RV_IsUnset(
+			IN const RValue* Value
+		) override final;
+
+		virtual bool RV_IsStruct(
+			IN const RValue* Value
+		) override final;
+
+		virtual bool RV_IsNumberCompatible(
+			IN const RValue* Value
+		) override final;
+
+		virtual bool RV_IsString(
+			IN const RValue* Value
+		) override final;
+
+		virtual bool RV_IsArray(
+			IN const RValue* Value
+		) override final;
+
 		/* RValue initializers */
 
 		virtual void RV_CreateEmpty(

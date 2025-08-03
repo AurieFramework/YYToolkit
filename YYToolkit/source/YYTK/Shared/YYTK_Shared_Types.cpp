@@ -112,6 +112,31 @@ RValue* YYTK::RValue::ToArray()
 	return GetPrivateInterface()->RV_ToCArray(this);
 }
 
+bool YYTK::RValue::IsUndefined() const
+{
+	return GetPrivateInterface()->RV_IsUndefined(this) || GetPrivateInterface()->RV_IsUnset(this);
+}
+
+bool YYTK::RValue::IsStruct() const
+{
+	return GetPrivateInterface()->RV_IsStruct(this);
+}
+
+bool YYTK::RValue::IsNumberConvertible() const
+{
+	return GetPrivateInterface()->RV_IsNumberCompatible(this);
+}
+
+bool YYTK::RValue::IsString() const
+{
+	return GetPrivateInterface()->RV_IsString(this);
+}
+
+bool YYTK::RValue::IsArray() const
+{
+	return GetPrivateInterface()->RV_IsArray(this);
+}
+
 void* YYTK::RValue::ToPointer() const
 {
 	return GetPrivateInterface()->RV_ToPointer(this);
@@ -361,6 +386,15 @@ int32_t YYTK::CInstance::GetMemberCount() const
 {
 	RValue self = this;
 	return GetPrivateInterface()->RV_GetMemberCount(&self);
+}
+
+bool YYTK::CInstance::ContainsValue(
+	IN std::string_view MemberName
+) const
+{
+	const RValue* member = this->GetRefMember(MemberName.data());
+
+	return member != nullptr;
 }
 
 CInstance* YYTK::CInstance::FromInstanceID(

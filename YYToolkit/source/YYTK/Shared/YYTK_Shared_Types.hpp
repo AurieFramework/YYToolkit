@@ -1722,6 +1722,21 @@ namespace YYTK
 		// Only applicable for VALUE_ARRAY RValues.
 		RValue* ToArray();
 
+		// Checks if accesses to the RValue cause an exception.
+		bool IsUndefined() const;
+
+		// Checks if accesses to nested members of the RValue are safe.
+		bool IsStruct() const;
+
+		// Checks if the RValue can be safely converted to a number.
+		bool IsNumberConvertible() const;
+
+		// Checks if the RValue is a string.
+		bool IsString() const;
+
+		// Checks if the RValue is an array.
+		bool IsArray() const;
+
 		/* Constructors / destructors */
 
 		// Empty constructor, creates an undefined RValue (not an unset one).
@@ -1961,6 +1976,10 @@ namespace YYTK
 		) const;
 
 		int32_t GetMemberCount() const;
+
+		bool ContainsValue(
+			IN std::string_view MemberName
+		) const;
 
 		static CInstance* FromInstanceID(
 			IN int32_t InstanceID
@@ -2790,6 +2809,10 @@ namespace YYTK
 		) const;
 
 		int32_t GetMemberCount() const;
+
+		bool ContainsValue(
+			IN std::string_view MemberName
+		) const;
 
 		static CInstance* FromInstanceID(
 			IN int32_t InstanceID
