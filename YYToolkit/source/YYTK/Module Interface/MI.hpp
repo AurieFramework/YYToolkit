@@ -305,6 +305,11 @@ namespace YYTK
 			IN const RValue& Instance,
 			IN std::string_view ObjectName
 		) override final;
+
+		virtual Aurie::AurieStatus GetMethodParameterCount(
+			IN std::string_view MethodName,
+			OUT int32_t& Count
+		) override final;
 	};
 
 	inline YYTKInterfaceImpl g_ModuleInterface;

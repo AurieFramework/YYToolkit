@@ -1851,7 +1851,7 @@ namespace YYTK
 			IN std::string_view MemberName
 			);
 
-		const RValue& operator[](
+		RValue operator[](
 			IN std::string_view MemberName
 			) const;
 

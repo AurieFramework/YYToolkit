@@ -11,7 +11,7 @@ ZydisDisassembledInstruction YYTK::Memory::DmDisassembleInstruction(
 		return {};
 
 	ZydisDisassembledInstruction instruction = {};
-	ZyanStatus status = ZydisDisassembleIntel(
+	ZydisDisassembleIntel(
 		image_arch == IMAGE_FILE_MACHINE_AMD64 ? ZYDIS_MACHINE_MODE_LONG_64 : ZYDIS_MACHINE_MODE_LEGACY_32,
 		reinterpret_cast<ZyanU64>(InstructionBase),
 		InstructionBase,
@@ -198,7 +198,7 @@ Aurie::AurieStatus YYTK::Memory::DmGetSectionBounds(
 	// Get the .text section address for the game executable
 	auto status = Aurie::Internal::PpiGetModuleSectionBounds(
 		GetModuleHandleW(nullptr),
-		".text",
+		SectionName,
 		text_section_offset,
 		text_section_size
 	);

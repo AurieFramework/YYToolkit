@@ -383,8 +383,6 @@ namespace YYTK
 
 			m_WindowHandle = window_handle.ToPointer<HWND>();
 
-			int d3d11_try_limit = 300;
-
 			for (int d3d11_try_limit = 300; d3d11_try_limit > 0; d3d11_try_limit--)
 			{
 				last_status = YkFetchD3D11Info(

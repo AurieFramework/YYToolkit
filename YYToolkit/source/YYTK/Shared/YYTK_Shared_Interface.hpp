@@ -352,6 +352,16 @@ namespace YYTK
 			IN const RValue& Instance,
 			IN std::string_view ObjectName
 		) = 0;
+
+		/**
+		 * \brief Reserved for internal use. Do not use.
+		 * \param MethodName The name of the method whose argument count is extracted.
+		 * \return AURIE_SUCCESS on success. AURIE_OBJECT_NOT_FOUND if the function does not exist.
+		 */
+		virtual Aurie::AurieStatus GetMethodParameterCount(
+			IN std::string_view MethodName,
+			OUT int32_t& Count
+		) = 0;
 	};
 
 	struct YYTKPrivateInterface : public Aurie::AurieInterfaceBase

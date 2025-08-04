@@ -222,7 +222,7 @@ namespace YYTK
 
 		// member_count will not be modified if the function fails.
 		g_ModuleInterface.GetInstanceMemberCount(
-			this,
+			Value,
 			member_count
 		);
 
@@ -277,7 +277,7 @@ namespace YYTK
 		YkWaitForLowerLevelInit();
 
 		RValue* element = nullptr;
-		AurieStatus last_status = g_ModuleInterface.GetArrayEntry(
+		g_ModuleInterface.GetArrayEntry(
 			*Value,
 			Index,
 			element
@@ -583,7 +583,7 @@ namespace YYTK
 	{
 		YkWaitForLowerLevelInit();
 
-		return nullptr;
+		return Object->m_Name;
 	}
 
 	const char* YYTKPrivateInterfaceImpl::CScript_GetName(
@@ -628,6 +628,7 @@ namespace YYTK
 		IN int Flags
 	)
 	{
+		UNREFERENCED_PARAMETER(Flags);
 		YkWaitForLowerLevelInit();
 
 		// Get the slot ID - this calls FindAlloc_Slot_From_Name

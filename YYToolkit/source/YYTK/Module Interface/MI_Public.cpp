@@ -1033,4 +1033,30 @@ namespace YYTK
 		// Compare the names
 		return _stricmp(ObjectName.data(), Instance.ToInstance()->m_Object->m_Name) == 0;
 	}
+
+	AurieStatus YYTKInterfaceImpl::GetMethodParameterCount(
+		IN std::string_view MethodName,
+		OUT int32_t& Count
+	)
+	{
+		int32_t index = 0;
+		AurieStatus last_status = AURIE_SUCCESS;
+
+		// Get the index of the method.
+		last_status = GetNamedRoutineIndex(MethodName.data(), &index);
+
+		// Make sure we succeeded (ie. method exists)
+		if (!AurieSuccess(last_status))
+			return last_status;
+
+		// Reserved for scripts.
+		if (index >= 100'000)
+			return AURIE_ACCESS_DENIED;
+
+		// Extract the argument count.
+		std::string function_name; TRoutine function_routine = nullptr;
+		YkExtractFunctionEntry(index, function_name, function_routine, Count);
+
+		return AURIE_SUCCESS;
+	}
 }

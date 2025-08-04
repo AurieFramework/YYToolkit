@@ -98,7 +98,6 @@ AurieStatus YYTK::Zeus::FindRunnerInterfaceHookpoint(
 
 		// Offset from the base of the patterns:
 		auto last_lea_index = pattern_index + 7;
-		auto last_call_index = pattern_index + 8;
 
 		// Get the instruction address of the lea, since DmDecodeInstruction doesn't output it directly
 		auto last_lea_address = Memory::DmCalculateInstructionAddress(decoded_instructions, static_cast<int64_t>(last_lea_index), last_instruction);
