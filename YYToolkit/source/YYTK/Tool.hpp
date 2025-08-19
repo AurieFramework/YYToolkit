@@ -87,6 +87,17 @@ namespace YYTK
 		int32_t Priority;
 		PVOID Routine;
 	};
+
+	union YYTKConfigFlags
+	{
+		struct
+		{
+			uint8_t DisableErrors : 1;
+			uint8_t MBZ : 7;
+		} Fields;
+		uint8_t Contents;
+	};
+	static_assert(sizeof(YYTKConfigFlags) == 1);
 }
 
 // Private includes

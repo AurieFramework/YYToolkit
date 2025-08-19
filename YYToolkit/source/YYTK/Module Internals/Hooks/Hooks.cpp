@@ -182,7 +182,6 @@ namespace YYTK
 				MmFreeMemory(g_ArSelfModule, formatted_cstring);
 				formatted_cstring = nullptr;
 			}
-
 		
 			return GetHookTrampoline<decltype(&HkYYError)>("YYError")(
 				(runner_provided_info_formatted).c_str()

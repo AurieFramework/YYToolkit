@@ -58,6 +58,59 @@ namespace YYTK
 		return g_ModuleInterface.GetRunnerInterface().KIND_NAME_RValue(Value);
 	}
 
+	const char* YYTKPrivateInterfaceImpl::RV_GetObjectSpecificKind(
+		IN const RValue* Value
+	)
+	{
+		// Special handler for this case.
+		// Made specifically for YYTK, will break your game if used in other projects.
+		if (Value->m_Kind == VALUE_OBJECT && Value->m_Object)
+		{
+			switch (Value->m_Object->m_ObjectKind)
+			{
+			case OBJECT_KIND_YYOBJECTBASE:
+			{
+				YYObjectBase* my_prototype = Value->m_Object->m_Prototype ? Value->m_Object->m_Prototype : Value->m_Object;
+
+				// my_prototype is always guaranteed non-null because of the if Value->m_Object check above.
+				if (my_prototype->m_Class)
+				{
+					const char* name = my_prototype->m_Class;
+
+					// Skip the "gml_Script_" prefix that objects have
+					// This effectively turns eg. gml_Script_MyObject to just MyObject.
+					if (!_strnicmp(name, "gml_Script_", 11))
+						name += 11;
+
+					if (!_strnicmp(name, "___struct___", 12))
+						name += 12;
+
+					return name;
+				}
+
+				// Return default KIND_NAME_RValue result.
+				break;
+			}
+			case OBJECT_KIND_CINSTANCE:
+				if (Value->m_Instance->m_Object && Value->m_Instance->m_Object->m_Name)
+					return Value->m_Instance->m_Object->m_Name;
+
+				// Return default KIND_NAME_RValue result.
+				break;
+			case OBJECT_KIND_SCRIPTREF:
+				CScriptRef* script_ref = reinterpret_cast<CScriptRef*>(Value->m_Object);
+
+				if (script_ref->m_CallScript && script_ref->m_CallScript->m_Name)
+					return script_ref->m_CallScript->m_Name;
+
+				// Return default KIND_NAME_RValue result.
+				break;
+			}
+		}
+
+		return this->RV_GetKindName(Value);
+	}
+
 	YYObjectBase* YYTKPrivateInterfaceImpl::RV_ToObject(
 		IN const RValue* Value
 	)
@@ -717,5 +770,30 @@ namespace YYTK
 		}
 
 		return buffer;
+	}
+
+	Aurie::AurieStatus YYTKPrivateInterfaceImpl::YkSetRuntimeFlags(
+		uint8_t NewFlags
+	)
+	{
+		static bool printed_warning = false;
+		if (!printed_warning)
+		{
+			DbgPrintEx(LOG_SEVERITY_CRITICAL, "Runtime flags have been modified.");
+			DbgPrintEx(LOG_SEVERITY_CRITICAL, "The game will continue execution regardless of internal failures or corruption.");
+			DbgPrintEx(LOG_SEVERITY_CRITICAL, "From this point onward, game integrity and stability CANNOT be guaranteed.");
+
+			printed_warning = true;
+		}
+
+		YYTKConfigFlags flags = { .Contents = NewFlags };
+
+		if (flags.Fields.MBZ != 0)
+			return AURIE_INVALID_PARAMETER;
+
+		if (g_ModuleInterface.m_RunnerErrorsDisabled)
+			*g_ModuleInterface.m_RunnerErrorsDisabled = flags.Fields.DisableErrors;
+
+		return AURIE_SUCCESS;
 	}
 }

@@ -364,6 +364,27 @@ namespace YYTK
 				return AURIE_MODULE_INTERNAL_ERROR;
 			}
 
+			TRoutine is_nan = nullptr;
+			last_status = GetNamedRoutinePointer(
+				"is_nan",
+				reinterpret_cast<PVOID*>(&is_nan)
+			);
+
+			DbgPrintEx(LOG_SEVERITY_TRACE, "is_nan => %s", AurieStatusToString(last_status));
+
+			last_status = Zeus::FindErrorSuppressionVariable(
+				is_nan,
+				&m_RunnerErrorsDisabled
+			);
+
+			DbgPrintEx(LOG_SEVERITY_TRACE, "Zeus::FindErrorSuppressionVariable => %s", AurieStatusToString(last_status));
+
+			if (!AurieSuccess(last_status))
+			{
+				DbgPrintEx(LOG_SEVERITY_WARNING, "Failed to find flag-bit 0 dependant variable.");
+				// no return, ignore.
+			}
+
 			RValue window_handle;
 			last_status = CallBuiltinEx(
 				window_handle,

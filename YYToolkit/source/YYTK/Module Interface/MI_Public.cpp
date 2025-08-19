@@ -290,14 +290,6 @@ namespace YYTK
 			if (!variable_exists.ToBoolean())
 				return AURIE_OBJECT_NOT_FOUND;
 
-			DbgPrintEx(
-				LOG_SEVERITY_WARNING,
-				"[%s:%d] GetInstanceMember() => StructGetMember failed on variable %s, but variable does exist?",
-				__FILE__,
-				__LINE__,
-				MemberName
-			);
-
 			last_status = this->GetVariableSlot(
 				Instance,
 				MemberName,

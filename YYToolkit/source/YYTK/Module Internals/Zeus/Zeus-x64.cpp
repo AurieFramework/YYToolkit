@@ -1573,4 +1573,57 @@ Aurie::AurieStatus YYTK::Zeus::VM::FindRoomData(
 	return AURIE_SUCCESS;
 }
 
+Aurie::AurieStatus YYTK::Zeus::FindErrorSuppressionVariable(
+	IN PVOID IsNaN,
+	OUT bool** SuppressionVariable
+)
+{
+	// Disassemble the function
+	auto instructions = Memory::DmDisassembleInstructionByRange(
+		IsNaN,
+		0x100
+	);
+
+	// Loop all instructions.
+	// We're looking for the first mov [mem64], 1 (imm)
+	for (const auto& instruction : instructions)
+	{
+		if (instruction.info.mnemonic != ZYDIS_MNEMONIC_MOV)
+			continue;
+
+		// We have to be moving to a memory location
+		if (instruction.operands[0].type != ZYDIS_OPERAND_TYPE_MEMORY)
+			continue;
+
+		// We have to have some displacement (offset)
+		if (!instruction.operands[0].mem.disp.has_displacement)
+			continue;
+
+		// The second operand is an immediate value
+		if (instruction.operands[1].type != ZYDIS_OPERAND_TYPE_IMMEDIATE)
+			continue;
+
+		// And the value is 1
+		if (instruction.operands[1].imm.value.s != 1)
+			continue;
+
+		ZyanU64 suppression_variable_address = 0;
+		ZydisCalcAbsoluteAddress(
+			&instruction.info,
+			&instruction.operands[0],
+			instruction.runtime_address,
+			&suppression_variable_address
+		);
+
+		if (!suppression_variable_address)
+			return AURIE_OBJECT_NOT_FOUND;
+
+		*SuppressionVariable = reinterpret_cast<bool*>(suppression_variable_address);
+		return AURIE_SUCCESS;
+	}
+
+	return AURIE_OBJECT_NOT_FOUND;
+}
+
+
 #endif

@@ -16,7 +16,7 @@
 #endif // YYTK_TO_STRING
 
 #ifndef YYTK_MAJOR
-#define YYTK_MAJOR 4
+#define YYTK_MAJOR 5
 #endif // YYTK_MAJOR
 
 #ifndef YYTK_MINOR
@@ -24,7 +24,7 @@
 #endif // YYTK_MINOR
 
 #ifndef YYTK_PATCH
-#define YYTK_PATCH 1
+#define YYTK_PATCH 0
 #endif
 
 #ifndef YYTK_VERSION_STRING
@@ -44,7 +44,7 @@
 #endif // YYTK_CPP_VERSION
 
 #if YYTK_CPP_VERSION < 202002L
-#error "YYToolkit v4 Shared Headers require at least C++20."
+#error "YYToolkit v5 Shared Headers require at least C++20."
 #endif // YYTK_CPP_VERSION
 
 #ifndef UTEXT

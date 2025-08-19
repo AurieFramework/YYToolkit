@@ -85,6 +85,13 @@ namespace YYTK
 		// In case the name isn't in the hashmap, the function allocates a new slot for it,
 		// effectively creating the variable inside the object.
 		PFN_FindAllocSlot m_FindAllocSlot = nullptr;
+
+		// An extremely dangerous variable.
+		// True by default for all games. If disabled, all errors within the runner are ignored.
+		// Due to this, the YYError hook will never be reached.
+		//
+		// This creates UNDEFINED ENGINE BEHAVIOR, and should NEVER BE USED unless debugging.
+		bool* m_RunnerErrorsDisabled = nullptr;
 	public:
 		// Stores plugin callbacks
 		std::vector<ModuleCallbackDescriptor> m_RegisteredCallbacks;
@@ -129,8 +136,11 @@ namespace YYTK
 			IN OUT FunctionWrapper<T>& Function
 		)
 		{
-			// Calls all callbacks matching the Trigger
+			// Discard any callbacks before FirstInit and YYRI init.
+			if (!this->m_IsRunnerInterfaceReady || !this->m_FirstInitComplete)
+				return;
 
+			// Calls all callbacks matching the Trigger
 			for (auto& callback_descriptor : m_RegisteredCallbacks)
 			{
 				if (callback_descriptor.Trigger == Trigger)

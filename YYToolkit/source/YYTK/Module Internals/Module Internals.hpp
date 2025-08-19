@@ -68,6 +68,11 @@ namespace YYTK
 			OUT	PFN_FindAllocSlot* FindAllocSlot
 		);
 
+		Aurie::AurieStatus FindErrorSuppressionVariable(
+			IN PVOID IsNaN,
+			OUT bool** SuppressionVariable
+		);
+
 		namespace YYC
 		{
 			Aurie::AurieStatus FindFunctionsArray(

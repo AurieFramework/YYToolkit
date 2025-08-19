@@ -91,49 +91,6 @@ namespace YYTK
 		) = 0;
 
 		/**
-		 * \brief Prints text to the console.
-		 * \param Color The desired text color.
-		 * \param Format A printf-style format string.
-		 */
-		virtual void Print(
-			IN CmColor Color,
-			IN std::string_view Format,
-			IN ...
-		) = 0;
-
-		/**
-		 * \brief Prints info to the console.
-		 * \param Format A printf-style format string.
-		 */
-		virtual void PrintInfo(
-			IN std::string_view Format,
-			IN ...
-		) = 0;
-
-		/**
-		 * \brief Prints a warning to the console.
-		 * \param Format A printf-style format string.
-		 */
-		virtual void PrintWarning(
-			IN std::string_view Format,
-			IN ...
-		) = 0;
-
-		/**
-		 * \brief Prints an error to the console.
-		 * \param Filepath Specify the __FILE__ macro.
-		 * \param Line Specify the __LINE__ macro.
-		 * \param Format A printf-style format string.
-		 */
-		virtual void PrintError(
-			IN std::string_view Filepath,
-			IN const int Line,
-			IN std::string_view Format,
-			IN ...
-		) = 0;
-
-
-		/**
 		 * \brief Defines a callback function for intercepting game events.
 		 * \param Module Specify g_ArSelfModule.
 		 * \param Trigger The event to listen for.
@@ -395,6 +352,245 @@ namespace YYTK
 			IN const RValue& Instance,
 			IN std::string_view ObjectName
 		) = 0;
+
+		/**
+		 * \brief Reserved for internal use. Do not use.
+		 * \param MethodName The name of the method whose argument count is extracted.
+		 * \return AURIE_SUCCESS on success. AURIE_OBJECT_NOT_FOUND if the function does not exist.
+		 */
+		virtual Aurie::AurieStatus GetMethodParameterCount(
+			IN std::string_view MethodName,
+			OUT int32_t& Count
+		) = 0;
+	};
+
+	struct YYTKPrivateInterface : public Aurie::AurieInterfaceBase
+	{
+		/* Aurie Boilerplate */
+
+		virtual Aurie::AurieStatus Create() = 0;
+
+		virtual void Destroy() = 0;
+
+		virtual void QueryVersion(
+			OUT short& Major,
+			OUT short& Minor,
+			OUT short& Patch
+		) = 0;
+
+		/* RValue conversions */
+
+		virtual double RV_ToDouble(
+			IN const RValue* Value
+		) = 0;
+
+		virtual int32_t RV_ToInt32(
+			IN const RValue* Value
+		) = 0;
+
+		virtual int64_t RV_ToInt64(
+			IN const RValue* Value
+		) = 0;
+
+		virtual PVOID RV_ToPointer(
+			IN const RValue* Value
+		) = 0;
+
+		virtual bool RV_ToBoolean(
+			IN const RValue* Value
+		) = 0;
+
+		virtual const char* RV_GetKindName(
+			IN const RValue* Value
+		) = 0;
+
+		virtual const char* RV_GetObjectSpecificKind(
+			IN const RValue* Value
+		) = 0;
+
+		virtual YYObjectBase* RV_ToObject(
+			IN const RValue* Value
+		) = 0;
+
+		virtual CInstance* RV_ToInstance(
+			IN const RValue* Value
+		) = 0;
+
+		virtual const char* RV_ToCString(
+			IN const RValue* Value
+		) = 0;
+
+		virtual std::string RV_ToString(
+			IN const RValue* Value
+		) = 0;
+
+		virtual std::u8string RV_ToU8String(
+			IN const RValue* Value
+		) = 0;
+
+		virtual std::map<std::string, RValue> RV_ToMap(
+			IN const RValue* Value
+		) = 0;
+
+		virtual std::map<std::string, RValue*> RV_ToRefMap(
+			IN RValue* Value
+		) = 0;
+
+		virtual std::vector<RValue> RV_ToVector(
+			IN const RValue* Value
+		) = 0;
+
+		virtual std::vector<RValue*> RV_ToRefVector(
+			IN RValue* Value
+		) = 0;
+
+		virtual int32_t RV_GetMemberCount(
+			IN const RValue* Value
+		) = 0;
+
+		virtual RValue* RV_ToCArray(
+			IN RValue* Value
+		) = 0;
+
+		virtual RValue RV_IndexByNumber(
+			IN const RValue* Value,
+			IN size_t Index
+		) = 0;
+
+		virtual RValue* RV_IndexByNumberRef(
+			IN RValue* Value,
+			IN size_t Index
+		) = 0;
+
+		virtual RValue RV_IndexByName(
+			IN const RValue* Value,
+			IN std::string_view Index
+		) = 0;
+
+		virtual RValue* RV_IndexByNameRef(
+			IN RValue* Value,
+			IN std::string_view Index
+		) = 0;
+
+		virtual bool RV_IsUndefined(
+			IN const RValue* Value
+		) = 0;
+
+		virtual bool RV_IsUnset(
+			IN const RValue* Value
+		) = 0;
+
+		virtual bool RV_IsStruct(
+			IN const RValue* Value
+		) = 0;
+
+		virtual bool RV_IsNumberCompatible(
+			IN const RValue* Value
+		) = 0;
+
+		virtual bool RV_IsString(
+			IN const RValue* Value
+		) = 0;
+
+		virtual bool RV_IsArray(
+			IN const RValue* Value
+		) = 0;
+
+		/* RValue initializers */
+
+		virtual void RV_CreateEmpty(
+			IN RValue* Value
+		) = 0;
+
+		virtual void RV_CreateFromDouble(
+			IN RValue* Value,
+			IN double Contents
+		) = 0;
+
+		virtual void RV_CreateFromInteger(
+			IN RValue* Value,
+			IN int64_t Contents
+		) = 0;
+
+		virtual void RV_CreateFromPointer(
+			IN RValue* Value,
+			IN void* Contents
+		) = 0;
+
+		virtual void RV_CreateFromObjectPointer(
+			IN RValue* Value,
+			IN void* Contents
+		) = 0;
+
+		virtual void RV_CreateFromVector(
+			IN RValue* Value,
+			IN const std::vector<RValue>& Contents
+		) = 0;
+
+		virtual void RV_CreateFromAnsiString(
+			IN RValue* Value,
+			IN const std::string_view Contents
+		) = 0;
+
+		virtual void RV_CreateFromU8String(
+			IN RValue* Value,
+			IN const std::u8string_view Contents
+		) = 0;
+
+		virtual void RV_CreateFromBoolean(
+			IN RValue* Value,
+			IN bool Contents
+		) = 0;
+
+		virtual void RV_CreateFromMap(
+			IN RValue* Value,
+			IN const std::map<std::string, RValue>& Contents
+		) = 0;
+
+		virtual void RV_Copy(
+			IN RValue* Destination,
+			IN const RValue* Source
+		) = 0;
+
+		virtual void RV_Free(
+			IN RValue* Value
+		) = 0;
+
+		virtual const char* CCode_GetName(
+			IN const CCode* Object
+		) = 0;
+
+		virtual const char* CScript_GetName(
+			IN const CScript* Object
+		) = 0;
+
+		virtual CRoomInternal* CRoom_GetInternalData(
+			IN CRoom* Object
+		) = 0;
+
+		virtual bool YYObjectBase_Add(
+			IN YYObjectBase* Object,
+			IN const char* Name,
+			IN const RValue& Value,
+			IN int Flags
+		) = 0;
+
+		virtual RValue* YYObjectBase_FindOrAllocateValue(
+			IN YYObjectBase* Object,
+			IN const char* Name
+		) = 0;
+
+		virtual CInstanceInternal* CInstance_GetInternalData(
+			IN CInstance* Instance
+		) = 0;
+
+		virtual CInstance* CInstance_FromID(
+			IN int32_t InstanceID
+		) = 0;
+
+		virtual Aurie::AurieStatus YkSetRuntimeFlags(
+			uint8_t NewFlags
+		) = 0;
 	};
 
 	inline YYTKInterface* GetInterface()
@@ -407,7 +603,7 @@ namespace YYTK
 		if (!module_interface)
 		{
 			AurieStatus last_status = ObGetInterface(
-				"YYTK_Main",
+				"YYTK_ZeusMain",
 				reinterpret_cast<AurieInterfaceBase*&>(module_interface)
 			);
 
@@ -416,6 +612,27 @@ namespace YYTK
 		}
 
 		return module_interface;
+	}
+
+	inline YYTKPrivateInterface* GetPrivateInterface()
+	{
+		using namespace Aurie;
+		static YYTKPrivateInterface* private_interface = nullptr;
+
+		// Try getting the interface
+		// If we error, we return nullptr.
+		if (!private_interface)
+		{
+			AurieStatus last_status = ObGetInterface(
+				"YYTK_ZeusPrivate",
+				reinterpret_cast<AurieInterfaceBase*&>(private_interface)
+			);
+
+			if (!AurieSuccess(last_status))
+				printf("[%s : %d] FATAL: Failed to get YYTK Interface (%s)!\n", __FILE__, __LINE__, AurieStatusToString(last_status));
+		}
+
+		return private_interface;
 	}
 }
 

@@ -50,6 +50,10 @@ namespace YYTK
 			IN const RValue* Value
 		) override final;
 
+		virtual const char* RV_GetObjectSpecificKind(
+			IN const RValue* Value
+		) override final;
+
 		virtual YYObjectBase* RV_ToObject(
 			IN const RValue* Value
 		) override final;
@@ -228,6 +232,10 @@ namespace YYTK
 
 		virtual CInstance* CInstance_FromID(
 			IN int32_t InstanceID
+		) override final;
+
+		virtual Aurie::AurieStatus YkSetRuntimeFlags(
+			uint8_t NewFlags
 		) override final;
 	};
 

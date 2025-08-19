@@ -404,6 +404,10 @@ namespace YYTK
 			IN const RValue* Value
 		) = 0;
 
+		virtual const char* RV_GetObjectSpecificKind(
+			IN const RValue* Value
+		) = 0;
+
 		virtual YYObjectBase* RV_ToObject(
 			IN const RValue* Value
 		) = 0;
@@ -582,6 +586,10 @@ namespace YYTK
 
 		virtual CInstance* CInstance_FromID(
 			IN int32_t InstanceID
+		) = 0;
+
+		virtual Aurie::AurieStatus YkSetRuntimeFlags(
+			uint8_t NewFlags
 		) = 0;
 	};
 
