@@ -353,7 +353,6 @@ namespace YYTK
 			instance_member
 		);
 
-		// Prevents access violations, null references are undefined behavior in the C++ standard
 		if (!AurieSuccess(last_status) || !instance_member)
 		{
 			DbgPrintEx(
@@ -363,7 +362,7 @@ namespace YYTK
 				AurieStatusToString(last_status)
 			);
 
-			return Value;
+			return {};
 		}
 
 		return *instance_member;
@@ -383,7 +382,6 @@ namespace YYTK
 			instance_member
 		);
 
-		// Prevents access violations, null references are undefined behavior in the C++ standard
 		if (!AurieSuccess(last_status) || !instance_member)
 		{
 			DbgPrintEx(
@@ -393,7 +391,7 @@ namespace YYTK
 				AurieStatusToString(last_status)
 			);
 
-			return Value;
+			return nullptr;
 		}
 
 		return instance_member;
