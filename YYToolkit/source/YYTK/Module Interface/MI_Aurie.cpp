@@ -426,6 +426,10 @@ namespace YYTK
 				return AURIE_MODULE_INTERNAL_ERROR;
 			}
 
+			// Build the symbol table.
+			// This can take a while (~100ms), so we do it once instead of on every exception.
+			Zeus::BuildApproximateSymbolTable(m_KnownGameSymbols);
+
 			last_status = Hooks::InitializeStage2Hooks(
 				m_WindowHandle,
 				m_EngineSwapchain

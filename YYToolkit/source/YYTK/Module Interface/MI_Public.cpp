@@ -682,7 +682,7 @@ namespace YYTK
 		if (!AurieSuccess(last_status))
 			return last_status;
 
-		Size = possible_size.ToInt64();
+		Size = static_cast<size_t>(possible_size.ToInt64());
 		return AURIE_SUCCESS;
 	}
 

@@ -73,6 +73,19 @@ namespace YYTK
 			OUT bool** SuppressionVariable
 		);
 
+		/**
+		 * \brief Tries to determine what runner function owns instruction pointer based off known function pointers.
+		 * \param InstructionPointer The instruction pointer to try look up.
+		 */
+
+		void BuildApproximateSymbolTable(
+			OUT std::vector<std::pair<uintptr_t, std::string>>& SymbolTable
+		);
+
+		std::string GuessSymbolFromGameInstructionAddress(
+			IN LPCVOID InstructionPointer
+		);
+
 		namespace YYC
 		{
 			Aurie::AurieStatus FindFunctionsArray(

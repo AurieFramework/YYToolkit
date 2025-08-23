@@ -182,9 +182,96 @@ namespace YYTK
 				MmFreeMemory(g_ArSelfModule, formatted_cstring);
 				formatted_cstring = nullptr;
 			}
-		
+
+			std::string new_info = runner_provided_info_formatted;
+			new_info += "\r\n";
+			new_info += "Current engine stacktrace:\r\n";
+			// Works for both VM games by unwinding the VM stack, and for YYC ones by unwinding the g_YYStackTrace.
+			RValue gm_callstack = g_ModuleInterface.CallBuiltin("debug_get_callstack", {});
+			if (gm_callstack.IsArray())
+			{
+				// Convert the array to a vector, as that's easier to work with for us.
+				auto callstack_vector = gm_callstack.ToVector();
+				for (const auto& frame : callstack_vector)
+				{
+					new_info += "- ";
+					new_info += frame.ToString();
+					new_info += "\r\n";
+				}
+			}
+
+			new_info += "\r\n";
+			new_info += "Current native stacktrace:\r\n";
+
+			// Capture the native stacktrace
+			const auto native_stacktrace = std::stacktrace::current();
+
+			// Log all functions in the trace
+			for (size_t function_index = 0; function_index < native_stacktrace.size(); function_index++)
+			{
+				const void* function = native_stacktrace._To_voidptr_array()[function_index];
+
+				// description will be empty if GuessSymbolFromGameInstructionAddress fails.
+				std::string description = Zeus::GuessSymbolFromGameInstructionAddress(function);
+
+				// If we failed, we need to craft a WinDbg-esque symbol print ourselves,
+				// since entry.description() is terribly slow.
+				if (description.empty())
+				{
+					// If a module owns this
+					char filename[256] = {};
+					HMODULE ip_module = nullptr;
+					if (GetModuleHandleExA(
+						GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS,
+						static_cast<LPCSTR>(function),
+						&ip_module
+					))
+					{
+						GetModuleFileNameA(ip_module, filename, 256);
+					}
+
+					description = std::format(
+						"{}!{:06X}",
+						filename,
+						reinterpret_cast<uintptr_t>(function) - reinterpret_cast<uintptr_t>(ip_module)
+					);
+				}
+
+				new_info += std::format("- {:016X} => {}\n",
+					reinterpret_cast<uint64_t>(function),
+					description
+				);
+			}
+
+			// Loop all modules - this is undocumented and plugins should not use this, but we do.
+			new_info += "Aurie Module List:\n";
+			AurieModule* current_module = g_ArSelfModule;
+			do
+			{
+				// The method doesn't modify module_name unless it succeeds.
+				std::wstring module_name = L"<unknown>";
+				MdGetImageFilename(current_module, module_name);
+
+				// Convert to UTF-8
+				const std::string module_name_utf8(module_name.begin(), module_name.end());
+
+				const uint64_t module_address = reinterpret_cast<uint64_t>(Internal::MdpGetModuleBaseAddress(current_module));
+				new_info += std::format("- {:016X} {}\n", module_address, module_name_utf8);
+
+				// Go to the next module
+				Internal::MdpGetNextModule(current_module, current_module);
+			} while (current_module != g_ArSelfModule);
+
+			DbgPrintEx(Aurie::LOG_SEVERITY_CRITICAL, "The GameMaker runtime has encountered an error!");
+			DbgPrintEx(Aurie::LOG_SEVERITY_TRACE, new_info.c_str());
+
+			std::string yytk_info = "\r\n\r\n********************************************\r\n";
+			yytk_info.append("YYToolkit is loaded. Relevant information has been logged to Aurie.log in the game directory.\r\n");
+			yytk_info.append("Please provide the entire log file to aid in debugging.\r\n");
+			yytk_info.append("********************************************\r\n");
+
 			return GetHookTrampoline<decltype(&HkYYError)>("YYError")(
-				(runner_provided_info_formatted).c_str()
+				(runner_provided_info_formatted + yytk_info).c_str()
 			);
 		}
 

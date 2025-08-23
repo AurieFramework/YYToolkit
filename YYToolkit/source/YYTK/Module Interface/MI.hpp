@@ -37,6 +37,10 @@ namespace YYTK
 		// of the lea-mov pairs that construct the Runner Interface on the stack.
 		uint64_t m_RunnerInterfaceSetupStart = 0;
 		uint64_t m_RunnerInterfaceSetupEnd = 0;
+
+		// Approximate symbol map. Built in late initialization.
+		// Used by the YYError hook.
+		std::vector<std::pair<uintptr_t, std::string>> m_KnownGameSymbols;
 	private:
 
 		// A pointer to the functions array in memory

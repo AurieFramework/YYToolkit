@@ -63,6 +63,7 @@ namespace Aurie
 	struct AurieMemoryAllocation;
 	struct AurieInlineHook;
 	struct AurieMidHook;
+	struct AurieRpHook;
 	struct AurieHook;
 
 	// Forward declarations (not opaque)
@@ -121,6 +122,8 @@ namespace Aurie
 		AURIE_OBJECT_HOOK = 4,
 		// An AurieHook object
 		AURIE_OBJECT_MIDFUNCTION_HOOK = 5,
+		// An AurieHook object
+		AURIE_OBJECT_RP_HOOK = 6,
 	};
 
 	enum AurieModuleOperationType : uint32_t
@@ -131,7 +134,9 @@ namespace Aurie
 		// The call is a ModuleInitialize call
 		AURIE_OPERATION_INITIALIZE = 2,
 		// The call is a ModuleUnload call
-		AURIE_OPERATION_UNLOAD = 3
+		AURIE_OPERATION_UNLOAD = 3,
+		// The call is a ModuleEntrypoint call
+		AURIE_OPERATION_ENTRYPOINT = 4
 	};
 
 	union XmmRegister {
@@ -599,6 +604,17 @@ namespace Aurie
 		return AURIE_API_CALL(MmCreateHook, Module, HookIdentifier, SourceFunction, DestinationFunction, Trampoline);
 	}
 
+	inline AurieStatus MmCreateUnsafeHook(
+		IN AurieModule* Module,
+		IN std::string_view HookIdentifier,
+		IN PVOID SourceFunction,
+		IN PVOID DestinationFunction,
+		OUT OPTIONAL PVOID* Trampoline
+	)
+	{
+		return AURIE_API_CALL(MmCreateUnsafeHook, Module, HookIdentifier, SourceFunction, DestinationFunction, Trampoline);
+	}
+
 	inline AurieStatus MmCreateMidfunctionHook(
 		IN AurieModule* Module,
 		IN std::string_view HookIdentifier,
@@ -652,6 +668,36 @@ namespace Aurie
 		)
 		{
 			return AURIE_API_CALL(MmpSigscanRegion, RegionBase, RegionSize, Pattern, PatternMask, PatternBase);
+		}
+
+		inline AurieObject* MmpGetHookByName(
+			IN AurieModule* Module,
+			IN std::string_view HookIdentifier
+		)
+		{
+			return AURIE_API_CALL(MmpGetHookByName, Module, HookIdentifier);
+		}
+
+		inline PVOID MmpGetHookSourceAddress(
+			IN AurieObject* Object
+		)
+		{
+			return AURIE_API_CALL(MmpGetHookSourceAddress, Object);
+		}
+
+		inline PVOID MmpGetHookTargetAddress(
+			IN AurieObject* Object
+		)
+		{
+			return AURIE_API_CALL(MmpGetHookTargetAddress, Object);
+		}
+
+		inline AurieStatus MmpGetRegistersForRPHook(
+			IN AurieRpHook* HookObject,
+			OUT ProcessorContext& Context
+		)
+		{
+			return AURIE_API_CALL(MmpGetRegistersForRPHook, HookObject, Context);
 		}
 	}
 

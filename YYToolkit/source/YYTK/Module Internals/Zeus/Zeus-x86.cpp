@@ -1385,4 +1385,242 @@ Aurie::AurieStatus YYTK::Zeus::FindErrorSuppressionVariable(
 	return AURIE_OBJECT_NOT_FOUND;
 }
 
+void YYTK::Zeus::BuildApproximateSymbolTable(
+	OUT std::vector<std::pair<uintptr_t, std::string>>& SymbolTable
+)
+{
+	AurieStatus last_status = AURIE_SUCCESS;
+	SymbolTable.clear();
+	SymbolTable.reserve(1024);
+
+	// Push all scripts...
+	int script_index = 0;
+	while (AurieSuccess(last_status))
+	{
+		CScript* current_script = nullptr;
+		last_status = g_ModuleInterface.GetScriptData(script_index++, current_script);
+
+		if (!current_script)
+			continue;
+
+		SymbolTable.push_back({ reinterpret_cast<uintptr_t>(current_script->m_Functions->m_ScriptFunction), current_script->m_Name });
+	}
+
+	// Push all built-in function entries...
+	last_status = AURIE_SUCCESS;
+	int builtin_func_index = 0;
+	while (AurieSuccess(last_status))
+	{
+		std::string function_name;
+		TRoutine function_ptr = nullptr;
+		int32_t argument_count = 0;
+
+		g_ModuleInterface.YkExtractFunctionEntry(
+			builtin_func_index++,
+			function_name,
+			function_ptr,
+			argument_count
+		);
+
+		if (!function_ptr)
+			break;
+
+		// If we go out-of-bounds, this will return an error status, since the function name won't exist.
+		int sanity_check_index = 0;
+		last_status = g_ModuleInterface.GetNamedRoutineIndex(
+			function_name.c_str(),
+			&sanity_check_index
+		);
+
+		// Insert if we got a valid function
+		if (AurieSuccess(last_status))
+			SymbolTable.push_back({ reinterpret_cast<uintptr_t>(function_ptr), function_name });
+	}
+
+	// Push all GV and SV functions
+	last_status = AURIE_SUCCESS;
+	size_t builtin_var_index = 0;
+	while (AurieSuccess(last_status))
+	{
+		RVariableRoutine* variable_information = nullptr;
+		last_status = g_ModuleInterface.GetBuiltinVariableInformation(
+			builtin_var_index++,
+			variable_information
+		);
+
+		if (!variable_information)
+			continue;
+
+		if (variable_information->m_GetVariable)
+		{
+			std::string name = "GV_";
+			name.append(variable_information->m_Name);
+
+			SymbolTable.push_back({ reinterpret_cast<uintptr_t>(variable_information->m_GetVariable), name });
+		}
+		if (variable_information->m_SetVariable)
+		{
+			std::string name = "SV_";
+			name.append(variable_information->m_Name);
+
+			SymbolTable.push_back({ reinterpret_cast<uintptr_t>(variable_information->m_SetVariable), name });
+		}
+	}
+
+	// Push runner interface functions...
+	const YYRunnerInterface& runner_interface = g_ModuleInterface.GetRunnerInterface();
+	{
+		SymbolTable.push_back({ reinterpret_cast<uintptr_t>(runner_interface.YYGetString), "YYGetString" });
+		SymbolTable.push_back({ reinterpret_cast<uintptr_t>(runner_interface.DebugConsoleOutput), "DebugConsoleOutput" });
+		SymbolTable.push_back({ reinterpret_cast<uintptr_t>(runner_interface.ReleaseConsoleOutput), "ReleaseConsoleOutput" });
+		SymbolTable.push_back({ reinterpret_cast<uintptr_t>(runner_interface.ShowMessage), "ShowMessage" });
+		SymbolTable.push_back({ reinterpret_cast<uintptr_t>(runner_interface.YYError), "YYError" });
+		SymbolTable.push_back({ reinterpret_cast<uintptr_t>(runner_interface.YYAlloc), "YYAlloc" });
+		SymbolTable.push_back({ reinterpret_cast<uintptr_t>(runner_interface.YYRealloc), "YYRealloc" });
+		SymbolTable.push_back({ reinterpret_cast<uintptr_t>(runner_interface.YYFree), "YYFree" });
+		SymbolTable.push_back({ reinterpret_cast<uintptr_t>(runner_interface.YYStrDup), "YYStrDup" });
+		SymbolTable.push_back({ reinterpret_cast<uintptr_t>(runner_interface.YYGetBool), "YYGetBool" });
+		SymbolTable.push_back({ reinterpret_cast<uintptr_t>(runner_interface.YYGetFloat), "YYGetFloat" });
+		SymbolTable.push_back({ reinterpret_cast<uintptr_t>(runner_interface.YYGetReal), "YYGetReal" });
+		SymbolTable.push_back({ reinterpret_cast<uintptr_t>(runner_interface.YYGetInt32), "YYGetInt32" });
+		SymbolTable.push_back({ reinterpret_cast<uintptr_t>(runner_interface.YYGetUint32), "YYGetUint32" });
+		SymbolTable.push_back({ reinterpret_cast<uintptr_t>(runner_interface.YYGetInt64), "YYGetInt64" });
+		SymbolTable.push_back({ reinterpret_cast<uintptr_t>(runner_interface.YYGetPtr), "YYGetPtr" });
+		SymbolTable.push_back({ reinterpret_cast<uintptr_t>(runner_interface.YYGetPtrOrInt), "YYGetPtrOrInt" });
+		SymbolTable.push_back({ reinterpret_cast<uintptr_t>(runner_interface.YYGetString), "YYGetString" });
+		SymbolTable.push_back({ reinterpret_cast<uintptr_t>(runner_interface.BOOL_RValue), "BOOL_RValue" });
+		SymbolTable.push_back({ reinterpret_cast<uintptr_t>(runner_interface.REAL_RValue), "REAL_RValue" });
+		SymbolTable.push_back({ reinterpret_cast<uintptr_t>(runner_interface.PTR_RValue), "PTR_RValue" });
+		SymbolTable.push_back({ reinterpret_cast<uintptr_t>(runner_interface.INT64_RValue), "INT64_RValue" });
+		SymbolTable.push_back({ reinterpret_cast<uintptr_t>(runner_interface.INT32_RValue), "INT32_RValue" });
+		SymbolTable.push_back({ reinterpret_cast<uintptr_t>(runner_interface.HASH_RValue), "HASH_RValue" });
+		SymbolTable.push_back({ reinterpret_cast<uintptr_t>(runner_interface.SET_RValue), "SET_RValue" });
+		SymbolTable.push_back({ reinterpret_cast<uintptr_t>(runner_interface.GET_RValue), "GET_RValue" });
+		SymbolTable.push_back({ reinterpret_cast<uintptr_t>(runner_interface.COPY_RValue), "COPY_RValue" });
+		SymbolTable.push_back({ reinterpret_cast<uintptr_t>(runner_interface.KIND_RValue), "KIND_RValue" });
+		SymbolTable.push_back({ reinterpret_cast<uintptr_t>(runner_interface.FREE_RValue), "FREE_RValue" });
+		SymbolTable.push_back({ reinterpret_cast<uintptr_t>(runner_interface.YYCreateString), "YYCreateString" });
+		SymbolTable.push_back({ reinterpret_cast<uintptr_t>(runner_interface.YYCreateArray), "YYCreateArray" });
+		SymbolTable.push_back({ reinterpret_cast<uintptr_t>(runner_interface.Script_Find_Id), "Script_Find_Id" });
+		SymbolTable.push_back({ reinterpret_cast<uintptr_t>(runner_interface.Script_Perform), "Script_Perform" });
+		SymbolTable.push_back({ reinterpret_cast<uintptr_t>(runner_interface.Code_Function_Find), "Code_Function_Find" });
+		SymbolTable.push_back({ reinterpret_cast<uintptr_t>(runner_interface.HTTP_Get), "HTTP_Get" });
+		SymbolTable.push_back({ reinterpret_cast<uintptr_t>(runner_interface.HTTP_Post), "HTTP_Post" });
+		SymbolTable.push_back({ reinterpret_cast<uintptr_t>(runner_interface.HTTP_Request), "HTTP_Request" });
+		SymbolTable.push_back({ reinterpret_cast<uintptr_t>(runner_interface.ASYNCFunc_SpriteAdd), "ASYNCFunc_SpriteAdd" });
+		SymbolTable.push_back({ reinterpret_cast<uintptr_t>(runner_interface.ASYNCFunc_SpriteCleanup), "ASYNCFunc_SpriteCleanup" });
+		SymbolTable.push_back({ reinterpret_cast<uintptr_t>(runner_interface.CreateSpriteAsync), "CreateSpriteAsync" });
+		SymbolTable.push_back({ reinterpret_cast<uintptr_t>(runner_interface.Timing_Time), "Timing_Time" });
+		SymbolTable.push_back({ reinterpret_cast<uintptr_t>(runner_interface.Timing_Sleep), "Timing_Sleep" });
+		SymbolTable.push_back({ reinterpret_cast<uintptr_t>(runner_interface.YYMutexCreate), "YYMutexCreate" });
+		SymbolTable.push_back({ reinterpret_cast<uintptr_t>(runner_interface.YYMutexDestroy), "YYMutexDestroy" });
+		SymbolTable.push_back({ reinterpret_cast<uintptr_t>(runner_interface.YYMutexLock), "YYMutexLock" });
+		SymbolTable.push_back({ reinterpret_cast<uintptr_t>(runner_interface.YYMutexUnlock), "YYMutexUnlock" });
+		SymbolTable.push_back({ reinterpret_cast<uintptr_t>(runner_interface.CreateAsyncEventWithDSMap), "CreateAsyncEventWithDSMap" });
+		SymbolTable.push_back({ reinterpret_cast<uintptr_t>(runner_interface.CreateAsyncEventWithDSMapAndBuffer), "CreateAsyncEventWithDSMapAndBuffer" });
+		SymbolTable.push_back({ reinterpret_cast<uintptr_t>(runner_interface.CreateDsMap), "CreateDsMap" });
+		SymbolTable.push_back({ reinterpret_cast<uintptr_t>(runner_interface.DsMapAddDouble), "DsMapAddDouble" });
+		SymbolTable.push_back({ reinterpret_cast<uintptr_t>(runner_interface.DsMapAddString), "DsMapAddString" });
+		SymbolTable.push_back({ reinterpret_cast<uintptr_t>(runner_interface.DsMapAddInt64), "DsMapAddInt64" });
+		SymbolTable.push_back({ reinterpret_cast<uintptr_t>(runner_interface.BufferGetContent), "BufferGetContent" });
+		SymbolTable.push_back({ reinterpret_cast<uintptr_t>(runner_interface.BufferWriteContent), "BufferWriteContent" });
+		SymbolTable.push_back({ reinterpret_cast<uintptr_t>(runner_interface.CreateBuffer), "CreateBuffer" });
+		SymbolTable.push_back({ reinterpret_cast<uintptr_t>(runner_interface.DsListCreate), "DsListCreate" });
+		SymbolTable.push_back({ reinterpret_cast<uintptr_t>(runner_interface.DsMapAddList), "DsMapAddList" });
+		SymbolTable.push_back({ reinterpret_cast<uintptr_t>(runner_interface.DsListAddMap), "DsListAddMap" });
+		SymbolTable.push_back({ reinterpret_cast<uintptr_t>(runner_interface.DsMapClear), "DsMapClear" });
+		SymbolTable.push_back({ reinterpret_cast<uintptr_t>(runner_interface.DsListClear), "DsListClear" });
+		SymbolTable.push_back({ reinterpret_cast<uintptr_t>(runner_interface.DsListClear), "DsListClear" });
+		SymbolTable.push_back({ reinterpret_cast<uintptr_t>(runner_interface.BundleFileExists), "BundleFileExists" });
+		SymbolTable.push_back({ reinterpret_cast<uintptr_t>(runner_interface.BundleFileName), "BundleFileName" });
+		SymbolTable.push_back({ reinterpret_cast<uintptr_t>(runner_interface.SaveFileExists), "SaveFileExists" });
+		SymbolTable.push_back({ reinterpret_cast<uintptr_t>(runner_interface.SaveFileName), "SaveFileName" });
+		SymbolTable.push_back({ reinterpret_cast<uintptr_t>(runner_interface.Base64Encode), "Base64Encode" });
+		SymbolTable.push_back({ reinterpret_cast<uintptr_t>(runner_interface.DsListAddInt64), "DsListAddInt64" });
+		SymbolTable.push_back({ reinterpret_cast<uintptr_t>(runner_interface.AddDirectoryToBundleWhitelist), "AddDirectoryToBundleWhitelist" });
+		SymbolTable.push_back({ reinterpret_cast<uintptr_t>(runner_interface.AddFileToBundleWhitelist), "AddFileToBundleWhitelist" });
+		SymbolTable.push_back({ reinterpret_cast<uintptr_t>(runner_interface.AddDirectoryToSaveWhitelist), "AddDirectoryToSaveWhitelist" });
+		SymbolTable.push_back({ reinterpret_cast<uintptr_t>(runner_interface.AddFileToSaveWhitelist), "AddFileToSaveWhitelist" });
+		SymbolTable.push_back({ reinterpret_cast<uintptr_t>(runner_interface.KIND_NAME_RValue), "KIND_NAME_RValue" });
+		SymbolTable.push_back({ reinterpret_cast<uintptr_t>(runner_interface.DsMapAddBool), "DsMapAddBool" });
+		SymbolTable.push_back({ reinterpret_cast<uintptr_t>(runner_interface.DsMapAddRValue), "DsMapAddRValue" });
+		SymbolTable.push_back({ reinterpret_cast<uintptr_t>(runner_interface.DestroyDsMap), "DestroyDsMap" });
+		SymbolTable.push_back({ reinterpret_cast<uintptr_t>(runner_interface.StructCreate), "StructCreate" });
+		SymbolTable.push_back({ reinterpret_cast<uintptr_t>(runner_interface.StructAddBool), "StructAddBool" });
+		SymbolTable.push_back({ reinterpret_cast<uintptr_t>(runner_interface.StructAddDouble), "StructAddDouble" });
+		SymbolTable.push_back({ reinterpret_cast<uintptr_t>(runner_interface.StructAddInt), "StructAddInt" });
+		SymbolTable.push_back({ reinterpret_cast<uintptr_t>(runner_interface.StructAddRValue), "StructAddRValue" });
+		SymbolTable.push_back({ reinterpret_cast<uintptr_t>(runner_interface.StructAddString), "StructAddString" });
+		SymbolTable.push_back({ reinterpret_cast<uintptr_t>(runner_interface.WhitelistIsDirectoryIn), "WhitelistIsDirectoryIn" });
+		SymbolTable.push_back({ reinterpret_cast<uintptr_t>(runner_interface.WhiteListIsFilenameIn), "WhiteListIsFilenameIn" });
+		SymbolTable.push_back({ reinterpret_cast<uintptr_t>(runner_interface.WhiteListAddTo), "WhiteListAddTo" });
+		SymbolTable.push_back({ reinterpret_cast<uintptr_t>(runner_interface.DirExists), "DirExists" });
+		SymbolTable.push_back({ reinterpret_cast<uintptr_t>(runner_interface.BufferGetFromGML), "BufferGetFromGML" });
+		SymbolTable.push_back({ reinterpret_cast<uintptr_t>(runner_interface.BufferTELL), "BufferTELL" });
+		SymbolTable.push_back({ reinterpret_cast<uintptr_t>(runner_interface.BufferGet), "BufferGet" });
+		SymbolTable.push_back({ reinterpret_cast<uintptr_t>(runner_interface.FilePrePend), "FilePrePend" });
+		SymbolTable.push_back({ reinterpret_cast<uintptr_t>(runner_interface.StructAddInt32), "StructAddInt32" });
+		SymbolTable.push_back({ reinterpret_cast<uintptr_t>(runner_interface.StructAddInt64), "StructAddInt64" });
+		SymbolTable.push_back({ reinterpret_cast<uintptr_t>(runner_interface.StructGetMember), "StructGetMember" });
+		SymbolTable.push_back({ reinterpret_cast<uintptr_t>(runner_interface.StructGetKeys), "StructGetKeys" });
+		SymbolTable.push_back({ reinterpret_cast<uintptr_t>(runner_interface.YYGetStruct), "YYGetStruct" });
+		SymbolTable.push_back({ reinterpret_cast<uintptr_t>(runner_interface.extOptGetRValue), "extOptGetRValue" });
+		SymbolTable.push_back({ reinterpret_cast<uintptr_t>(runner_interface.extOptGetString), "extOptGetString" });
+		SymbolTable.push_back({ reinterpret_cast<uintptr_t>(runner_interface.extOptGetReal), "extOptGetReal" });
+		SymbolTable.push_back({ reinterpret_cast<uintptr_t>(runner_interface.isRunningFromIDE), "isRunningFromIDE" });
+	}
+
+	// Sort the vector for std::upper_bound lookups later.
+	std::sort(
+		SymbolTable.begin(),
+		SymbolTable.end(),
+		[](auto& a, auto& b)
+		{ return a.first < b.first; }
+	);
+}
+
+std::string YYTK::Zeus::GuessSymbolFromGameInstructionAddress(
+	IN LPCVOID InstructionPointer
+)
+{
+	// Try to get the NT header
+	const uintptr_t address = reinterpret_cast<uintptr_t>(InstructionPointer);
+
+	uint64_t text_section_start = 0;
+	uint64_t text_section_end = 0;
+	AurieStatus last_status = AURIE_SUCCESS;
+
+	last_status = Memory::DmGetSectionBounds(".text", &text_section_start, &text_section_end);
+
+	if (!AurieSuccess(last_status))
+		return "";
+
+	if (address < text_section_start)
+		return "";
+
+	if (address > text_section_end)
+		return "";
+
+	std::wstring game_name_wstring;
+	MdGetImageFilename(g_ArInitialImage, game_name_wstring);
+
+	auto it = std::upper_bound(
+		g_ModuleInterface.m_KnownGameSymbols.begin(),
+		g_ModuleInterface.m_KnownGameSymbols.end(),
+		address,
+		[](uintptr_t Address, const auto& Pair) {
+			return Address < Pair.first;
+		}
+	);
+
+	// If the iterator points to the start of the vector (we're below the first entry)
+	if (it == g_ModuleInterface.m_KnownGameSymbols.begin())
+		return "";
+
+	const std::string game_name_utf8(game_name_wstring.begin(), game_name_wstring.end());
+	const auto symbol = --it;
+
+	return std::format("{}!{}+0x{:X}", game_name_utf8, symbol->second, address - symbol->first);
+}
+
 #endif
