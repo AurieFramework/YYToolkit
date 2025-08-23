@@ -49,6 +49,8 @@ AurieStatus YYTK::Zeus::FindRunnerInterfaceHookpoint(
 
 	// Find the required pattern in the game
 	// There may be multiple that match, but only one is correct.
+	UNREFERENCED_PARAMETER(TargetInstruction);
+
 	uint64_t text_section_base = 0;
 	size_t text_section_size = 0;
 
@@ -65,8 +67,6 @@ AurieStatus YYTK::Zeus::FindRunnerInterfaceHookpoint(
 
 	// Since PpiGetModuleSectionBounds returns the offset to the .text section
 	// we need the base address of the game to add to the offset
-	char* game_base = reinterpret_cast<char*>(GetModuleHandleW(nullptr));
-
 	// Scan for all occurences of this pattern in memory
 	std::vector<size_t> pattern_matches = Memory::DmSigscanGameEx(
 		UTEXT(
@@ -154,6 +154,7 @@ void YYTK::Zeus::HandleRunnerInterfaceCreation(
 	IN ProcessorContext& ProcessorContext
 )
 {
+	UNREFERENCED_PARAMETER(ProcessorContext);
 	return;
 }
 
@@ -164,6 +165,9 @@ AurieStatus YYTK::Zeus::RegisterRunnerInterfaceHook(
 {
 	// Runner interface is ready by now - it's been ready ever since stage 1 found it on the stack.
 	// A hook is not needed.
+	UNREFERENCED_PARAMETER(Hookpoint);
+	UNREFERENCED_PARAMETER(TargetFunction);
+
 	SetEvent(g_ModuleInterface.m_RunnerInterfacePopulatedEvent);
 
 	return AURIE_SUCCESS;
@@ -173,8 +177,6 @@ AurieStatus YYTK::Zeus::FindCodeExecutionHookpoint(
 	OUT PVOID* TargetInstruction
 )
 {
-	AurieStatus last_status = AURIE_SUCCESS;
-
 	// We're looking for a pattern in Code_Execute
 	size_t pattern_match = Memory::DmSigscanGame(
 		UTEXT(
@@ -1618,7 +1620,7 @@ std::string YYTK::Zeus::GuessSymbolFromGameInstructionAddress(
 		return "";
 
 	const std::string game_name_utf8(game_name_wstring.begin(), game_name_wstring.end());
-	const auto symbol = --it;
+	const auto& symbol = --it;
 
 	return std::format("{}!{}+0x{:X}", game_name_utf8, symbol->second, address - symbol->first);
 }
