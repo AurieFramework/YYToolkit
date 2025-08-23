@@ -472,6 +472,11 @@ namespace YYTK
 			IN std::string_view Index
 		) = 0;
 
+		virtual bool RV_ContainsNestedValue(
+			IN const RValue* Value,
+			IN std::string_view Index
+		) = 0;
+
 		virtual bool RV_IsUndefined(
 			IN const RValue* Value
 		) = 0;

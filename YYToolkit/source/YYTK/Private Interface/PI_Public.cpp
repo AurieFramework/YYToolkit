@@ -397,6 +397,23 @@ namespace YYTK
 		return instance_member;
 	}
 
+	bool YYTKPrivateInterfaceImpl::RV_ContainsNestedValue(
+		IN const RValue* Value,
+		IN std::string_view Index
+	)
+	{
+		YkWaitForLowerLevelInit();
+
+		RValue* instance_member = nullptr;
+		AurieStatus last_status = g_ModuleInterface.GetInstanceMember(
+			*Value,
+			Index.data(),
+			instance_member
+		);
+
+		return AurieSuccess(last_status);
+	}
+
 	bool YYTKPrivateInterfaceImpl::RV_IsUndefined(
 		IN const RValue* Value
 	)

@@ -118,6 +118,11 @@ namespace YYTK
 			IN std::string_view Index
 		) override final;
 
+		virtual bool RV_ContainsNestedValue(
+			IN const RValue* Value,
+			IN std::string_view Index
+		) override final;
+
 		virtual bool RV_IsUndefined(
 			IN const RValue* Value
 		) override final;
