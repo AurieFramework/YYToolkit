@@ -231,8 +231,8 @@ namespace YYTK
 					}
 
 					description = std::format(
-						"{}!{:06X}",
-						filename,
+						"{}+0x{:06X}",
+						fs::path(filename).filename().string().c_str(),
 						reinterpret_cast<uintptr_t>(function) - reinterpret_cast<uintptr_t>(ip_module)
 					);
 				}

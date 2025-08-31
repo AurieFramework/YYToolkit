@@ -663,10 +663,10 @@ AurieStatus YYTK::Zeus::FindSlotAllocationFunction(
 	if (!YYObjectBase_Add)
 		return AURIE_UNAVAILABLE;
 
-	// Disassemble 48 bytes at the function
+	// Disassemble 96 bytes at the function
 	auto instructions = Memory::DmDisassembleInstructionByRange(
 		YYObjectBase_Add,
-		0x30
+		0x60
 	);
 
 	// Find the first call, and trace the target
@@ -694,6 +694,180 @@ AurieStatus YYTK::Zeus::FindSlotAllocationFunction(
 	return AURIE_SUCCESS;
 }
 
+// These functions are only present on x64. Having them on x86 would just clutter up the headers.
+static AurieStatus FindCurrentFunction(
+	IN const YYTK::YYRunnerInterface& Interface,
+	OUT YYTK::RFunction*** g_pFunction
+)
+{
+	using namespace YYTK;
+
+	// Disassemble YYGetPtr.
+	auto instructions = Memory::DmDisassembleInstructionByRange(
+		Interface.YYGetPtr,
+		0x50
+	);
+
+	// It just so happens the first mov that has a 
+	// memory operand references the the_functions array.
+	// It usually looks like mov <64bit register>, [the_functions]
+	for (auto& instruction : instructions)
+	{
+		// The instruction has to be a mov
+		if (instruction.info.mnemonic != ZYDIS_MNEMONIC_MOV)
+			continue;
+
+		// The instruction has to have 2 operands
+		// The first one (operands[0]) is the register being moved into
+		// The second one (operands[1]) is the address
+		if (instruction.info.operand_count != 2)
+			continue;
+
+		ZydisDecodedOperand& first_operand = instruction.operands[0];
+		ZydisDecodedOperand& second_operand = instruction.operands[1];
+
+		// We have to be moving INTO a register, not FROM a register
+		if (first_operand.type != ZYDIS_OPERAND_TYPE_REGISTER)
+			continue;
+
+		// Get the register we're moving into, and get the largest variant of that register
+		ZydisRegister largest_enclosing = ZydisRegisterGetLargestEnclosing(
+			ZYDIS_MACHINE_MODE_LONG_64,
+			first_operand.reg.value
+		);
+
+		// If the register is already in its largest variant, we can continue
+		// This is to filter out the_numb (the number of elements in the functions array),
+		// which is being moved in the same way, just into a 32-bit register.
+
+		if (largest_enclosing != first_operand.reg.value)
+			continue;
+
+		// We have to be moving from a memory location, not from a register
+		if (second_operand.type != ZYDIS_OPERAND_TYPE_MEMORY)
+			continue;
+
+		// There has to be an offset... duh
+		if (!second_operand.mem.disp.has_displacement)
+			continue;
+
+		// Calculate the absolute address
+		ZyanU64 call_address = 0;
+		ZydisCalcAbsoluteAddress(
+			&instruction.info,
+			&second_operand,
+			instruction.runtime_address,
+			&call_address
+		);
+
+		// It's a pointer to a pointer, we dereference it once to   
+		// get the actual pointer to the first element in the array
+		*g_pFunction = reinterpret_cast<RFunction**>(call_address);
+		return AURIE_SUCCESS;
+	}
+
+	return AURIE_OBJECT_NOT_FOUND;
+}
+
+static AurieStatus FindFunctionsArrayWithScriptPerform(
+	IN const YYTK::YYRunnerInterface& Interface,
+	IN YYTK::RFunction** g_pFunctions,
+	OUT YYTK::RFunction*** FunctionsArray
+)
+{
+	using namespace YYTK;
+
+	// Disassemble instructions at Script_Perform
+	auto instructions = Memory::DmDisassembleInstructionByRange(
+		Interface.Script_Perform,
+		0x100
+	);
+
+	// Get the first MOV instruction that references g_pFunctions.
+	auto current_function_iterator = std::find_if(
+		instructions.begin(),
+		instructions.end(),
+		[g_pFunctions](IN const ZydisDisassembledInstruction& Instruction) -> bool
+		{
+			// Looking for a mov.
+			if (Instruction.info.mnemonic != ZYDIS_MNEMONIC_MOV)
+				return false;
+
+			const ZydisDecodedOperand& first_operand = Instruction.operands[0];
+			const ZydisDecodedOperand& second_operand = Instruction.operands[1];
+
+			// Our mov should be moving to a register from a memory location.
+			if (first_operand.type != ZYDIS_OPERAND_TYPE_REGISTER)
+				return false;
+
+			if (second_operand.type != ZYDIS_OPERAND_TYPE_MEMORY)
+				return false;
+
+			// Calculate the absolute address
+			ZyanU64 call_address = 0;
+			ZydisCalcAbsoluteAddress(
+				&Instruction.info,
+				&second_operand,
+				Instruction.runtime_address,
+				&call_address
+			);
+
+			// Return true if it's referencing g_pFunctions.
+			return call_address == reinterpret_cast<ZyanU64>(g_pFunctions);
+		}
+	);
+
+	if (current_function_iterator == instructions.end())
+	{
+		DbgPrintEx(LOG_SEVERITY_ERROR, "Failed to find g_pFunction reference in Script_Perform!");
+		return AURIE_OBJECT_NOT_FOUND;
+	}
+
+	// Get the index that current_function_iterator belongs to.
+	ptrdiff_t current_function_index = std::distance(instructions.begin(), current_function_iterator);
+	
+	// Go back in the instructions list from the g_pFunctions-referencing instruction until
+	// we find another MOV instruction referencing a memory address.
+	//
+	// This will be our the_functions reference.
+	for (auto i = (current_function_index - 1); i > 0; i--)
+	{
+		// Looking for a mov.
+		if (instructions[i].info.mnemonic != ZYDIS_MNEMONIC_MOV)
+			continue;
+
+		const ZydisDecodedOperand& first_operand = instructions[i].operands[0];
+		const ZydisDecodedOperand& second_operand = instructions[i].operands[1];
+
+		// Our mov should be moving to a register from a memory location.
+		if (first_operand.type != ZYDIS_OPERAND_TYPE_REGISTER)
+			continue;
+
+		if (second_operand.type != ZYDIS_OPERAND_TYPE_MEMORY)
+			continue;
+
+		// Calculate the absolute address
+		ZyanU64 call_address = 0;
+		ZydisCalcAbsoluteAddress(
+			&instructions[i].info,
+			&second_operand,
+			instructions[i].runtime_address,
+			&call_address
+		);
+
+		if (call_address)
+		{
+			DbgPrintEx(LOG_SEVERITY_TRACE, "Found the_functions reference in Script_Perform (%s)", instructions[i].text);
+
+			*FunctionsArray = reinterpret_cast<RFunction**>(call_address);
+			return AURIE_SUCCESS;
+		}
+	}
+
+	DbgPrintEx(LOG_SEVERITY_ERROR, "Failed to find the_functions reference in Script_Perform!");
+	return AURIE_OBJECT_NOT_FOUND;
+}
+
 AurieStatus YYTK::Zeus::YYC::FindFunctionsArray(
 	IN const YYRunnerInterface& Interface,
 	OUT RFunction*** FunctionsArray
@@ -702,7 +876,37 @@ AurieStatus YYTK::Zeus::YYC::FindFunctionsArray(
 	if (!Interface.Code_Function_Find)
 		return AURIE_MODULE_INTERNAL_ERROR;
 
-	// Disassemble this function
+	// If we have Script_Perform (and YYGetPtr, but we always seem to have that), 
+	// chances are we're on a newer runner. We can use the v5-exclusive method of finding g_pFunction,
+	// and then scanning Script_Perform for references to the true functions array.
+	// 
+	// This bypasses the 2024.14 changes that make referencing the functions array from Code_Function_Find impossible.
+	if (Interface.Script_Perform && Interface.YYGetPtr)
+	{
+		// Get the g_pFunction pointer. It will contain nullptr at this point, but we don't care about it's actual value.
+		RFunction** g_pFunction = nullptr;
+		AurieStatus last_status = FindCurrentFunction(
+			Interface,
+			&g_pFunction
+		);
+
+		// Make sure we got it.
+		if (!AurieSuccess(last_status))
+			return last_status;
+
+		last_status = FindFunctionsArrayWithScriptPerform(
+			Interface,
+			g_pFunction,
+			FunctionsArray
+		);
+
+		return last_status;
+	}
+
+	// If the required functions are unavailable, we resort to the old method of scanning Code_Function_Find, and
+	// either have it work or crash the runner.
+	
+	// Disassemble the Code_Function_Find function.
 	auto instructions = Memory::DmDisassembleInstructionByRange(
 		Interface.Code_Function_Find,
 		0x200
