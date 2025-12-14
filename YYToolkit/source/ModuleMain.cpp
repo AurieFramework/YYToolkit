@@ -21,8 +21,9 @@ EXPORTED void ModuleOperationCallback(
 	{
 	case AURIE_OPERATION_INITIALIZE:
 		{
-			if (!g_ModuleInterface.m_SecondInitComplete)
-				g_ModuleInterface.Create();
+			// Before any initialization happens, we call our final initialize function.
+			// It early-returns if the init is done, so unconditional calls here are fine.
+			g_ModuleInterface.YkSetupFinalInitialization();
 			break;
 		}
 	case AURIE_OPERATION_UNLOAD:
@@ -95,6 +96,11 @@ EXPORTED AurieStatus ModuleInitialize(
 
 	if (!g_ModuleInterface.m_SecondInitComplete)
 		return AURIE_MODULE_INITIALIZATION_FAILED;
+
+	if (!g_ModuleInterface.m_ThirdInitComplete)
+		return AURIE_MODULE_INITIALIZATION_FAILED;
+
+	DbgPrint("YYToolkit has been loaded successfully.");
 
 	return AURIE_SUCCESS;
 }

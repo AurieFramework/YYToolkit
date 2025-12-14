@@ -300,8 +300,7 @@ namespace YYTK
 		}
 
 		Aurie::AurieStatus InitializeStage2Hooks(
-			IN HWND WindowHandle,
-			IN IDXGISwapChain* EngineSwapChain
+			IN HWND WindowHandle
 		)
 		{
 
@@ -318,11 +317,34 @@ namespace YYTK
 
 			AurieStatus last_status = AURIE_SUCCESS;
 
-			if (!EngineSwapChain)
-				return AURIE_MODULE_INITIALIZATION_FAILED;
+			last_status = MmCreateHook(
+				g_ArSelfModule,
+				"YYError",
+				g_ModuleInterface.GetRunnerInterface().YYError,
+				HkYYError,
+				nullptr
+			);
 
+			if (!AurieSuccess(last_status))
+				return last_status;
+
+			g_OriginalWindowProc = reinterpret_cast<WNDPROC>(SetWindowLongPtr(
+				WindowHandle,
+				GWLP_WNDPROC,
+				reinterpret_cast<LONG_PTR>(HkWndProc)
+			));
+
+			return AURIE_SUCCESS;
+		}
+
+		AurieStatus InitializeStage3Hooks(
+			IN HWND WindowHandle, 
+			IN IDXGISwapChain* EngineSwapChain
+		)
+		{
+			AurieStatus last_status = AURIE_SUCCESS;
 			PVOID* swapchain_vtable = *reinterpret_cast<PVOID**>(EngineSwapChain);
-			
+
 			if (!swapchain_vtable)
 				return AURIE_MODULE_INITIALIZATION_FAILED;
 
@@ -345,26 +367,7 @@ namespace YYTK
 				nullptr
 			);
 
-			if (!AurieSuccess(last_status))
-				return AURIE_MODULE_INITIALIZATION_FAILED;
-
-			last_status = MmCreateHook(
-				g_ArSelfModule,
-				"YYError",
-				g_ModuleInterface.GetRunnerInterface().YYError,
-				HkYYError,
-				nullptr
-			);
-
-			g_OriginalWindowProc = reinterpret_cast<WNDPROC>(SetWindowLongPtr(
-				WindowHandle,
-				GWLP_WNDPROC,
-				reinterpret_cast<LONG_PTR>(HkWndProc)
-			));
-
-			assert(g_OriginalWindowProc != nullptr);
-
-			return AURIE_SUCCESS;
+			return last_status;
 		}
 
 		Aurie::AurieStatus HkUninitialize(

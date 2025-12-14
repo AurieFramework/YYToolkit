@@ -7,7 +7,7 @@ namespace YYTK
 		IN const RValue* Value
 	)
 	{
-		YkWaitForLowerLevelInit();
+		YkWaitForLowerLevelInit(__FUNCTION__);
 		
 		return g_ModuleInterface.GetRunnerInterface().REAL_RValue(Value);
 	}
@@ -16,7 +16,7 @@ namespace YYTK
 		IN const RValue* Value
 	)
 	{
-		YkWaitForLowerLevelInit();
+		YkWaitForLowerLevelInit(__FUNCTION__);
 
 		return g_ModuleInterface.GetRunnerInterface().INT32_RValue(Value);
 	}
@@ -25,7 +25,7 @@ namespace YYTK
 		IN const RValue* Value
 	)
 	{
-		YkWaitForLowerLevelInit();
+		YkWaitForLowerLevelInit(__FUNCTION__);
 
 		return g_ModuleInterface.GetRunnerInterface().INT64_RValue(Value);
 
@@ -35,7 +35,7 @@ namespace YYTK
 		IN const RValue* Value
 	)
 	{
-		YkWaitForLowerLevelInit();
+		YkWaitForLowerLevelInit(__FUNCTION__);
 
 		return g_ModuleInterface.GetRunnerInterface().PTR_RValue(Value);
 	}
@@ -44,7 +44,7 @@ namespace YYTK
 		IN const RValue* Value
 	)
 	{
-		YkWaitForLowerLevelInit();
+		YkWaitForLowerLevelInit(__FUNCTION__);
 
 		return g_ModuleInterface.GetRunnerInterface().BOOL_RValue(Value);
 	}
@@ -53,7 +53,7 @@ namespace YYTK
 		IN const RValue* Value
 	)
 	{
-		YkWaitForLowerLevelInit();
+		YkWaitForLowerLevelInit(__FUNCTION__);
 
 		return g_ModuleInterface.GetRunnerInterface().KIND_NAME_RValue(Value);
 	}
@@ -115,8 +115,6 @@ namespace YYTK
 		IN const RValue* Value
 	)
 	{
-		YkWaitForLowerLevelInit();
-
 		return static_cast<YYObjectBase*>(RV_ToPointer(Value));
 	}
 
@@ -124,8 +122,6 @@ namespace YYTK
 		IN const RValue* Value
 	)
 	{
-		YkWaitForLowerLevelInit();
-
 		return static_cast<CInstance*>(RV_ToPointer(Value));
 	}
 
@@ -133,7 +129,7 @@ namespace YYTK
 		IN const RValue* Value
 	)
 	{
-		YkWaitForLowerLevelInit();
+		YkWaitForLowerLevelInit(__FUNCTION__);
 
 		return g_ModuleInterface.GetRunnerInterface().YYGetString(Value, 0);
 	}
@@ -142,8 +138,6 @@ namespace YYTK
 		IN const RValue* Value
 	)
 	{
-		YkWaitForLowerLevelInit();
-
 		return RV_ToCString(Value);
 	}
 
@@ -151,8 +145,6 @@ namespace YYTK
 		IN const RValue* Value
 	)
 	{
-		YkWaitForLowerLevelInit();
-
 		return reinterpret_cast<const char8_t*>(RV_ToCString(Value));
 	}
 
@@ -160,7 +152,7 @@ namespace YYTK
 		IN const RValue* Value
 	)
 	{
-		YkWaitForLowerLevelInit();
+		YkWaitForLowerLevelInit(__FUNCTION__);
 
 		std::map<std::string, RValue> result;
 
@@ -180,7 +172,7 @@ namespace YYTK
 		IN RValue* Value
 	)
 	{
-		YkWaitForLowerLevelInit();
+		YkWaitForLowerLevelInit(__FUNCTION__);
 
 		std::map<std::string, RValue*> result;
 
@@ -200,7 +192,7 @@ namespace YYTK
 		IN const RValue* Value
 	)
 	{
-		YkWaitForLowerLevelInit();
+		YkWaitForLowerLevelInit(__FUNCTION__);
 
 		// GetArraySize and GetArrayEntry cannot guarantee that our
 		// RValue stays intact (due to engine functions being called), 
@@ -237,7 +229,7 @@ namespace YYTK
 		IN RValue* Value
 	)
 	{
-		YkWaitForLowerLevelInit();
+		YkWaitForLowerLevelInit(__FUNCTION__);
 
 		AurieStatus last_status = AURIE_SUCCESS;
 
@@ -269,7 +261,7 @@ namespace YYTK
 		IN const RValue* Value
 	)
 	{
-		YkWaitForLowerLevelInit();
+		YkWaitForLowerLevelInit(__FUNCTION__);
 
 		int32_t member_count = 0;
 
@@ -286,7 +278,7 @@ namespace YYTK
 		IN RValue* Value
 	)
 	{
-		YkWaitForLowerLevelInit();
+		YkWaitForLowerLevelInit(__FUNCTION__);
 
 		RValue* array_start = nullptr;
 
@@ -304,7 +296,7 @@ namespace YYTK
 		IN size_t Index
 	)
 	{
-		YkWaitForLowerLevelInit();
+		YkWaitForLowerLevelInit(__FUNCTION__);
 
 		// GetArrayEntry cannot guarantee that our RValue will not be modified.
 		RValue value_copy = *Value;
@@ -327,7 +319,7 @@ namespace YYTK
 		IN size_t Index
 	)
 	{
-		YkWaitForLowerLevelInit();
+		YkWaitForLowerLevelInit(__FUNCTION__);
 
 		RValue* element = nullptr;
 		g_ModuleInterface.GetArrayEntry(
@@ -344,7 +336,7 @@ namespace YYTK
 		IN std::string_view Index
 	)
 	{
-		YkWaitForLowerLevelInit();
+		YkWaitForLowerLevelInit(__FUNCTION__);
 
 		RValue* instance_member = nullptr;
 		AurieStatus last_status = g_ModuleInterface.GetInstanceMember(
@@ -373,7 +365,7 @@ namespace YYTK
 		IN std::string_view Index
 	)
 	{
-		YkWaitForLowerLevelInit();
+		YkWaitForLowerLevelInit(__FUNCTION__);
 
 		RValue* instance_member = nullptr;
 		AurieStatus last_status = g_ModuleInterface.GetInstanceMember(
@@ -402,7 +394,7 @@ namespace YYTK
 		IN std::string_view Index
 	)
 	{
-		YkWaitForLowerLevelInit();
+		YkWaitForLowerLevelInit(__FUNCTION__);
 
 		RValue* instance_member = nullptr;
 		AurieStatus last_status = g_ModuleInterface.GetInstanceMember(
@@ -460,7 +452,8 @@ namespace YYTK
 		IN RValue* Value
 	)
 	{
-		YkWaitForLowerLevelInit();
+		// This initializer is safe. No engine functions are called.
+		// Therefore, no YkWaitForLowerLevelInit call is required.
 
 		Value->m_Real = 0;
 		Value->m_Flags = 0;
@@ -472,7 +465,8 @@ namespace YYTK
 		IN double Contents
 	)
 	{
-		YkWaitForLowerLevelInit();
+		// This initializer is safe. No engine functions are called.
+		// Therefore, no YkWaitForLowerLevelInit call is required.
 
 		RV_CreateEmpty(Value);
 		Value->m_Real = Contents;
@@ -484,7 +478,8 @@ namespace YYTK
 		IN int64_t Contents
 	)
 	{
-		YkWaitForLowerLevelInit();
+		// This initializer is safe. No engine functions are called.
+		// Therefore, no YkWaitForLowerLevelInit call is required.
 
 		RV_CreateEmpty(Value);
 		Value->m_i64 = Contents;
@@ -496,7 +491,8 @@ namespace YYTK
 		IN void* Contents
 	)
 	{
-		YkWaitForLowerLevelInit();
+		// This initializer is safe. No engine functions are called.
+		// Therefore, no YkWaitForLowerLevelInit call is required.
 
 		RV_CreateEmpty(Value);
 		Value->m_Kind = VALUE_PTR;
@@ -508,7 +504,8 @@ namespace YYTK
 		IN void* Contents
 	)
 	{
-		YkWaitForLowerLevelInit();
+		// This initializer is safe. No engine functions are called.
+		// Therefore, no YkWaitForLowerLevelInit call is required.
 
 		RV_CreateEmpty(Value);
 
@@ -521,7 +518,7 @@ namespace YYTK
 		IN const std::vector<RValue>& Contents
 	)
 	{
-		YkWaitForLowerLevelInit();
+		YkWaitForLowerLevelInit(__FUNCTION__);
 
 		RV_CreateEmpty(Value);
 
@@ -558,7 +555,7 @@ namespace YYTK
 		IN const std::string_view Contents
 	)
 	{
-		YkWaitForLowerLevelInit();
+		YkWaitForLowerLevelInit(__FUNCTION__);
 
 		RV_CreateEmpty(Value);
 		g_ModuleInterface.StringToRValue(
@@ -572,7 +569,7 @@ namespace YYTK
 		IN const std::u8string_view Contents
 	)
 	{
-		YkWaitForLowerLevelInit();
+		YkWaitForLowerLevelInit(__FUNCTION__);
 
 		RV_CreateEmpty(Value);
 		g_ModuleInterface.StringToRValue(
@@ -586,11 +583,12 @@ namespace YYTK
 		IN bool Contents
 	)
 	{
-		YkWaitForLowerLevelInit();
+		// This initializer is safe. No engine functions are called.
+		// Therefore, no YkWaitForLowerLevelInit call is required.
+		
 		Value->m_Real = static_cast<double>(Contents);
 		Value->m_Flags = 0;
 		Value->m_Kind = VALUE_BOOL;
-
 	}
 
 	void YYTKPrivateInterfaceImpl::RV_CreateFromMap(
@@ -598,7 +596,7 @@ namespace YYTK
 		IN const std::map<std::string, RValue>& Contents
 	)
 	{
-		YkWaitForLowerLevelInit();
+		YkWaitForLowerLevelInit(__FUNCTION__);
 
 		// Initialize this RValue to unset.
 		RV_CreateEmpty(Value);
@@ -624,7 +622,7 @@ namespace YYTK
 		IN const RValue* Source
 	)
 	{
-		YkWaitForLowerLevelInit();
+		YkWaitForLowerLevelInit(__FUNCTION__);
 
 		g_ModuleInterface.GetRunnerInterface().COPY_RValue(
 			Destination,
@@ -636,7 +634,7 @@ namespace YYTK
 		IN RValue* Value
 	)
 	{
-		YkWaitForLowerLevelInit();
+		YkWaitForLowerLevelInit(__FUNCTION__);
 
 		g_ModuleInterface.GetRunnerInterface().FREE_RValue(
 			Value
@@ -649,7 +647,7 @@ namespace YYTK
 		IN const CCode* Object
 	)
 	{
-		YkWaitForLowerLevelInit();
+		YkWaitForLowerLevelInit(__FUNCTION__);
 
 		return Object->m_Name;
 	}
@@ -658,7 +656,7 @@ namespace YYTK
 		IN const CScript* Object
 	)
 	{
-		YkWaitForLowerLevelInit();
+		YkWaitForLowerLevelInit(__FUNCTION__);
 
 		return Object->m_Name;
 	}
@@ -667,7 +665,7 @@ namespace YYTK
 		IN CRoom* Object
 	)
 	{
-		YkWaitForLowerLevelInit();
+		YkWaitForLowerLevelInit(__FUNCTION__);
 
 		size_t bg_color_idx = 0;
 		AurieStatus last_status = g_ModuleInterface.GetBuiltinVariableIndex(
@@ -697,7 +695,7 @@ namespace YYTK
 	)
 	{
 		UNREFERENCED_PARAMETER(Flags);
-		YkWaitForLowerLevelInit();
+		YkWaitForLowerLevelInit(__FUNCTION__);
 
 		// Get the slot ID - this calls FindAlloc_Slot_From_Name
 		int32_t variable_hash = 0;
@@ -718,7 +716,7 @@ namespace YYTK
 		IN const char* Name
 	)
 	{
-		YkWaitForLowerLevelInit();
+		YkWaitForLowerLevelInit(__FUNCTION__);
 
 		// Get the slot ID - this calls FindAlloc_Slot_From_Name
 		int32_t variable_hash = 0;
@@ -732,7 +730,7 @@ namespace YYTK
 		IN CInstance* Instance
 	)
 	{
-		YkWaitForLowerLevelInit();
+		YkWaitForLowerLevelInit(__FUNCTION__);
 
 		RValue self_id_builtin;
 		g_ModuleInterface.GetBuiltin(
@@ -765,7 +763,7 @@ namespace YYTK
 		IN int32_t InstanceID
 	)
 	{
-		YkWaitForLowerLevelInit();
+		YkWaitForLowerLevelInit(__FUNCTION__);
 
 		CInstance* buffer = nullptr;
 		AurieStatus last_status = AURIE_SUCCESS;

@@ -281,6 +281,11 @@ namespace YYTK
 
 		// Meant for Stage 2 of loading in g_ModuleInterface
 		Aurie::AurieStatus InitializeStage2Hooks(
+			IN HWND WindowHandle
+		);
+
+		// Meant for Stage 3 of loading in g_ModuleInterface
+		Aurie::AurieStatus InitializeStage3Hooks(
 			IN HWND WindowHandle,
 			IN IDXGISwapChain* EngineSwapChain
 		);

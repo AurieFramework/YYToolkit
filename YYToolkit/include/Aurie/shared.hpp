@@ -48,7 +48,7 @@
 #endif // AURIE_FWK_MINOR
 
 #ifndef AURIE_FWK_PATCH
-#define AURIE_FWK_PATCH 0
+#define AURIE_FWK_PATCH 2
 #endif // AURIE_FWK_PATCH
 
 
@@ -446,6 +446,7 @@ namespace Aurie
 					exit(0);
 				}
 
+				g_FunctionMap[FunctionName] = Func;
 				return Func(Args...);
 			}
 
@@ -467,6 +468,7 @@ namespace Aurie
 					exit(0);
 				}
 
+				g_FunctionMap[FunctionName] = Func;
 				return Func();
 			}
 		};
@@ -604,6 +606,22 @@ namespace Aurie
 		return AURIE_API_CALL(MmCreateHook, Module, HookIdentifier, SourceFunction, DestinationFunction, Trampoline);
 	}
 
+	inline AurieStatus MmEnableHook(
+		IN AurieModule* Module,
+		IN std::string_view HookIdentifier
+	)
+	{
+		return AURIE_API_CALL(MmEnableHook, Module, HookIdentifier);
+	}
+
+	inline AurieStatus MmDisableHook(
+		IN AurieModule* Module,
+		IN std::string_view HookIdentifier
+	)
+	{
+		return AURIE_API_CALL(MmDisableHook, Module, HookIdentifier);
+	}
+
 	inline AurieStatus MmCreateUnsafeHook(
 		IN AurieModule* Module,
 		IN std::string_view HookIdentifier,
@@ -649,6 +667,15 @@ namespace Aurie
 		return AURIE_API_CALL(MmRemoveHook, Module, HookIdentifier);
 	}
 
+	inline AurieStatus MmGetRegistersForHook(
+		IN AurieModule* Module,
+		IN std::string_view HookIdentifier,
+		OUT ProcessorContext& Context
+	)
+	{
+		return AURIE_API_CALL(MmGetRegistersForHook, Module, HookIdentifier, Context);
+	}
+
 	namespace Internal
 	{
 		inline bool MmpIsAllocatedMemory(
@@ -668,36 +695,6 @@ namespace Aurie
 		)
 		{
 			return AURIE_API_CALL(MmpSigscanRegion, RegionBase, RegionSize, Pattern, PatternMask, PatternBase);
-		}
-
-		inline AurieObject* MmpGetHookByName(
-			IN AurieModule* Module,
-			IN std::string_view HookIdentifier
-		)
-		{
-			return AURIE_API_CALL(MmpGetHookByName, Module, HookIdentifier);
-		}
-
-		inline PVOID MmpGetHookSourceAddress(
-			IN AurieObject* Object
-		)
-		{
-			return AURIE_API_CALL(MmpGetHookSourceAddress, Object);
-		}
-
-		inline PVOID MmpGetHookTargetAddress(
-			IN AurieObject* Object
-		)
-		{
-			return AURIE_API_CALL(MmpGetHookTargetAddress, Object);
-		}
-
-		inline AurieStatus MmpGetRegistersForRPHook(
-			IN AurieRpHook* HookObject,
-			OUT ProcessorContext& Context
-		)
-		{
-			return AURIE_API_CALL(MmpGetRegistersForRPHook, HookObject, Context);
 		}
 	}
 

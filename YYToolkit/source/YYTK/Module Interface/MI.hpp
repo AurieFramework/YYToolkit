@@ -16,6 +16,9 @@ namespace YYTK
 		// Dictates whether the second stage of initializing completed already.
 		bool m_SecondInitComplete = false;
 
+		// Dictates whether the second stage of initializing completed already.
+		bool m_ThirdInitComplete = false;
+
 		// The runner interface stolen by disassembling Extension_PrePrepare(),
 		// alternatively found by reconstructing the stack (in older games).
 		YYRunnerInterface m_RunnerInterface = {};
@@ -156,6 +159,26 @@ namespace YYTK
 			OUT ID3D11Device** DeviceObject,
 			OUT IDXGISwapChain** Swapchain
 		);
+
+		// Handles "stage 1" initialization.
+		// This occurs prior to the game process being resumed by Aurie Core.
+		// The engine is NOT initialized at all, and most facilities are unavailable.
+		Aurie::AurieStatus YkSetupEarlyInitialization();
+
+		// Handles "stage 2" initialization.
+		// This occurs after extensions have been loaded and called.
+		// Most engine facilities such as built-ins are available at this point.
+		// This is the last stop before user-code runs.
+		//
+		// In x86, called from YkSetupFinalInitialization.
+		// In x64, called by the Extension_PrePrepare breakpoint routine.
+		Aurie::AurieStatus YkSetupLateInitialization();
+
+		// Handles "stage 3" initialization.
+		// Essentially just D3D stuff that needs to have a window. Called before the first loaded module's
+		// init is done.
+		// Runs late initialization if it didn't run already.
+		Aurie::AurieStatus YkSetupFinalInitialization();
 
 		// === Interface Functions ===
 		virtual Aurie::AurieStatus Create() override final;

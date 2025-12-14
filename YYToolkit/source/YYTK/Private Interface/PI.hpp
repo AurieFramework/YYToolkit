@@ -10,7 +10,9 @@ namespace YYTK
 	private:
 		bool YkIsLowerLevelInterfaceReady();
 
-		void YkWaitForLowerLevelInit();
+		void YkWaitForLowerLevelInit(
+			IN const char* Function
+		);
 
 	public:
 		/* Aurie Boilerplate */

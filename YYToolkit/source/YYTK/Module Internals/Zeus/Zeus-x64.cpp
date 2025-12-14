@@ -300,6 +300,8 @@ void YYTK::Zeus::HandleRunnerInterfaceCreation(
 
 	// Signal the event.
 	SetEvent(g_ModuleInterface.m_RunnerInterfacePopulatedEvent);
+
+	g_ModuleInterface.YkSetupLateInitialization();
 }
 
 AurieStatus YYTK::Zeus::RegisterRunnerInterfaceHook(
@@ -330,9 +332,23 @@ AurieStatus YYTK::Zeus::FindCodeExecutionHookpoint(
 		"x????xxxxx"
 	);
 
-	// If there's no match:
+	// If there's no match, it's possible that we have a 2024.14 VM runner
 	if (!code_execute_match)
-		return AURIE_OBJECT_NOT_FOUND;
+	{
+		DbgPrintEx(LOG_SEVERITY_TRACE, "code_execute_match is null, maybe a 2024.14 VM runner?");
+		code_execute_match = Memory::DmSigscanGame(
+			UTEXT(
+				"\xE8\x00\x00\x00\x00"	// call <ExecuteIt>
+				"\x3C\x01"				// cmp al, 1
+				"\x74\x00"				// jz ??
+			),
+			"x????xxx?"
+		);
+
+		// If no matches still, we fail.
+		if (!code_execute_match)
+			return AURIE_OBJECT_NOT_FOUND;
+	}
 
 	auto disassembled_instruction = Memory::DmDisassembleInstruction(
 		reinterpret_cast<PVOID>(code_execute_match)
@@ -1617,7 +1633,7 @@ Aurie::AurieStatus YYTK::Zeus::VM::FindArrayOffsetFromRValue(
 		0
 	);
 
-	if (pattern_index != SIZE_MAX)
+	if (pattern_index == SIZE_MAX)
 		return AURIE_OBJECT_NOT_FOUND;
 
 	ZydisDisassembledInstruction& call_instruction = instructions.at(pattern_index + 1);
@@ -1721,51 +1737,63 @@ Aurie::AurieStatus YYTK::Zeus::VM::FindRoomData(
 		0x100
 	);
 
-	// The first match should be it
-	size_t pattern_index = Memory::DmFindMnemonicPattern(
-		instructions,
-		{
-			ZYDIS_MNEMONIC_MOV,
-			ZYDIS_MNEMONIC_MOV,
-			ZYDIS_MNEMONIC_TEST,
-			ZYDIS_MNEMONIC_JZ
-		},
-		0
-	);
+	size_t pattern_index = 0;
+	ZydisDisassembledInstruction* mov_instruction = nullptr;
 
-	// If we didn't get a match, something is wrong
-	if (pattern_index == SIZE_MAX)
-		return AURIE_OBJECT_NOT_FOUND;
-
-	assert(instructions[pattern_index].info.mnemonic == ZYDIS_MNEMONIC_MOV);
-
-	ZydisDisassembledInstruction& mov_instruction = instructions[pattern_index];
-
-	// Make sure the mov has two operands
-	if (mov_instruction.info.operand_count != 2)
-		return AURIE_INVALID_SIGNATURE;
-
-	// We're supposed to be moving to a register
-	if (mov_instruction.operands[0].type != ZYDIS_OPERAND_TYPE_REGISTER)
-		return AURIE_INVALID_SIGNATURE;
-
-	// We're supposed to be moving from memory
-	if (mov_instruction.operands[1].type != ZYDIS_OPERAND_TYPE_MEMORY)
-		return AURIE_INVALID_SIGNATURE;
-
-	// Reject stupidity like mov reg, [reg] - we have to have displacement
-	if (!mov_instruction.operands[1].mem.disp.has_displacement)
+	while (pattern_index != SIZE_MAX)
 	{
-		DbgPrintEx(LOG_SEVERITY_ERROR, "No displacement in room data! Yell at Archie to stop being lazy.");
-		return AURIE_INVALID_SIGNATURE;
+		pattern_index = Memory::DmFindMnemonicPattern(
+			instructions,
+			{
+				ZYDIS_MNEMONIC_MOV,
+				ZYDIS_MNEMONIC_MOV,
+				ZYDIS_MNEMONIC_TEST,
+				ZYDIS_MNEMONIC_JZ
+			},
+			pattern_index
+		);
+
+		// If we didn't get a match, something is wrong
+		if (pattern_index == SIZE_MAX)
+			return AURIE_OBJECT_NOT_FOUND;
+
+		assert(instructions[pattern_index].info.mnemonic == ZYDIS_MNEMONIC_MOV);
+
+		mov_instruction = &instructions[pattern_index];
+
+		// Shift pattern index by 1, to prevent a "continue" going back to finding the same match twice.
+		pattern_index++;
+
+		// Make sure the mov has two operands
+		if (mov_instruction->info.operand_count != 2)
+			continue;
+
+		// We're supposed to be moving to a register
+		if (mov_instruction->operands[0].type != ZYDIS_OPERAND_TYPE_REGISTER)
+			continue;
+
+		// We're supposed to be moving from memory
+		if (mov_instruction->operands[1].type != ZYDIS_OPERAND_TYPE_MEMORY)
+			continue;
+
+		// Reject stupidity like mov reg, [reg] - we have to have displacement
+		if (!mov_instruction->operands[1].mem.disp.has_displacement)
+		{
+			DbgPrintEx(LOG_SEVERITY_WARNING, "No displacement in room data. Continuing...");
+			continue;
+		}
+
+		// Break - we found it.
+		break;
 	}
+
 
 	// Calculate the address of the room array
 	ZyanU64 array_address = 0;
 	if (!ZYAN_SUCCESS(ZydisCalcAbsoluteAddress(
-		&mov_instruction.info,
-		&mov_instruction.operands[1],
-		mov_instruction.runtime_address,
+		&mov_instruction->info,
+		&mov_instruction->operands[1],
+		mov_instruction->runtime_address,
 		&array_address
 	)))
 	{
