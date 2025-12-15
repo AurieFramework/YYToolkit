@@ -445,6 +445,11 @@ namespace YYTK
 		}
 
 		m_SecondInitComplete = true;
+
+		// Run the RUNNER_INIT callback. We're done, and the runner is set up.
+		FunctionWrapper dummy_wrapper = FunctionWrapper<void(int)>([](int) {}, 0);
+		YkDispatchCallbacks(EVENT_RUNNER_INIT, dummy_wrapper);
+
 		return Aurie::AURIE_SUCCESS;
 	}
 

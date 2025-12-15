@@ -161,7 +161,7 @@ namespace YYTK
 		EVENT_OBJECT_CALL = 1,	// The event represents a Code_Execute() call.
 		EVENT_FRAME = 2,		// The event represents an IDXGISwapChain::Present() call.
 		EVENT_RESIZE = 3,		// The event represents an IDXGISwapChain::ResizeBuffers() call.
-		EVENT_UNUSED = 4,		// This value is unused.
+		EVENT_RUNNER_INIT = 4,	// The event represents the runner finishing initialization.
 		EVENT_WNDPROC = 5		// The event represents a WndProc() call.
 	};
 
