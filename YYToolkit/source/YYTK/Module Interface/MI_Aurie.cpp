@@ -271,8 +271,7 @@ namespace YYTK
 		// If we failed doing that, we quit.
 		if (!AurieSuccess(last_status))
 		{
-			DbgPrintEx(LOG_SEVERITY_CRITICAL, "Failed to locate RValue array offset!");
-			return AURIE_MODULE_INTERNAL_ERROR;
+			DbgPrintEx(LOG_SEVERITY_WARNING, "Failed to locate RValue array offset!");
 		}
 
 		// Trace printing ftw!

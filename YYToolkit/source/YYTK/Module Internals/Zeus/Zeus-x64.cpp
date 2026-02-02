@@ -1230,57 +1230,59 @@ Aurie::AurieStatus YYTK::Zeus::YYC::FindArrayOffsetFromRValue(
 		0x100
 	);
 
-	size_t two_movs_index = SIZE_MAX;
-	while (instructions.size())
+	// Map to store counts of displacements: <DisplacementValue, Count>
+	std::map<int64_t, int> displacement_counts;
+
+	for (const auto& instr : instructions)
 	{
-		// Find a potential match
-		two_movs_index = Memory::DmFindMnemonicPattern(
-			instructions,
-			{
-				ZYDIS_MNEMONIC_MOV,
-				ZYDIS_MNEMONIC_MOV
-			},
-			0
-		);
-
-		// If no matches exist, end the loop
-		if (two_movs_index == SIZE_MAX)
+		// End at the return of the current function
+		if (instr.info.mnemonic == ZYDIS_MNEMONIC_RET)
 			break;
 
-		ZydisDisassembledInstruction& first_mov = instructions.at(two_movs_index);
-		ZydisDisassembledInstruction& second_mov = instructions.at(two_movs_index + 1);
+		// We only care about MOV instructions
+		if (instr.info.mnemonic != ZYDIS_MNEMONIC_MOV)
+			continue;
 
-		// TODO: I don't know how to invert this properly
-		// To explain this whole thing, we're searching for two consecutive movs that fulfill:
-		// - Moving from some memory addresses (offset by a common value) to (any) registers
-		// - That's about it?
-		if ((first_mov.info.operand_count == 2 && second_mov.info.operand_count == 2) &&
-			(first_mov.operands[0].type == ZYDIS_OPERAND_TYPE_REGISTER && second_mov.operands[0].type == ZYDIS_OPERAND_TYPE_REGISTER) &&
-			(first_mov.operands[1].type == ZYDIS_OPERAND_TYPE_MEMORY && second_mov.operands[1].type == ZYDIS_OPERAND_TYPE_MEMORY) &&
-			(first_mov.operands[1].mem.disp.has_displacement && second_mov.operands[1].mem.disp.has_displacement) &&
-			(first_mov.operands[1].mem.disp.value == second_mov.operands[1].mem.disp.value)
-			)
-		{
-			break;
-		}
+		const auto& dest = instr.operands[0];
+		const auto& src = instr.operands[1];
 
-		// Create a new vector, starting at where the two movs ended, up until the end of the current vector
-		std::vector<ZydisDisassembledInstruction> new_instructions(
-			instructions.cbegin() + two_movs_index + 1, instructions.cend()
-		);
+		// Filter for 64-bit general-purpose registers (excluding RSP) to target pointers.
+		// This effectively filters out the 'length' member (int32_t) and stack operations.
+		// Skip RSP because the values aren't on the stack. 
+		if (dest.type != ZYDIS_OPERAND_TYPE_REGISTER || dest.size != 64 || dest.reg.value == ZYDIS_REGISTER_RSP)
+			continue;
 
-		// Move from new_instructions to instructions, effectively replacing them
-		instructions = std::move(new_instructions);
+		if (src.type != ZYDIS_OPERAND_TYPE_MEMORY)
+			continue;
 
-		// Reset the index
-		two_movs_index = SIZE_MAX;
+		// Ignore direct pointer access with no offset
+		if (!src.mem.disp.has_displacement)
+			continue;
+
+		displacement_counts[src.mem.disp.value]++;
 	}
 
-	// If we couldn't find two movs that match, return an error
-	if (two_movs_index == SIZE_MAX)
+	// Now find the best candidate.
+	// We look for a displacement that was accessed at least twice (for array1 and array2).
+	// std::map sorts by key, so this will naturally find the lowest offset first.
+
+	int64_t found_offset = -1;
+	bool found = false;
+
+	for (const auto& [disp, count] : displacement_counts)
+	{
+		if (count >= 2)
+		{
+			found_offset = disp;
+			found = true;
+			break;
+		}
+	}
+
+	if (!found)
 		return AURIE_OBJECT_NOT_FOUND;
 
-	*OffsetFromBase = instructions.at(two_movs_index).operands[1].mem.disp.value;
+	*OffsetFromBase = found_offset;
 
 	return AURIE_SUCCESS;
 }
