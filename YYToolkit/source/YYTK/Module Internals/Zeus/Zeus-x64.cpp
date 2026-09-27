@@ -1755,9 +1755,61 @@ Aurie::AurieStatus YYTK::Zeus::VM::FindRoomData(
 			pattern_index
 		);
 
-		// If we didn't get a match, something is wrong
+		// If we didn't get a match, the lookup may not be inlined (e.g. DELTARUNE's runner:
+		// room_instance_clear calls a separate Room_Data(index) helper, which is
+		//   test ecx, ecx / js / movsxd rdx, ecx / cmp rdx, [count] / jnb /
+		//   mov rax, [g_RoomArray.Rooms] / mov rax, [rax+rdx*8] / ret
+		// Follow the first direct calls and look for mov reg,[rip+disp] followed by
+		// mov reg,[reg+reg*8] inside the callee.
 		if (pattern_index == SIZE_MAX)
+		{
+			for (const auto& call : instructions)
+			{
+				if (call.info.mnemonic != ZYDIS_MNEMONIC_CALL)
+					continue;
+				if (call.operands[0].type != ZYDIS_OPERAND_TYPE_IMMEDIATE)
+					continue;
+
+				ZyanU64 callee = 0;
+				if (!ZYAN_SUCCESS(ZydisCalcAbsoluteAddress(&call.info, &call.operands[0], call.runtime_address, &callee)))
+					continue;
+
+				auto callee_instructions = Memory::DmDisassembleInstructionByRange(
+					reinterpret_cast<PVOID>(callee),
+					0x40
+				);
+
+				for (size_t i = 0; i + 1 < callee_instructions.size(); i++)
+				{
+					const auto& first = callee_instructions[i];
+					const auto& second = callee_instructions[i + 1];
+
+					if (first.info.mnemonic == ZYDIS_MNEMONIC_RET)
+						break;
+					if (first.info.mnemonic != ZYDIS_MNEMONIC_MOV || second.info.mnemonic != ZYDIS_MNEMONIC_MOV)
+						continue;
+					if (first.operands[0].type != ZYDIS_OPERAND_TYPE_REGISTER || first.operands[1].type != ZYDIS_OPERAND_TYPE_MEMORY)
+						continue;
+					if (first.operands[1].mem.base != ZYDIS_REGISTER_RIP || !first.operands[1].mem.disp.has_displacement)
+						continue;
+					if (second.operands[1].type != ZYDIS_OPERAND_TYPE_MEMORY || second.operands[1].mem.scale != 8)
+						continue;
+					if (second.operands[1].mem.base != first.operands[0].reg.value)
+						continue;
+
+					ZyanU64 array_address = 0;
+					if (!ZYAN_SUCCESS(ZydisCalcAbsoluteAddress(&first.info, &first.operands[1], first.runtime_address, &array_address)))
+						continue;
+
+					DbgPrintEx(LOG_SEVERITY_TRACE, "Room array found via non-inlined Room_Data at 0x%llX => 0x%llX", callee, array_address);
+					s_RoomEntry = reinterpret_cast<CRoom***>(array_address);
+					*RoomData = s_GetRoomEntry;
+					return AURIE_SUCCESS;
+				}
+			}
+
 			return AURIE_OBJECT_NOT_FOUND;
+		}
 
 		assert(instructions[pattern_index].info.mnemonic == ZYDIS_MNEMONIC_MOV);
 
