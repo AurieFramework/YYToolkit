@@ -269,6 +269,12 @@ namespace YYTK
 		{
 			AurieStatus last_status = AURIE_SUCCESS;
 
+			// Built-in variables (x, y, sprite_index, ...) have no slot in the instance's
+			// variable map; FindAllocSlot/InternalGetYYVarRef fault on them. Use GetBuiltin/SetBuiltin.
+			size_t builtin_index = 0;
+			if (AurieSuccess(GetBuiltinVariableIndex(MemberName, builtin_index)))
+				return AURIE_ACCESS_DENIED;
+
 			RValue variable_exists;
 			int32_t variable_hash = 0;
 
@@ -300,6 +306,9 @@ namespace YYTK
 			// we return the last status.
 			if (!AurieSuccess(last_status))
 				return last_status;
+
+			if (variable_hash < 0)
+				return AURIE_OBJECT_NOT_FOUND;
 
 			// Otherwise we try to get the internal value and write it to InternalGetYYVarRef
 			member_value = &Instance.m_Object->InternalGetYYVarRef(variable_hash);

@@ -122,6 +122,7 @@ namespace YYTK
 		 * \param MemberName The name of the member variable to access.
 		 * \param Member A buffer into which an engine-managed pointer to the variable is written.
 		 * \return AURIE_SUCCESS on success. AURIE_OBJECT_NOT_FOUND if the variable does not exist. AURIE_INVALID_PARAMETER if Instance is invalid.
+		 *         AURIE_ACCESS_DENIED if MemberName is a built-in variable (x, y, sprite_index...); read those with GetBuiltin.
 		 */
 		virtual Aurie::AurieStatus GetInstanceMember(
 			IN RValue Instance,
