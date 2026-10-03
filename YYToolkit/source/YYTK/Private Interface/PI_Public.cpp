@@ -673,18 +673,46 @@ namespace YYTK
 			bg_color_idx
 		);
 
-		// This lookup will fail in newer runners where backgrounds were removed
-		if (!AurieSuccess(last_status))
-		{
-			// Note: We have to craft the pointer manually here, since
-			// bool alignment prevents us from just having a struct (it'd get aligned to sizeof(PVOID)).
+		// Backgrounds-era runners keep the classic layout.
+		if (AurieSuccess(last_status))
+			return &Object->WithBackgrounds.Internals;
 
-			// Don't ask why it's from m_Color and not from m_ShowColor, it doesn't make sense
-			// and I can't figure out why it works - it just does.
-			return reinterpret_cast<CRoomInternal*>(&Object->m_Color);
+		// Newer runners (backgrounds removed) moved the internals between versions:
+		// 2024.6 starts them at &m_Color, 2024.14 one pointer earlier (a field before was dropped).
+		// Pick the candidate whose active-instance count matches the instance_count builtin,
+		// measured once on the current room and cached for every CRoom.
+		static ptrdiff_t s_InternalOffset = -1;
+		const ptrdiff_t candidates[] = {
+			reinterpret_cast<char*>(&Object->m_Color) - reinterpret_cast<char*>(Object),
+			reinterpret_cast<char*>(&Object->m_Color) - reinterpret_cast<char*>(Object) - static_cast<ptrdiff_t>(sizeof(PVOID))
+		};
+
+		if (s_InternalOffset < 0)
+		{
+			CRoom* run_room = nullptr;
+			RValue instance_count;
+			if (AurieSuccess(g_ModuleInterface.GetCurrentRoomData(run_room)) && run_room &&
+				AurieSuccess(g_ModuleInterface.GetBuiltin("instance_count", nullptr, NULL_INDEX, instance_count)))
+			{
+				const int32_t expected = instance_count.ToInt32();
+				for (ptrdiff_t offset : candidates)
+				{
+					auto* internals = reinterpret_cast<CRoomInternal*>(reinterpret_cast<char*>(run_room) + offset);
+					const auto& list = internals->m_ActiveInstances;
+					if (list.m_Count == expected && ((expected == 0) == (list.m_First == nullptr)))
+					{
+						s_InternalOffset = offset;
+						DbgPrintEx(LOG_SEVERITY_TRACE, "CRoom internals at +0x%llx (instance_count %d)", static_cast<unsigned long long>(offset), expected);
+						break;
+					}
+				}
+			}
 		}
 
-		return &Object->WithBackgrounds.Internals;
+		// Note: the pointer is crafted manually, since bool alignment
+		// prevents us from just having a struct (it'd get aligned to sizeof(PVOID)).
+		const ptrdiff_t offset = (s_InternalOffset >= 0) ? s_InternalOffset : candidates[0];
+		return reinterpret_cast<CRoomInternal*>(reinterpret_cast<char*>(Object) + offset);
 	}
 
 	bool YYTKPrivateInterfaceImpl::YYObjectBase_Add(
