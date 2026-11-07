@@ -362,6 +362,32 @@ namespace YYTK
 			IN std::string_view MethodName,
 			OUT int32_t& Count
 		) = 0;
+
+		/**
+		 * \brief Runs a code object through the runner's own Code_Execute.
+		 * EVENT_OBJECT_CALL callbacks are not dispatched for this call.
+		 * \param SelfInstance The instance the code runs as.
+		 * \param OtherInstance The "other" instance.
+		 * \param CodeObject The CCode to run. On YYC runners a CCode without a compiled
+		 * function but with a VMBuffer runs on the runner's bytecode VM.
+		 * \param Result Receives the code's return value.
+		 * \param ArgumentCount Number of arguments the code reads from the argument stack.
+		 * \return AURIE_SUCCESS if Code_Execute returned true, AURIE_EXTERNAL_ERROR if it
+		 * returned false, AURIE_MODULE_INTERNAL_ERROR if Code_Execute was not found.
+		 */
+		virtual Aurie::AurieStatus ExecuteCodeObject(
+			IN CInstance* SelfInstance,
+			IN CInstance* OtherInstance,
+			IN CCode* CodeObject,
+			OUT RValue& Result,
+			IN int ArgumentCount
+		) = 0;
+
+		/**
+		 * \brief Reports whether the game runs YYC-compiled native code rather than VM bytecode.
+		 * Determined during initialization from the code_is_compiled() built-in.
+		 */
+		virtual bool IsYYCRunner() = 0;
 	};
 
 	struct YYTKPrivateInterface : public Aurie::AurieInterfaceBase

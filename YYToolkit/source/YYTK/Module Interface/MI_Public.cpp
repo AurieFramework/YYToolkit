@@ -1051,4 +1051,33 @@ namespace YYTK
 
 		return AURIE_SUCCESS;
 	}
+
+	AurieStatus YYTKInterfaceImpl::ExecuteCodeObject(
+		IN CInstance* SelfInstance,
+		IN CInstance* OtherInstance,
+		IN CCode* CodeObject,
+		OUT RValue& Result,
+		IN int ArgumentCount
+	)
+	{
+		using FNCodeExecute = bool(*)(CInstance*, CInstance*, CCode*, RValue*, int);
+
+		if (!CodeObject)
+			return AURIE_INVALID_PARAMETER;
+
+		// The original Code_Execute, which the ExecuteIt hook wraps. Calling the trampoline
+		// instead of the hooked function keeps EVENT_OBJECT_CALL callbacks out of it.
+		auto code_execute = reinterpret_cast<FNCodeExecute>(MmGetHookTrampoline(g_ArSelfModule, "ExecuteIt"));
+		if (!code_execute)
+			return AURIE_MODULE_INTERNAL_ERROR;
+
+		return code_execute(SelfInstance, OtherInstance, CodeObject, &Result, ArgumentCount)
+			? AURIE_SUCCESS
+			: AURIE_EXTERNAL_ERROR;
+	}
+
+	bool YYTKInterfaceImpl::IsYYCRunner()
+	{
+		return m_IsYYCRunner;
+	}
 }
