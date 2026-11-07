@@ -487,6 +487,21 @@ namespace YYTK
 			return AURIE_MODULE_INTERNAL_ERROR;
 		}
 
+		// Install the D3D11 Present/ResizeBuffers hooks backing EVENT_FRAME
+		// and EVENT_RESIZE now that we have a live swapchain. Without this
+		// call, CreateCallback(..., EVENT_FRAME/EVENT_RESIZE, ...) silently
+		// registers a callback that can never actually fire, since nothing
+		// ever hooks Present()/ResizeBuffers() in the first place.
+		last_status = Hooks::InitializeStage3Hooks(m_WindowHandle, m_EngineSwapchain);
+
+		DbgPrintEx(LOG_SEVERITY_TRACE, "Hooks::InitializeStage3Hooks => %s", AurieStatusToString(last_status));
+
+		if (!AurieSuccess(last_status))
+		{
+			DbgPrintEx(LOG_SEVERITY_CRITICAL, "Failed to create D3D11 hooks!");
+			return AURIE_MODULE_INTERNAL_ERROR;
+		}
+
 		m_ThirdInitComplete = true;
 		return AURIE_SUCCESS;
 	}
