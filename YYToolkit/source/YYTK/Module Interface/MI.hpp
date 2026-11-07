@@ -347,6 +347,16 @@ namespace YYTK
 			IN std::string_view MethodName,
 			OUT int32_t& Count
 		) override final;
+
+		virtual Aurie::AurieStatus ExecuteCodeObject(
+			IN CInstance* SelfInstance,
+			IN CInstance* OtherInstance,
+			IN CCode* CodeObject,
+			OUT RValue& Result,
+			IN int ArgumentCount
+		) override final;
+
+		virtual bool IsYYCRunner() override final;
 	};
 
 	inline YYTKInterfaceImpl g_ModuleInterface;
